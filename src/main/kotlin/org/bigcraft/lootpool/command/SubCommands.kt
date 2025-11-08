@@ -1,0 +1,21 @@
+package org.bigcraft.lootpool.command
+
+import dev.jorel.commandapi.CommandAPICommand
+import dev.jorel.commandapi.executors.CommandExecutor
+import me.wyne.wutils.i18n.kotlin.placeholderComponent
+import org.bigcraft.lootpool.LootPool
+
+abstract class SubCommand(argument: String) {
+    open val command = CommandAPICommand(argument)
+    operator fun invoke() = command
+}
+
+class ReloadCommand(plugin: LootPool) : SubCommand("reload") {
+    override val command: CommandAPICommand = super.command
+        .withPermission("lootpool.reload")
+        .executes(CommandExecutor { sender, _ ->
+            plugin.reload()
+            sender.placeholderComponent("success-plugin-reload").sendMessage(sender)
+            LootPool.log.info("Plugin reloaded")
+        })
+}
