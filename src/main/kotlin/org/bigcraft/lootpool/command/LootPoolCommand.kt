@@ -14,7 +14,8 @@ class LootPoolCommand @Inject constructor(private val plugin: LootPool) {
 
     private fun registerCommand() {
         commandAPICommand("lootpool") {
-            ReloadCommand(plugin)()
+            withSubcommand(ReloadCommand(plugin)())
+            withSubcommand(CreateCommand())
         }
     }
 

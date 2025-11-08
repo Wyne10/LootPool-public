@@ -21,10 +21,10 @@ abstract class AbstractManager<V> : Loadable {
 
     override fun load(config: ConfigurationSection) {
         loadedMap.clear()
-        val section = config.getConfigurationSection(sectionKey)!!
+        val section = config.getConfigurationSection(sectionKey) ?: return
         section.getKeys(false).forEach { key ->
             LootPool.log.debug("Loading key '{}' from '{}'", key, section.name)
-            loadedMap[key] = valueLoader.fromConfig(section.getConfigurationSection(key)!!)
+            loadedMap[key] = valueLoader.fromConfig(key, section)
         }
     }
 

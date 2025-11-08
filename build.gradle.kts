@@ -18,6 +18,8 @@ dependencies {
     compileOnly(libs.commandApi)
     compileOnly(libs.commandApiKotlin)
 
+    implementation(project(":api"))
+
     implementation(libs.guice)
     implementation(libs.adventureMini)
     implementation(libs.adventureBukkit)
@@ -81,11 +83,14 @@ bukkit {
     softDepend = listOf("PlaceholderAPI", "CommandAPI")
     permissions {
         register("lootpool.*") {
-            children = listOf("lootpool.reload")
+            children = listOf("lootpool.reload", "lootpool.create")
             default = BukkitPluginDescription.Permission.Default.OP
         }
         register("lootpool.reload") {
             description = "Allows to reload plugin"
+        }
+        register("lootpool.create") {
+            description = "Allows to create loot pools"
         }
     }
 }

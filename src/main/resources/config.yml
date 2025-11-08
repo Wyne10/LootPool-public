@@ -5,3 +5,5 @@ usePlayerLanguage: true
 serializer: MINI_MESSAGE
 # OFF/FATAL/ERROR/WARN/INFO/DEBUG/TRACE/ALL
 logLevel: INFO
+
+lootpool:

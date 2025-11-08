@@ -20,6 +20,7 @@ import net.kyori.adventure.platform.bukkit.BukkitAudiences
 import org.bigcraft.lootpool.LootPool.Companion.EMPTY_CONFIGURATION
 import org.bigcraft.lootpool.LootPool.Companion.log
 import org.bigcraft.lootpool.module.CommandModule
+import org.bigcraft.lootpool.module.LootPoolModule
 import org.bigcraft.lootpool.module.PluginModule
 import java.io.File
 import java.util.concurrent.Executors
@@ -79,6 +80,7 @@ object InitializeInjector : PluginStep<LootPool> {
             LootPool.instance.injector = Guice.createInjector(
                 Stage.PRODUCTION,
                 PluginModule(plugin),
+                LootPoolModule,
                 CommandModule
             )
         } catch (e: CreationException) {
