@@ -4,9 +4,11 @@ import com.google.inject.Inject
 import com.google.inject.Singleton
 import org.bigcraft.lootpool.AbstractManager
 import org.bigcraft.lootpool.ConfigurableFactory
+import org.bigcraft.lootpool.api.Loot
 import org.bigcraft.lootpool.api.LootPool
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.configuration.file.YamlConfiguration
+import org.bukkit.configuration.serialization.ConfigurationSerialization
 import java.io.File
 
 @Singleton
@@ -16,6 +18,20 @@ class LootPoolManager @Inject constructor(plugin: org.bigcraft.lootpool.LootPool
     override val valueLoader: ConfigurableFactory<LootPool> = LootPoolFactory
 
     val lootDirectory = File(plugin.dataFolder, "$sectionKey/")
+
+    init {
+        instance = this
+        ConfigurationSerialization.registerClass(Loot::class.java)
+        ConfigurationSerialization.registerClass(LootPool::class.java)
+    }
+
+    fun getLootPool(key: String) = loadedMap[key]
+
+    fun removeLootPool(key: String) {
+        loadedMap.remove(key)
+        val file = File(lootDirectory, "$key.yml")
+        file.delete()
+    }
 
     override fun load(config: ConfigurationSection) {
         super.load(config)
@@ -38,6 +54,11 @@ class LootPoolManager @Inject constructor(plugin: org.bigcraft.lootpool.LootPool
                 val key = file.nameWithoutExtension
                 loadedMap[key] = valueLoader.fromConfig(key, YamlConfiguration.loadConfiguration(file))
             }
+    }
+
+    companion object {
+        lateinit var instance: LootPoolManager
+            private set
     }
 
 }

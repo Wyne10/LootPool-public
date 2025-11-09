@@ -83,7 +83,7 @@ bukkit {
     softDepend = listOf("PlaceholderAPI", "CommandAPI")
     permissions {
         register("lootpool.*") {
-            children = listOf("lootpool.reload", "lootpool.create")
+            children = listOf("lootpool.reload", "lootpool.create", "lootpool.modify", "lootpool.remove", "lootpool.info")
             default = BukkitPluginDescription.Permission.Default.OP
         }
         register("lootpool.reload") {
@@ -91,6 +91,15 @@ bukkit {
         }
         register("lootpool.create") {
             description = "Allows to create loot pools"
+        }
+        register("lootpool.modify") {
+            description = "Allows to modify existing loot pools"
+        }
+        register("lootpool.remove") {
+            description = "Allows to remove existing loot pools"
+        }
+        register("lootpool.info") {
+            description = "Allows to check info about existing loot pools"
         }
     }
 }

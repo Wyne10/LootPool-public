@@ -4,9 +4,12 @@ import me.wyne.wutils.common.event.EventRegistry
 import me.wyne.wutils.common.event.RegisterableListener
 import me.wyne.wutils.common.kotlin.item.isNotNullOrAir
 import me.wyne.wutils.common.kotlin.item.isNullOrAir
+import me.wyne.wutils.i18n.kotlin.placeholderComponent
 import me.wyne.wutils.i18n.kotlin.placeholderComponents
 import me.wyne.wutils.i18n.kotlin.replace
 import org.bigcraft.lootpool.LootPool
+import org.bigcraft.lootpool.api.Loot
+import org.bigcraft.lootpool.core.LootPoolManager
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
@@ -22,6 +25,11 @@ class LootPoolGui(private val key: String, private val player: Player) : Registe
     private val lootPool = mutableListOf<MutableLoot>()
 
     private val eventRegistry = EventRegistry(LootPool.instance)
+
+    constructor(key: String, player: Player, lootPool: org.bigcraft.lootpool.api.LootPool) : this(key, player) {
+        lootPool.lootPool.forEach { this.lootPool.add(it.asMutable()) }
+        run { render() }
+    }
 
     init {
         eventRegistry.register(this)
@@ -119,6 +127,10 @@ class LootPoolGui(private val key: String, private val player: Player) : Registe
     private fun onInventoryClose(event: InventoryCloseEvent) {
         if (event.inventory != inventory) return
         eventRegistry.close()
+        LootPoolManager.instance.write(key, org.bigcraft.lootpool.api.LootPool(
+            lootPool.map { it.asImmutable() }
+        ))
+        player.placeholderComponent("success-lootpool-create", "key" replace key).sendMessage(player)
     }
 
     private fun validateClick(event: InventoryClickEvent): Boolean {
@@ -209,3 +221,9 @@ private data class MutableLoot(var item: ItemStack, private var _weight: Int, pr
         return render
     }
 }
+
+private fun Loot.asMutable() =
+    MutableLoot(this.item.clone(), this.weight, this.minAmount, this.maxAmount)
+
+private fun MutableLoot.asImmutable() =
+    Loot(this.item.clone(), this.weight, this.minAmount, this.maxAmount)

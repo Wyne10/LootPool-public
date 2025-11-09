@@ -1,18 +1,10 @@
 package org.bigcraft.lootpool.api;
 
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
-import org.bukkit.configuration.serialization.ConfigurationSerialization;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public record LootPool(List<Loot> lootPool) implements ConfigurationSerializable {
-
-    static {
-        ConfigurationSerialization.registerClass(LootPool.class);
-    }
 
     public LootPool(LootPool lootPool) {
         this(lootPool.lootPool());
@@ -36,9 +28,14 @@ public record LootPool(List<Loot> lootPool) implements ConfigurationSerializable
     public static LootPool deserialize(Map<String, Object> args) {
         List<Loot> lootPool = new ArrayList<>();
         for (Object loot : args.values()) {
-            lootPool.add((Loot) loot);
+            if (loot instanceof Loot)
+                lootPool.add((Loot) loot);
         }
         return new LootPool(List.copyOf(lootPool));
+    }
+
+    public LootPool sortByWeights() {
+        return new LootPool(lootPool.stream().sorted(Comparator.comparingInt(Loot::weight)).toList());
     }
 
 }

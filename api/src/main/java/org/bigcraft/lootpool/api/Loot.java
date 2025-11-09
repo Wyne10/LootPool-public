@@ -1,7 +1,6 @@
 package org.bigcraft.lootpool.api;
 
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
-import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.NumberConversions;
 
@@ -9,10 +8,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public record Loot(ItemStack item, int weight, int minAmount, int maxAmount) implements ConfigurationSerializable {
-
-    static {
-        ConfigurationSerialization.registerClass(Loot.class);
-    }
 
     public Loot(Loot loot) {
         this(loot.item(), loot.weight(), loot.minAmount(), loot.maxAmount());

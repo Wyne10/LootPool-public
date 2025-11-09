@@ -5,12 +5,20 @@ gui-loot:
   - "<gray>[1 <red>-<gray>]/[2 <green>+<gray>] <white>Макс. количество: <gold><max-amount>"
   - '<gray>[Q] <red>Удалить'
 
-
 ### Messages
 
 ## Info
+info-lootpool-already-exists: "Лут пул '<key>' уже существует [<hover:show_text:'<green>Нажмите чтобы модифицировать'><click:run_command:/lootpool modify <key>><green><u>Модифицировать<white>]"
+info-loot: "- <loot-name><reset> [<min-amount>..<max-amount>] - <gold><weight> <aqua>(<percentage>%)"
+info-lootpool:
+  - "Лут пул '<key>':"
+  - "<loot-list>"
 
 ## Error
+error-lootpool-not-found: "<red>Лут пул '<key>' не существует!"
+error-lootpool-already-exists: "<red>Лут пул '<key>' уже существует!"
 
 ## Success
 success-plugin-reload: "<green>Плагин перезагружен!"
+success-lootpool-create: "<green>Лут пул '<key>' создан"
+success-lootpool-remove: "<green>Лут пул '<key>' <red>удален"

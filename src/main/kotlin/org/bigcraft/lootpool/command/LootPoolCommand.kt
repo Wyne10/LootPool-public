@@ -4,9 +4,13 @@ import com.google.inject.Inject
 import com.google.inject.Singleton
 import dev.jorel.commandapi.kotlindsl.commandAPICommand
 import org.bigcraft.lootpool.LootPool
+import org.bigcraft.lootpool.core.LootPoolManager
 
 @Singleton
-class LootPoolCommand @Inject constructor(private val plugin: LootPool) {
+class LootPoolCommand @Inject constructor(
+    private val plugin: LootPool,
+    private val lootPoolManager: LootPoolManager
+) {
 
     init {
         registerCommand()
@@ -15,7 +19,10 @@ class LootPoolCommand @Inject constructor(private val plugin: LootPool) {
     private fun registerCommand() {
         commandAPICommand("lootpool") {
             withSubcommand(ReloadCommand(plugin)())
-            withSubcommand(CreateCommand())
+            withSubcommand(CreateCommand(lootPoolManager)())
+            withSubcommand(ModifyCommand(lootPoolManager)())
+            withSubcommand(RemoveCommand(lootPoolManager)())
+            withSubcommand(InfoCommand(lootPoolManager)())
         }
     }
 
