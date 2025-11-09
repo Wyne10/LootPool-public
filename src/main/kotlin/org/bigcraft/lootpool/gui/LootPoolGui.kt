@@ -11,7 +11,6 @@ import org.bigcraft.lootpool.LootPool
 import org.bigcraft.lootpool.api.Loot
 import org.bigcraft.lootpool.core.LootPoolManager
 import org.bukkit.Bukkit
-import org.bukkit.NamespacedKey
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.inventory.ClickType
@@ -128,8 +127,8 @@ class LootPoolGui(private val key: String, private val player: Player) : Registe
     private fun onInventoryClose(event: InventoryCloseEvent) {
         if (event.inventory != inventory) return
         eventRegistry.close()
-        LootPoolManager.instance.writeLootPool(key, org.bigcraft.lootpool.api.LootPool(
-                NamespacedKey(LootPool.instance, key),
+        LootPoolManager.instance.writeLootPool(org.bigcraft.lootpool.api.LootPool(
+                key,
                 listOf(*lootPool.map { it.asImmutable() }.toTypedArray())
             )
         )

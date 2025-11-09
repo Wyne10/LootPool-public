@@ -9,7 +9,9 @@ gui-loot:
 
 ## Info
 info-lootpool-already-exists: "Loot pool '<key>' already exists [<hover:show_text:'<green>Click to modify'><click:run_command:/lootpool modify <key>><green><u>Modify<white>]"
-info-loot: "- <loot-name><reset> [<min-amount>..<max-amount>] - <gold><weight> <aqua>(<percentage>%)"
+info-loot-already-exists: "Loot '<key>' already exists [<hover:show_text:'<green>Click to modify'><click:run_command:/lootpool modify-loot <key>><green><u>Modify<white>]"
+info-loot: "- <loot-name><reset> [<min-amount>..<max-amount>]"
+info-lootpool-loot: "- <loot-name><reset> [<min-amount>..<max-amount>] - <gold><weight> <aqua>(<percentage>%)"
 info-lootpool:
   - "Loot pool '<key>':"
   - "<loot-list>"
@@ -18,7 +20,14 @@ info-lootpool:
 error-lootpool-not-found: "<red>Loot pool '<key>' doesn't exist!"
 error-lootpool-already-exists: "<red>Loot pool '<key>' already exists!"
 
+error-loot-not-found: "<red>Loot '<key>' doesn't exist!"
+error-loot-already-exists: "<red>Loot pool '<key>' already exists!"
+error-empty-loot: "<red>Loot can't be empty!"
+
 ## Success
 success-plugin-reload: "<green>Plugin reloaded!"
 success-lootpool-create: "<green>Loot pool '<key>' created"
 success-lootpool-remove: "<green>Loot pool '<key>' <red>removed"
+
+success-loot-create: "<green>Loot '<key>' created"
+success-loot-remove: "<green>Loot '<key>' <red>removed"

@@ -1,6 +1,5 @@
 package org.bigcraft.lootpool
 
-import com.google.gson.Gson
 import com.google.inject.CreationException
 import com.google.inject.Guice
 import com.google.inject.Stage

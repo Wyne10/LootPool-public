@@ -12,7 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
-public record LootPool(NamespacedKey key, List<Loot> lootPool) implements ConfigurationSerializable, LootTable {
+public record LootPool(String key, List<Loot> lootPool) implements ConfigurationSerializable, LootTable {
 
     public LootPool(LootPool lootPool) {
         this(lootPool.key(), lootPool.lootPool());
@@ -26,7 +26,7 @@ public record LootPool(NamespacedKey key, List<Loot> lootPool) implements Config
     @Override
     public Map<String, Object> serialize() {
         Map<String, Object> data = new HashMap<>();
-        data.put("key", key.toString());
+        data.put("key", key);
         for (int i = 0; i < lootPool.size(); i++) {
             data.put(String.valueOf(i), lootPool.get(i));
         }
@@ -39,7 +39,7 @@ public record LootPool(NamespacedKey key, List<Loot> lootPool) implements Config
             if (loot instanceof Loot)
                 lootPool.add((Loot) loot);
         }
-        return new LootPool(NamespacedKey.fromString((String) args.get("key")), List.copyOf(lootPool));
+        return new LootPool((String) args.get("key"), List.copyOf(lootPool));
     }
 
     public LootPool sortByWeight() {
@@ -116,9 +116,10 @@ public record LootPool(NamespacedKey key, List<Loot> lootPool) implements Config
         populate(inventory, inventory.getSize());
     }
 
+    @SuppressWarnings("DataFlowIssue")
     @Override
     public @NotNull NamespacedKey getKey() {
-        return key;
+        return NamespacedKey.fromString("lootpool:" + key);
     }
 
 }

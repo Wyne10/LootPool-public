@@ -9,7 +9,9 @@ gui-loot:
 
 ## Info
 info-lootpool-already-exists: "Лут пул '<key>' уже существует [<hover:show_text:'<green>Нажмите чтобы модифицировать'><click:run_command:/lootpool modify <key>><green><u>Модифицировать<white>]"
-info-loot: "- <loot-name><reset> [<min-amount>..<max-amount>] - <gold><weight> <aqua>(<percentage>%)"
+info-loot-already-exists: "Лут '<key>' уже существует [<hover:show_text:'<green>Нажмите чтобы модифицировать'><click:run_command:/lootpool modify-loot <key>><green><u>Модифицировать<white>]"
+info-loot: "- <loot-name><reset> [<min-amount>..<max-amount>]"
+info-lootpool-loot: "- <loot-name><reset> [<min-amount>..<max-amount>] - <gold><weight> <aqua>(<percentage>%)"
 info-lootpool:
   - "Лут пул '<key>':"
   - "<loot-list>"
@@ -18,7 +20,14 @@ info-lootpool:
 error-lootpool-not-found: "<red>Лут пул '<key>' не существует!"
 error-lootpool-already-exists: "<red>Лут пул '<key>' уже существует!"
 
+error-loot-not-found: "<red>Лут '<key>' не существует!"
+error-loot-already-exists: "<red>Лут '<key>' уже существует!"
+error-empty-loot: "<red>Лут не может быть пустым!"
+
 ## Success
 success-plugin-reload: "<green>Плагин перезагружен!"
 success-lootpool-create: "<green>Лут пул '<key>' создан"
 success-lootpool-remove: "<green>Лут пул '<key>' <red>удален"
+
+success-loot-create: "<green>Лут '<key>' создан"
+success-loot-remove: "<green>Лут '<key>' <red>удален"

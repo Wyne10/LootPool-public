@@ -22,7 +22,6 @@ class LootPool : CompositeJavaPlugin<LootPool>() {
             InitializeConfig,
             InitializeLoader,
             Load,
-            Disable,
             Reload
         )
     }

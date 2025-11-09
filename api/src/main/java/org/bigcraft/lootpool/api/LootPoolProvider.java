@@ -7,7 +7,7 @@ public interface LootPoolProvider {
     LootPool getLootPool(String key);
     @Nullable
     LootPool removeLootPool(String key);
-    void addLootPool(String ley, LootPool lootPool);
-    void writeLootPool(String key, LootPool lootPool);
+    void addLootPool(LootPool lootPool);
+    void writeLootPool(LootPool lootPool);
     void reload();
 }
