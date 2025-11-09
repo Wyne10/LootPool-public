@@ -19,6 +19,7 @@ import me.wyne.wutils.log.*
 import net.kyori.adventure.platform.bukkit.BukkitAudiences
 import org.bigcraft.lootpool.LootPool.Companion.EMPTY_CONFIGURATION
 import org.bigcraft.lootpool.LootPool.Companion.log
+import org.bigcraft.lootpool.module.ApiModule
 import org.bigcraft.lootpool.module.CommandModule
 import org.bigcraft.lootpool.module.LootPoolModule
 import org.bigcraft.lootpool.module.PluginModule
@@ -81,6 +82,7 @@ object InitializeInjector : PluginStep<LootPool> {
                 Stage.PRODUCTION,
                 PluginModule(plugin),
                 LootPoolModule,
+                ApiModule,
                 CommandModule
             )
         } catch (e: CreationException) {
@@ -114,16 +116,8 @@ object Load : PluginStep<LootPool> {
     }
 }
 
-@Step(scope = StepScope.DISABLE)
-object Disable : CompositeStep<LootPool>(Write)
-
 @Step(scope = StepScope.RELOAD)
-object Reload : CompositeStep<LootPool>(ReloadConfig, InitializeLoader, InitializeI18n, Write, Load)
-
-object Write : PluginStep<LootPool> {
-    override fun run(plugin: LootPool) {
-    }
-}
+object Reload : CompositeStep<LootPool>(ReloadConfig, InitializeLoader, InitializeI18n, Load)
 
 object ReloadConfig : PluginStep<LootPool> {
     override fun run(plugin: LootPool) {

@@ -1,13 +1,17 @@
 package org.bigcraft.lootpool.api;
 
+import org.bukkit.Material;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.NumberConversions;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 
 public record Loot(ItemStack item, int weight, int minAmount, int maxAmount) implements ConfigurationSerializable {
+
+    public static final Loot EMPTY = new Loot(new ItemStack(Material.AIR), 0, 1, 1);
 
     public Loot(Loot loot) {
         this(loot.item(), loot.weight(), loot.minAmount(), loot.maxAmount());
@@ -30,6 +34,12 @@ public record Loot(ItemStack item, int weight, int minAmount, int maxAmount) imp
 
     public static Loot deserialize(Map<String, Object> args) {
         return new Loot((ItemStack) args.get("item"), NumberConversions.toInt(args.get("weight")), NumberConversions.toInt(args.get("minAmount")), NumberConversions.toInt(args.get("maxAmount")));
+    }
+
+    public ItemStack create() {
+        var item = this.item.clone();
+        item.setAmount(ThreadLocalRandom.current().nextInt(minAmount, maxAmount));
+        return item;
     }
 
 }

@@ -2,6 +2,7 @@ package org.bigcraft.lootpool.module
 
 import com.google.inject.AbstractModule
 import org.bigcraft.lootpool.LootPool
+import org.bigcraft.lootpool.LootPoolApi
 import org.bigcraft.lootpool.core.LootPoolManager
 
 //region Implementations
@@ -53,4 +54,6 @@ private class CoreAbstractSwappableModule(
 //endregion
 
 val LootPoolModule: AbstractModule = CoreModule(LootPoolManager::class.java)
+
+val ApiModule: AbstractModule = CoreModule(LootPoolApi::class.java)
 
