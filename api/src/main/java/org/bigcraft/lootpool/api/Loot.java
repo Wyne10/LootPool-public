@@ -38,7 +38,7 @@ public record Loot(ItemStack item, int weight, int minAmount, int maxAmount) imp
 
     public ItemStack create() {
         var item = this.item.clone();
-        item.setAmount(ThreadLocalRandom.current().nextInt(minAmount, maxAmount));
+        item.setAmount(ThreadLocalRandom.current().nextInt(minAmount, maxAmount + 1));
         return item;
     }
 
