@@ -52,6 +52,9 @@ public record LootPool(String key, List<Loot> lootPool) implements Configuration
             totalWeight += loot.weight();
         }
 
+        if (totalWeight == 0)
+            return Loot.EMPTY;
+
         int randomValue = ThreadLocalRandom.current().nextInt(totalWeight);
 
         int currentSum = 0;
