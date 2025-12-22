@@ -59,7 +59,7 @@ class InitializeLogger(private val logDirectory: File) : PluginStep<LootPool> {
 object InitializeI18n : PluginStep<LootPool> {
     override fun run(plugin: LootPool) {
         I18n.global = PluginI18nBuilder(plugin)
-            .setLog(log)
+            .setLogger(log)
             .setComponentAudience(BukkitComponentAudiences(BukkitAudiences.create(plugin)))
             .setComponentInterpreter(
                 ComponentInterpreters.valueOf(
@@ -94,7 +94,7 @@ object InitializeInjector : PluginStep<LootPool> {
 object InitializeConfig : CompositeStep<LootPool>(ReloadConfig) {
     override fun before(plugin: LootPool) {
         Config.global.apply {
-            log = LootPool.log
+            logger = LootPool.log
             setConfigGenerator(plugin, "config.yml")
             generateConfig()
         }

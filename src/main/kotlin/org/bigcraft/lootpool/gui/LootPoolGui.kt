@@ -102,7 +102,8 @@ class LootPoolGui(private val key: String, private val player: Player) : Registe
     private fun onHotbar(event: InventoryClickEvent) {
         if (!validateClick(event)) return
         if (!validateModificationClick(event)) return
-        if (event.action != InventoryAction.HOTBAR_SWAP) return
+        if (event.action != InventoryAction.HOTBAR_SWAP &&
+            event.action != InventoryAction.HOTBAR_MOVE_AND_READD) return
         if (event.click != ClickType.NUMBER_KEY) return
         val loot = lootPool[event.slot]
         if (event.hotbarButton == 0)
@@ -127,6 +128,7 @@ class LootPoolGui(private val key: String, private val player: Player) : Registe
     private fun onInventoryClose(event: InventoryCloseEvent) {
         if (event.inventory != inventory) return
         eventRegistry.close()
+        if (lootPool.isEmpty()) return
         LootPoolManager.instance.writeLootPool(org.bigcraft.lootpool.api.LootPool(
                 key,
                 listOf(*lootPool.map { it.asImmutable() }.toTypedArray())
@@ -174,7 +176,6 @@ class LootPoolGui(private val key: String, private val player: Player) : Registe
         private val CANCELLED_ACTIONS = setOf(
             InventoryAction.COLLECT_TO_CURSOR,
             InventoryAction.CLONE_STACK,
-            InventoryAction.HOTBAR_MOVE_AND_READD,
             InventoryAction.UNKNOWN,
             InventoryAction.NOTHING,
         )
@@ -188,11 +189,11 @@ class LootPoolGui(private val key: String, private val player: Player) : Registe
 
 private data class MutableLoot(var item: ItemStack, private var _weight: Int, private var _minAmount: Int, private var _maxAmount: Int) {
 
-    constructor(item: ItemStack) : this(item, 0, item.amount, item.amount)
+    constructor(item: ItemStack) : this(item, 1, item.amount, item.amount)
 
     var weight: Int
         get() = _weight
-        set(value) { _weight = value.coerceAtLeast(0) }
+        set(value) { _weight = value.coerceAtLeast(1) }
 
     var minAmount: Int
         get() = _minAmount
