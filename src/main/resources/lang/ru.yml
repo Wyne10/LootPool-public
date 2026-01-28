@@ -4,6 +4,7 @@ gui-loot:
   - "<gray>[Shift + ЛКМ <red>-<gray>]/[Shift + ПКМ <green>+<gray>] <white>Мин. количество: <gold><min-amount>"
   - "<gray>[1 <red>-<gray>]/[2 <green>+<gray>] <white>Макс. количество: <gold><max-amount>"
   - '<gray>[Q] <red>Удалить'
+gui-nothing-item: "Ничего"
 
 ### Messages
 

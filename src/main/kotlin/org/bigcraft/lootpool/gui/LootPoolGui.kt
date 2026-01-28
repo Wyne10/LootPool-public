@@ -11,6 +11,7 @@ import org.bigcraft.lootpool.LootPool
 import org.bigcraft.lootpool.api.Loot
 import org.bigcraft.lootpool.core.LootPoolManager
 import org.bukkit.Bukkit
+import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.inventory.ClickType
@@ -22,18 +23,22 @@ import org.bukkit.inventory.ItemStack
 class LootPoolGui(private val key: String, private val player: Player) : RegisterableListener {
 
     private val inventory = Bukkit.createInventory(player, 9 * 6)
-    private val lootPool = mutableListOf<MutableLoot>()
+    private val nothingItem = MutableLoot(ItemStack(Material.GRAY_STAINED_GLASS_PANE)
+        .also { it.editMeta { meta -> meta.setDisplayNameComponent(player.placeholderComponent("gui-nothing-item").bungee()) } },
+        0, 1, 1
+    )
+    private val lootPool = mutableListOf<MutableLoot>().also { it.add(nothingItem) }
 
     private val eventRegistry = EventRegistry(LootPool.instance)
 
     constructor(key: String, player: Player, lootPool: org.bigcraft.lootpool.api.LootPool) : this(key, player) {
         lootPool.lootPool.forEach { this.lootPool.add(it.asMutable()) }
-        run { render() }
     }
 
     init {
         eventRegistry.register(this)
         player.openInventory(inventory)
+        run { render() }
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -58,6 +63,7 @@ class LootPoolGui(private val key: String, private val player: Player) : Registe
     @EventHandler(ignoreCancelled = true)
     private fun onReplace(event: InventoryClickEvent) {
         if (!validateClick(event)) return
+        if (event.slot == 0) return
         // Replace loot pool item with item on a cursor
         if (event.clickedInventory == inventory && event.currentItem.isNotNullOrAir() && event.cursor.isNotNullOrAir()) {
             event.isCancelled = true
@@ -117,6 +123,7 @@ class LootPoolGui(private val key: String, private val player: Player) : Registe
     private fun onQ(event: InventoryClickEvent) {
         if (!validateClick(event)) return
         if (!validateModificationClick(event)) return
+        if (event.slot == 0) return
         if (event.action != InventoryAction.DROP_ONE_SLOT &&
             event.action != InventoryAction.DROP_ALL_SLOT) return
         lootPool.removeAt(event.slot)
@@ -128,7 +135,8 @@ class LootPoolGui(private val key: String, private val player: Player) : Registe
     private fun onInventoryClose(event: InventoryCloseEvent) {
         if (event.inventory != inventory) return
         eventRegistry.close()
-        if (lootPool.isEmpty()) return
+        if (lootPool.size <= 1) return
+        lootPool[0] = MutableLoot(ItemStack(Material.AIR), nothingItem.weight, nothingItem.minAmount, nothingItem.maxAmount)
         LootPoolManager.instance.writeLootPool(org.bigcraft.lootpool.api.LootPool(
                 key,
                 listOf(*lootPool.map { it.asImmutable() }.toTypedArray())
@@ -189,11 +197,11 @@ class LootPoolGui(private val key: String, private val player: Player) : Registe
 
 private data class MutableLoot(var item: ItemStack, private var _weight: Int, private var _minAmount: Int, private var _maxAmount: Int) {
 
-    constructor(item: ItemStack) : this(item, 1, item.amount, item.amount)
+    constructor(item: ItemStack) : this(item, 0, item.amount, item.amount)
 
     var weight: Int
         get() = _weight
-        set(value) { _weight = value.coerceAtLeast(1) }
+        set(value) { _weight = value.coerceAtLeast(0) }
 
     var minAmount: Int
         get() = _minAmount

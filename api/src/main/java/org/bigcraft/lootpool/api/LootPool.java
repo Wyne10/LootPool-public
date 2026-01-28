@@ -69,11 +69,11 @@ public record LootPool(String key, List<Loot> lootPool) implements Configuration
     }
 
     public List<ItemStack> populate(int slots) {
-        List<ItemStack> result =  new ArrayList<>();
+        List<ItemStack> result = new ArrayList<>();
         for (int i = 0; i < slots; i++) {
             result.add(getRandom().create());
         }
-        return List.copyOf(result);
+        return result;
     }
 
     @SuppressWarnings("DataFlowIssue")

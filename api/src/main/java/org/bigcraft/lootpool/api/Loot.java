@@ -11,7 +11,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public record Loot(ItemStack item, int weight, int minAmount, int maxAmount) implements ConfigurationSerializable {
 
-    public static final Loot EMPTY = new Loot(new ItemStack(Material.AIR), 1, 1, 1);
+    public static final Loot EMPTY = new Loot(new ItemStack(Material.AIR), 0, 1, 1);
 
     public Loot(Loot loot) {
         this(loot.item(), loot.weight(), loot.minAmount(), loot.maxAmount());

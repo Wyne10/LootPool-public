@@ -4,6 +4,7 @@ gui-loot:
   - "<gray>[Shift + LMB <red>-<gray>]/[Shift + RMB <green>+<gray>] <white>Min amount: <gold><min-amount>"
   - "<gray>[1 <red>-<gray>]/[2 <green>+<gray>] <white>Max amount: <gold><max-amount>"
   - '<gray>[Q] <red>Remove'
+gui-nothing-item: "Nothing"
 
 ### Messages
 
