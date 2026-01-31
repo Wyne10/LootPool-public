@@ -1,10 +1,10 @@
-name: Build, deploy and release plugin
+name: Build, deploy and release
 
 on:
   workflow_dispatch:
     inputs:
       release:
-        description: 'Create a GitHub release with this branch'
+        description: 'Create a GitHub release'
         default: true
         required: true
         type: boolean
@@ -14,13 +14,13 @@ on:
         required: true
         type: boolean
       deploy:
-        description: 'Deploy Gradle artifacts via SSH'
+        description: 'Copy artifacts to deploy path'
         default: true
         required: true
         type: boolean
       deploy-path:
-        description: 'Path to deploy artifacts to'
-        default: 'build'
+        description: 'Path to copy artifacts to'
+        default: '~/build/'
         required: false
         type: string
   pull_request:
@@ -31,12 +31,9 @@ jobs:
   master-deploy:
     uses: NeverMined-Entertainment/CI-CD/.github/workflows/master-deploy.yml@master
     with:
-      release: ${{ (github.event_name == 'workflow_dispatch' && inputs.release) || (github.event_name == 'pull_request' && true) }}
-      latest: ${{ (github.event_name == 'workflow_dispatch' && inputs.latest) || (github.event_name == 'pull_request' && true) }}
-      deploy: ${{ (github.event_name == 'workflow_dispatch' && inputs.deploy) || (github.event_name == 'pull_request' && true) }}
-      deploy-path: ${{ github.event_name == 'workflow_dispatch' && inputs['deploy-path'] || 'build' }}
+      release: ${{ github.event_name == 'pull_request' || inputs.release }}
+      latest: ${{ github.event_name == 'pull_request' || inputs.latest }}
+      deploy: ${{ github.event_name == 'pull_request' || inputs.deploy }}
+      deploy-path: ${{ inputs.deploy-path || '~/build/' }}
     secrets:
       token: ${{ secrets.TOKEN }}
-      ssh-host: ${{ secrets.SSH_HOST }}
-      ssh-username: ${{ secrets.SSH_USERNAME }}
-      ssh-password: ${{ secrets.SSH_PASSWORD }}
