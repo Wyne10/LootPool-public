@@ -32,7 +32,9 @@ class LootPoolGui(private val key: String, private val player: Player) : Registe
     private val eventRegistry = EventRegistry(LootPool.instance)
 
     constructor(key: String, player: Player, lootPool: org.bigcraft.lootpool.api.LootPool) : this(key, player) {
-        lootPool.lootPool.forEach { this.lootPool.add(it.asMutable()) }
+        lootPool.lootPool
+            .filter { it.item.isNotNullOrAir() }
+            .forEach { this.lootPool.add(it.asMutable()) }
     }
 
     init {
@@ -136,7 +138,10 @@ class LootPoolGui(private val key: String, private val player: Player) : Registe
         if (event.inventory != inventory) return
         eventRegistry.close()
         if (lootPool.size <= 1) return
-        lootPool[0] = MutableLoot(ItemStack(Material.AIR), nothingItem.weight, nothingItem.minAmount, nothingItem.maxAmount)
+        if (nothingItem.weight > 0)
+            lootPool[0] = MutableLoot(ItemStack(Material.AIR), nothingItem.weight, nothingItem.minAmount, nothingItem.maxAmount)
+        else
+            lootPool.removeAt(0)
         LootPoolManager.instance.writeLootPool(org.bigcraft.lootpool.api.LootPool(
                 key,
                 listOf(*lootPool.map { it.asImmutable() }.toTypedArray())
