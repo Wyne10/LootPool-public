@@ -84,7 +84,7 @@ class LootInfoCommand(lootManager: LootManager) : SubCommand("info-loot") {
             val loot = lootManager.getLoot(key)!!
             sender.placeholderComponent(
                 "info-loot",
-                "loot-name" replace I18n.global.component().toString(loot.loot.item.displayName()),
+                "loot-name" replace I18n.global.component().toString(loot.loot.item.nameComponent),
                 "min-amount" replace loot.loot.minAmount,
                 "max-amount" replace loot.loot.maxAmount,
             ).sendMessage(sender)

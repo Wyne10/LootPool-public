@@ -9,6 +9,7 @@ import dev.jorel.commandapi.executors.CommandExecutor
 import dev.jorel.commandapi.executors.PlayerCommandExecutor
 import dev.jorel.commandapi.kotlindsl.getValue
 import me.wyne.wutils.i18n.I18n
+import me.wyne.wutils.i18n.kotlin.component
 import me.wyne.wutils.i18n.kotlin.placeholderComponent
 import me.wyne.wutils.i18n.kotlin.reduce
 import me.wyne.wutils.i18n.kotlin.replace
@@ -17,6 +18,7 @@ import net.kyori.adventure.text.Component
 import org.bigcraft.lootpool.core.LootPoolManager
 import org.bigcraft.lootpool.gui.LootPoolGui
 import org.bukkit.command.CommandSender
+import org.bukkit.inventory.ItemStack
 
 class CreateCommand(lootPoolManager: LootPoolManager) : SubCommand("create") {
     override val command: CommandAPICommand = super.command
@@ -74,7 +76,7 @@ class InfoCommand(lootPoolManager: LootPoolManager) : SubCommand("info") {
                 .mapIndexed { index, loot ->
                     sender.placeholderComponent(
                         "info-lootpool-loot",
-                        "loot-name" replace I18n.global.component().toString(loot.item.displayName()),
+                        "loot-name" replace I18n.global.component().toString(loot.item.nameComponent),
                         "weight" replace loot.weight,
                         "min-amount" replace loot.minAmount,
                         "max-amount" replace loot.maxAmount,
@@ -97,3 +99,13 @@ fun assertLootPoolExists(key: String, sender: CommandSender, lootPoolManager: Lo
         *sender.placeholderComponent("error-lootpool-not-found", "key" replace key).bungee()
     )
 }
+
+val ItemStack.nameComponent: Component
+    get() {
+        if (itemMeta == null) return Component.translatable(type.translationKey)
+        return if (itemMeta.hasDisplayName())
+            itemMeta.displayNameComponent.component
+        else
+            Component.translatable(type.translationKey)
+    }
+
