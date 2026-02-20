@@ -21,21 +21,6 @@ private class OptionalModule(
     }
 }
 
-private class OptionalAbstractModule(
-    private val className: String,
-    private val exceptionMessage: String = "$className not found, module ignored",
-    private vararg val modules: AbstractModule
-) : AbstractModule() {
-    override fun configure() {
-        try {
-            Class.forName(className)
-            modules.forEach { install(it) }
-        } catch (e: ClassNotFoundException) {
-            LootPool.log.warn(exceptionMessage)
-        }
-    }
-}
-
 //endregion
 
 val CommandModule: AbstractModule = OptionalModule(

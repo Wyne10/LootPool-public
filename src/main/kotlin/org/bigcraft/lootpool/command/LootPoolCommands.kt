@@ -7,9 +7,7 @@ import dev.jorel.commandapi.arguments.ArgumentSuggestions
 import dev.jorel.commandapi.arguments.StringArgument
 import dev.jorel.commandapi.executors.CommandExecutor
 import dev.jorel.commandapi.executors.PlayerCommandExecutor
-import dev.jorel.commandapi.kotlindsl.getValue
 import me.wyne.wutils.i18n.I18n
-import me.wyne.wutils.i18n.kotlin.component
 import me.wyne.wutils.i18n.kotlin.placeholderComponent
 import me.wyne.wutils.i18n.kotlin.reduce
 import me.wyne.wutils.i18n.kotlin.replace
@@ -18,14 +16,13 @@ import net.kyori.adventure.text.Component
 import org.bigcraft.lootpool.core.LootPoolManager
 import org.bigcraft.lootpool.gui.LootPoolGui
 import org.bukkit.command.CommandSender
-import org.bukkit.inventory.ItemStack
 
 class CreateCommand(lootPoolManager: LootPoolManager) : SubCommand("create") {
     override val command: CommandAPICommand = super.command
         .withPermission("lootpool.create")
         .withArguments(StringArgument("key"))
         .executesPlayer(PlayerCommandExecutor { sender, args ->
-            val key: String by args
+            val key = args.getOrDefaultRaw("key", "")
             if (lootPoolManager.mapKeys.contains(key)) {
                 if (sender.hasPermission("lootpool.modify"))
                     sender.placeholderComponent("info-lootpool-already-exists", "key" replace key).sendMessage(sender)
@@ -42,7 +39,7 @@ class ModifyCommand(lootPoolManager: LootPoolManager) : SubCommand("modify") {
         .withPermission("lootpool.modify")
         .withArguments(lootPoolKey("key", lootPoolManager))
         .executesPlayer(PlayerCommandExecutor { sender, args ->
-            val key: String by args
+            val key = args.getOrDefaultRaw("key", "")
             assertLootPoolExists(key, sender, lootPoolManager)
             val lootPool = lootPoolManager.getLootPool(key)
             LootPoolGui(key, sender, lootPool!!)
@@ -54,7 +51,7 @@ class RemoveCommand(lootPoolManager: LootPoolManager) : SubCommand("remove") {
         .withPermission("lootpool.remove")
         .withArguments(lootPoolKey("key", lootPoolManager))
         .executes(CommandExecutor { sender, args ->
-            val key: String by args
+            val key = args.getOrDefaultRaw("key", "")
             assertLootPoolExists(key, sender, lootPoolManager)
             lootPoolManager.removeLootPool(key)
             sender.placeholderComponent("success-lootpool-remove", "key" replace key).sendMessage(sender)
@@ -66,7 +63,7 @@ class InfoCommand(lootPoolManager: LootPoolManager) : SubCommand("info") {
         .withPermission("lootpool.info")
         .withArguments(lootPoolKey("key", lootPoolManager))
         .executes(CommandExecutor { sender, args ->
-            val key: String by args
+            val key = args.getOrDefaultRaw("key", "")
             assertLootPoolExists(key, sender, lootPoolManager)
             val lootPool = lootPoolManager.getLootPool(key)!!
             val weightSorted = lootPool.lootPool.sortedByDescending { it.weight }
@@ -80,7 +77,7 @@ class InfoCommand(lootPoolManager: LootPoolManager) : SubCommand("info") {
                         "weight" replace loot.weight,
                         "min-amount" replace loot.minAmount,
                         "max-amount" replace loot.maxAmount,
-                        "percentage" replace percentage[index]
+                        "percentage" replace String.format("%.2f", percentage[index])
                     )
                 }.reduce() ?: Component.empty()
             sender.placeholderComponent("info-lootpool", "key" replace key)
@@ -99,13 +96,3 @@ fun assertLootPoolExists(key: String, sender: CommandSender, lootPoolManager: Lo
         *sender.placeholderComponent("error-lootpool-not-found", "key" replace key).bungee()
     )
 }
-
-val ItemStack.nameComponent: Component
-    get() {
-        if (itemMeta == null) return Component.translatable(type.translationKey)
-        return if (itemMeta.hasDisplayName())
-            itemMeta.displayNameComponent.component
-        else
-            Component.translatable(type.translationKey)
-    }
-

@@ -2,8 +2,11 @@ package org.bigcraft.lootpool.command
 
 import dev.jorel.commandapi.CommandAPICommand
 import dev.jorel.commandapi.executors.CommandExecutor
+import me.wyne.wutils.i18n.kotlin.component
 import me.wyne.wutils.i18n.kotlin.placeholderComponent
+import net.kyori.adventure.text.Component
 import org.bigcraft.lootpool.LootPool
+import org.bukkit.inventory.ItemStack
 
 abstract class SubCommand(argument: String) {
     open val command = CommandAPICommand(argument)
@@ -19,3 +22,12 @@ class ReloadCommand(plugin: LootPool) : SubCommand("reload") {
             LootPool.log.info("Plugin reloaded")
         })
 }
+
+val ItemStack.nameComponent: Component
+    get() {
+        if (itemMeta == null) return Component.translatable(type.translationKey)
+        return if (itemMeta.hasDisplayName())
+            itemMeta.displayNameComponent.component
+        else
+            Component.translatable(type.translationKey)
+    }

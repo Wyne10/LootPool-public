@@ -2,27 +2,27 @@ import net.minecrell.pluginyml.bukkit.BukkitPluginDescription
 import org.codehaus.plexus.util.Os
 
 plugins {
-    kotlin("jvm") version "2.2.20"
+    kotlin("jvm") version "2.3.10"
     alias(libs.plugins.shadow)
     alias(libs.plugins.runPaper)
     alias(libs.plugins.pluginYml)
 }
 
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain(16)
 }
 
 dependencies {
     compileOnly(libs.paperApi)
     compileOnly(libs.placeholderApi)
     compileOnly(libs.commandApi)
-    compileOnly(libs.commandApiKotlin)
 
     implementation(project(":api"))
 
     implementation(libs.guice)
     implementation(libs.adventureMini)
     implementation(libs.adventureBukkit)
+    implementation(libs.adventurePlain)
 
     implementation(libs.wutilsConfig)
     implementation(libs.wutilsLog)
@@ -47,7 +47,7 @@ tasks {
 
     runServer {
         val minecraftVersion: String = if (Os.isFamily(Os.FAMILY_WINDOWS) || isDebug) "1.19.4" else "1.16.5"
-        val viaVersion = "5.7.0"
+        val viaVersion = "5.7.1"
         val commandApiVersion = "9.4.2"
         downloadPlugins {
             url("https://download.luckperms.net/1614/bukkit/loader/LuckPerms-Bukkit-5.5.26.jar")
