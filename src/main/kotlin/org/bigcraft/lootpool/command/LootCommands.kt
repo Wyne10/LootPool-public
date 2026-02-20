@@ -8,7 +8,6 @@ import dev.jorel.commandapi.arguments.IntegerArgument
 import dev.jorel.commandapi.arguments.StringArgument
 import dev.jorel.commandapi.executors.CommandExecutor
 import dev.jorel.commandapi.executors.PlayerCommandExecutor
-import dev.jorel.commandapi.kotlindsl.getValue
 import me.wyne.wutils.common.kotlin.item.isNotNullOrAir
 import me.wyne.wutils.i18n.I18n
 import me.wyne.wutils.i18n.kotlin.placeholderComponent
@@ -19,16 +18,16 @@ import org.bigcraft.lootpool.core.LootManager
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 
-class CreateLootCommand(lootManager: LootManager) : SubCommand("create-loot") {
+class CreateLootCommand(lootManager: LootManager) : SubCommand("create") {
     override val command: CommandAPICommand = super.command
         .withPermission("lootpool.create")
         .withArguments(StringArgument("key"))
         .withArguments(IntegerArgument("minAmount", 1, 64))
         .withArguments(IntegerArgument("maxAmount", 1, 64))
         .executesPlayer(PlayerCommandExecutor { sender, args ->
-            val key: String by args
-            val minAmount: Int by args
-            val maxAmount: Int by args
+            val key = args.getOrDefaultRaw("key", "")
+            val minAmount = args.getByClassOrDefault("minAmount", Int::class.java, 1)
+            val maxAmount = args.getByClassOrDefault("maxAmount", Int::class.java, 64)
             assertLootNotNull(key, sender)
             if (lootManager.mapKeys.contains(key)) {
                 if (sender.hasPermission("lootpool.modify"))
@@ -43,43 +42,43 @@ class CreateLootCommand(lootManager: LootManager) : SubCommand("create-loot") {
         })
 }
 
-class ModifyLootCommand(lootManager: LootManager) : SubCommand("modify-loot") {
+class ModifyLootCommand(lootManager: LootManager) : SubCommand("modify") {
     override val command: CommandAPICommand = super.command
         .withPermission("lootpool.modify")
         .withArguments(lootKey("key", lootManager))
         .withOptionalArguments(IntegerArgument("minAmount", 1, 64))
         .withOptionalArguments(IntegerArgument("maxAmount", 1, 64))
         .executesPlayer(PlayerCommandExecutor { sender, args ->
-            val key: String by args
+            val key = args.getOrDefaultRaw("key", "")
             assertLootExists(key, sender, lootManager)
             assertLootNotNull(key, sender)
             val loot = lootManager.getLoot(key)!!
-            val minAmount = args["minAmount"] as? Int ?: loot.loot.minAmount
-            val maxAmount = args["maxAmount"] as? Int ?: loot.loot.maxAmount
+            val minAmount = args.getByClassOrDefault("minAmount", Int::class.java, loot.loot.minAmount)
+            val maxAmount = args.getByClassOrDefault("maxAmount", Int::class.java, loot.loot.maxAmount)
             lootManager.writeLoot(KeyedLoot(key, Loot(sender.inventory.itemInMainHand.clone().apply { amount = 1 }, 0,
                         minAmount.coerceAtMost(maxAmount), maxAmount.coerceAtLeast(minAmount))))
             sender.placeholderComponent("success-loot-create", "key" replace key).sendMessage(sender)
         })
 }
 
-class RemoveLootCommand(lootManager: LootManager) : SubCommand("remove-loot") {
+class RemoveLootCommand(lootManager: LootManager) : SubCommand("remove") {
     override val command: CommandAPICommand = super.command
         .withPermission("lootpool.remove")
         .withArguments(lootKey("key", lootManager))
         .executes(CommandExecutor { sender, args ->
-            val key: String by args
+            val key = args.getOrDefaultRaw("key", "")
             assertLootExists(key, sender, lootManager)
             lootManager.removeLoot(key)
             sender.placeholderComponent("success-loot-remove", "key" replace key).sendMessage(sender)
         })
 }
 
-class LootInfoCommand(lootManager: LootManager) : SubCommand("info-loot") {
+class LootInfoCommand(lootManager: LootManager) : SubCommand("info") {
     override val command: CommandAPICommand = super.command
         .withPermission("lootpool.info")
         .withArguments(lootKey("key", lootManager))
         .executes(CommandExecutor { sender, args ->
-            val key: String by args
+            val key = args.getOrDefaultRaw("key", "")
             assertLootExists(key, sender, lootManager)
             val loot = lootManager.getLoot(key)!!
             sender.placeholderComponent(

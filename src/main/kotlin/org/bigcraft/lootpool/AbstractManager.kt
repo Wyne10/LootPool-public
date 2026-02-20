@@ -3,6 +3,8 @@ package org.bigcraft.lootpool
 import me.wyne.wutils.common.loadable.Loadable
 import me.wyne.wutils.common.loadable.Loader
 import org.bukkit.configuration.ConfigurationSection
+import org.bukkit.configuration.file.YamlConfiguration
+import java.io.File
 
 @Suppress("LeakingThis")
 abstract class AbstractManager<V> : Loadable {
@@ -23,9 +25,24 @@ abstract class AbstractManager<V> : Loadable {
         loadedMap.clear()
         val section = config.getConfigurationSection(sectionKey) ?: return
         section.getKeys(false).forEach { key ->
-            LootPool.log.debug("Loading key '{}' from '{}'", key, section.name)
-            loadedMap[key] = valueLoader.fromConfig(key, section)
+            LootPool.log.debug("Loading key '{}' from '{}'", key, sectionKey)
+            runCatching {
+                loadedMap[key] = valueLoader.fromConfig(key, section)
+            }.onFailure { LootPool.log.error("Failed loading '{}' from '{}'", key, sectionKey, it) }
         }
+    }
+
+    protected fun loadFiles(directory: File) {
+        if (!directory.exists())
+            directory.mkdirs()
+        directory.listFiles()
+            ?.forEach { file ->
+                val key = file.nameWithoutExtension
+                LootPool.log.debug("Loading key '{}' from '{}'", key, directory.name)
+                runCatching {
+                    loadedMap[key] = valueLoader.fromConfig(key, YamlConfiguration.loadConfiguration(file))
+                }.onFailure { LootPool.log.error("Failed loading '{}' from '{}'", key, directory.name, it) }
+            }
     }
 
 }

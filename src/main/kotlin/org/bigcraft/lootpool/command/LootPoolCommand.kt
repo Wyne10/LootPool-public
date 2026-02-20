@@ -2,7 +2,7 @@ package org.bigcraft.lootpool.command
 
 import com.google.inject.Inject
 import com.google.inject.Singleton
-import dev.jorel.commandapi.kotlindsl.commandAPICommand
+import dev.jorel.commandapi.CommandAPICommand
 import org.bigcraft.lootpool.LootPool
 import org.bigcraft.lootpool.core.LootManager
 import org.bigcraft.lootpool.core.LootPoolManager
@@ -19,17 +19,23 @@ class LootPoolCommand @Inject constructor(
     }
 
     private fun registerCommand() {
-        commandAPICommand("lootpool") {
-            withSubcommand(ReloadCommand(plugin)())
-            withSubcommand(CreateCommand(lootPoolManager)())
-            withSubcommand(ModifyCommand(lootPoolManager)())
-            withSubcommand(RemoveCommand(lootPoolManager)())
-            withSubcommand(InfoCommand(lootPoolManager)())
-            withSubcommand(CreateLootCommand(lootManager)())
-            withSubcommand(ModifyLootCommand(lootManager)())
-            withSubcommand(RemoveLootCommand(lootManager)())
-            withSubcommand(LootInfoCommand(lootManager)())
-        }
+        CommandAPICommand("lootpool")
+            .withSubcommand(
+                CommandAPICommand("pool")
+                    .withSubcommand(CreateCommand(lootPoolManager)())
+                    .withSubcommand(ModifyCommand(lootPoolManager)())
+                    .withSubcommand(RemoveCommand(lootPoolManager)())
+                    .withSubcommand(InfoCommand(lootPoolManager)())
+            )
+            .withSubcommand(
+                CommandAPICommand("item")
+                    .withSubcommand(CreateLootCommand(lootManager)())
+                    .withSubcommand(ModifyLootCommand(lootManager)())
+                    .withSubcommand(RemoveLootCommand(lootManager)())
+                    .withSubcommand(LootInfoCommand(lootManager)())
+            )
+            .withSubcommand(ReloadCommand(plugin)())
+            .register(plugin)
     }
 
 }

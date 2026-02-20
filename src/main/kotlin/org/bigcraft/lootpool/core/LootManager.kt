@@ -9,6 +9,7 @@ import org.bigcraft.lootpool.api.KeyedLoot
 import org.bigcraft.lootpool.api.LootProvider
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.configuration.file.YamlConfiguration
+import org.bukkit.configuration.serialization.ConfigurationSerialization
 import java.io.File
 
 @Singleton
@@ -18,6 +19,10 @@ class LootManager @Inject constructor(private val plugin: org.bigcraft.lootpool.
     override val valueLoader: ConfigurableFactory<KeyedLoot> = LootFactory
 
     private val lootDirectory = File(plugin.dataFolder, "$sectionKey/")
+
+    init {
+        ConfigurationSerialization.registerClass(KeyedLoot::class.java)
+    }
 
     override fun getLoot(key: String) = loadedMap[key]
 
@@ -48,17 +53,7 @@ class LootManager @Inject constructor(private val plugin: org.bigcraft.lootpool.
 
     override fun load(config: ConfigurationSection) {
         super.load(config)
-        loadFiles()
-    }
-
-    private fun loadFiles() {
-        if (!lootDirectory.exists())
-            lootDirectory.mkdirs()
-        lootDirectory.listFiles()
-            .forEach { file ->
-                val key = file.nameWithoutExtension
-                loadedMap[key] = valueLoader.fromConfig(key, YamlConfiguration.loadConfiguration(file))
-            }
+        loadFiles(lootDirectory)
     }
 
 }

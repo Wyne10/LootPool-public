@@ -56,17 +56,7 @@ class LootPoolManager @Inject constructor(private val plugin: org.bigcraft.lootp
 
     override fun load(config: ConfigurationSection) {
         super.load(config)
-        loadFiles()
-    }
-
-    private fun loadFiles() {
-        if (!lootPoolDirectory.exists())
-            lootPoolDirectory.mkdirs()
-        lootPoolDirectory.listFiles()
-            .forEach { file ->
-                val key = file.nameWithoutExtension
-                loadedMap[key] = valueLoader.fromConfig(key, YamlConfiguration.loadConfiguration(file))
-            }
+        loadFiles(lootPoolDirectory)
     }
 
     companion object {
