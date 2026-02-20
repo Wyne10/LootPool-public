@@ -1,13 +1,18 @@
 package org.bigcraft.lootpool.api;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public interface LootPoolProvider {
+import java.util.Map;
+
+public interface LootPoolProvider extends CommonLootProvider {
+    @NotNull
+    Map<@NotNull String, @NotNull LootPool> getLootPoolMap();
     @Nullable
-    LootPool getLootPool(String key);
+    LootPool getLootPool(@NotNull String key);
     @Nullable
-    LootPool removeLootPool(String key);
-    void addLootPool(LootPool lootPool);
-    void writeLootPool(LootPool lootPool);
+    LootPool removeLootPool(@NotNull String key);
+    void addLootPool(@NotNull LootPool lootPool);
+    void writeLootPool(@NotNull LootPool lootPool);
     void reload();
 }

@@ -27,6 +27,15 @@ class LootPoolManager @Inject constructor(private val plugin: org.bigcraft.lootp
         ConfigurationSerialization.registerClass(LootPool::class.java)
     }
 
+    override fun getLootKeys(): Set<String> =
+        mapKeys.toSet()
+
+    override fun getLootList(key: String): List<Loot>? =
+        getLootPool(key)?.lootPool
+
+    override fun getLootPoolMap(): Map<String, LootPool> =
+        loadedMap.toMap()
+
     override fun getLootPool(key: String) = loadedMap[key]
 
     override fun removeLootPool(key: String): LootPool? {

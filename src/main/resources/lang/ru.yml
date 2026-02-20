@@ -25,6 +25,8 @@ error-loot-not-found: "<red>Лут '<key>' не существует!"
 error-loot-already-exists: "<red>Лут '<key>' уже существует!"
 error-empty-loot: "<red>Лут не может быть пустым!"
 
+error-not-a-container: "<red>Целевая позиция <x>, <y>, <z> не является контейнером"
+
 ## Success
 success-plugin-reload: "<green>Плагин перезагружен!"
 success-lootpool-create: "<green>Лут пул '<key>' создан"
@@ -32,3 +34,5 @@ success-lootpool-remove: "<green>Лут пул '<key>' <red>удален"
 
 success-loot-create: "<green>Лут '<key>' создан"
 success-loot-remove: "<green>Лут '<key>' <red>удален"
+
+success-loot-drop: "Выброшено <amount> предметов"

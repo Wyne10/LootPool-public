@@ -12,18 +12,18 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
-public record LootPool(String key, List<Loot> lootPool) implements ConfigurationSerializable, LootTable {
+public record LootPool(@NotNull String key, @NotNull List<@NotNull Loot> lootPool) implements ConfigurationSerializable, LootTable {
 
-    public LootPool(LootPool lootPool) {
+    public LootPool(@NotNull LootPool lootPool) {
         this(lootPool.key(), lootPool.lootPool());
     }
 
-    public LootPool(Map<String, Object> args) {
+    public LootPool(@NotNull Map<String, Object> args) {
         this(LootPool.deserialize(args));
     }
 
-    @SuppressWarnings("NullableProblems")
     @Override
+    @NotNull
     public Map<String, Object> serialize() {
         Map<String, Object> data = new HashMap<>();
         data.put("key", key);
@@ -33,7 +33,8 @@ public record LootPool(String key, List<Loot> lootPool) implements Configuration
         return data;
     }
 
-    public static LootPool deserialize(Map<String, Object> args) {
+    @NotNull
+    public static LootPool deserialize(@NotNull Map<String, Object> args) {
         List<Loot> lootPool = new ArrayList<>();
         for (Object loot : args.values()) {
             if (loot instanceof Loot)
@@ -42,10 +43,12 @@ public record LootPool(String key, List<Loot> lootPool) implements Configuration
         return new LootPool((String) args.get("key"), List.copyOf(lootPool));
     }
 
+    @NotNull
     public LootPool sortByWeight() {
         return new LootPool(key, lootPool.stream().sorted(Comparator.comparingInt(Loot::weight)).toList());
     }
 
+    @NotNull
     public Loot getRandom() {
         int totalWeight = 0;
         for (Loot loot : lootPool) {
@@ -68,7 +71,8 @@ public record LootPool(String key, List<Loot> lootPool) implements Configuration
         return Loot.EMPTY;
     }
 
-    public List<ItemStack> populate(int slots) {
+    @NotNull
+    public List<@NotNull ItemStack> populate(int slots) {
         List<ItemStack> result = new ArrayList<>();
         for (int i = 0; i < slots; i++) {
             result.add(getRandom().create());
@@ -77,7 +81,7 @@ public record LootPool(String key, List<Loot> lootPool) implements Configuration
     }
 
     @SuppressWarnings("DataFlowIssue")
-    public void populate(Inventory inventory, int slots) {
+    public void populate(@NotNull Inventory inventory, int slots) {
         Queue<Integer> emptySlots = getEmptySlots(inventory);
         int toPopulate = Math.min(emptySlots.size(), slots);
         while (toPopulate > 0) {
@@ -87,7 +91,7 @@ public record LootPool(String key, List<Loot> lootPool) implements Configuration
         }
     }
 
-    public void populateRandomly(Inventory inventory, int slots) {
+    public void populateRandomly(@NotNull Inventory inventory, int slots) {
         var emptySlots = getEmptySlots(inventory);
         int toPopulate = Math.min(emptySlots.size(), slots);
         while (toPopulate > 0) {
@@ -99,7 +103,8 @@ public record LootPool(String key, List<Loot> lootPool) implements Configuration
         }
     }
 
-    private LinkedList<Integer> getEmptySlots(Inventory inventory) {
+    @NotNull
+    private LinkedList<Integer> getEmptySlots(@NotNull Inventory inventory) {
         var slots = new LinkedList<Integer>();
         for (int i = 0; i < inventory.getSize(); i++) {
             var item = inventory.getItem(i);

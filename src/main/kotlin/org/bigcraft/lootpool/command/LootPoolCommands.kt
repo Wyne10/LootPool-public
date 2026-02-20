@@ -77,7 +77,7 @@ class InfoCommand(lootPoolManager: LootPoolManager) : SubCommand("info") {
                         "weight" replace loot.weight,
                         "min-amount" replace loot.minAmount,
                         "max-amount" replace loot.maxAmount,
-                        "percentage" replace percentage[index]
+                        "percentage" replace String.format("%.2f", percentage[index])
                     )
                 }.reduce() ?: Component.empty()
             sender.placeholderComponent("info-lootpool", "key" replace key)

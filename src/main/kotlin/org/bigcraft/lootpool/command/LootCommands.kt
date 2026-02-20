@@ -22,12 +22,14 @@ class CreateLootCommand(lootManager: LootManager) : SubCommand("create") {
     override val command: CommandAPICommand = super.command
         .withPermission("lootpool.create")
         .withArguments(StringArgument("key"))
-        .withArguments(IntegerArgument("minAmount", 1, 64))
-        .withArguments(IntegerArgument("maxAmount", 1, 64))
+        .withOptionalArguments(IntegerArgument("minAmount", 1, 64))
+        .withOptionalArguments(IntegerArgument("maxAmount", 1, 64))
+        .withOptionalArguments(IntegerArgument("weight", 0))
         .executesPlayer(PlayerCommandExecutor { sender, args ->
             val key = args.getOrDefaultRaw("key", "")
             val minAmount = args.getByClassOrDefault("minAmount", Int::class.java, 1)
             val maxAmount = args.getByClassOrDefault("maxAmount", Int::class.java, 64)
+            val weight = args.getByClassOrDefault("weight", Int::class.java, 1)
             assertLootNotNull(key, sender)
             if (lootManager.mapKeys.contains(key)) {
                 if (sender.hasPermission("lootpool.modify"))
@@ -36,7 +38,7 @@ class CreateLootCommand(lootManager: LootManager) : SubCommand("create") {
                     sender.placeholderComponent("error-loot-already-exists", "key" replace key).sendMessage(sender)
                 return@PlayerCommandExecutor
             }
-            lootManager.writeLoot(KeyedLoot(key, Loot(sender.inventory.itemInMainHand.clone().apply { amount = 1 }, 0,
+            lootManager.writeLoot(KeyedLoot(key, Loot(sender.inventory.itemInMainHand.clone().apply { amount = 1 }, weight,
                         minAmount.coerceAtMost(maxAmount), maxAmount.coerceAtLeast(minAmount))))
             sender.placeholderComponent("success-loot-create", "key" replace key).sendMessage(sender)
         })
@@ -48,6 +50,7 @@ class ModifyLootCommand(lootManager: LootManager) : SubCommand("modify") {
         .withArguments(lootKey("key", lootManager))
         .withOptionalArguments(IntegerArgument("minAmount", 1, 64))
         .withOptionalArguments(IntegerArgument("maxAmount", 1, 64))
+        .withOptionalArguments(IntegerArgument("weight", 0))
         .executesPlayer(PlayerCommandExecutor { sender, args ->
             val key = args.getOrDefaultRaw("key", "")
             assertLootExists(key, sender, lootManager)
@@ -55,7 +58,8 @@ class ModifyLootCommand(lootManager: LootManager) : SubCommand("modify") {
             val loot = lootManager.getLoot(key)!!
             val minAmount = args.getByClassOrDefault("minAmount", Int::class.java, loot.loot.minAmount)
             val maxAmount = args.getByClassOrDefault("maxAmount", Int::class.java, loot.loot.maxAmount)
-            lootManager.writeLoot(KeyedLoot(key, Loot(sender.inventory.itemInMainHand.clone().apply { amount = 1 }, 0,
+            val weight = args.getByClassOrDefault("weight", Int::class.java, 1)
+            lootManager.writeLoot(KeyedLoot(key, Loot(sender.inventory.itemInMainHand.clone().apply { amount = 1 }, weight,
                         minAmount.coerceAtMost(maxAmount), maxAmount.coerceAtLeast(minAmount))))
             sender.placeholderComponent("success-loot-create", "key" replace key).sendMessage(sender)
         })

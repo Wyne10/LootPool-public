@@ -6,6 +6,7 @@ import org.bigcraft.lootpool.AbstractManager
 import org.bigcraft.lootpool.ConfigurableFactory
 import org.bigcraft.lootpool.ReloadConfig
 import org.bigcraft.lootpool.api.KeyedLoot
+import org.bigcraft.lootpool.api.Loot
 import org.bigcraft.lootpool.api.LootProvider
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.configuration.file.YamlConfiguration
@@ -23,6 +24,15 @@ class LootManager @Inject constructor(private val plugin: org.bigcraft.lootpool.
     init {
         ConfigurationSerialization.registerClass(KeyedLoot::class.java)
     }
+
+    override fun getLootKeys(): Set<String> =
+        mapKeys.toSet()
+
+    override fun getLootList(key: String): List<Loot>? =
+        getLoot(key)?.let { listOf(it.loot) }
+
+    override fun getLootMap(): Map<String, KeyedLoot> =
+        loadedMap.toMap()
 
     override fun getLoot(key: String) = loadedMap[key]
 
