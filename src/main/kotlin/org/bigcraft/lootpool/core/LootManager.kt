@@ -22,6 +22,7 @@ class LootManager @Inject constructor(private val plugin: org.bigcraft.lootpool.
     private val lootDirectory = File(plugin.dataFolder, "$sectionKey/")
 
     init {
+        instance = this
         ConfigurationSerialization.registerClass(KeyedLoot::class.java)
     }
 
@@ -66,4 +67,8 @@ class LootManager @Inject constructor(private val plugin: org.bigcraft.lootpool.
         loadFiles(lootDirectory)
     }
 
+    companion object {
+        lateinit var instance: LootManager
+            private set
+    }
 }
