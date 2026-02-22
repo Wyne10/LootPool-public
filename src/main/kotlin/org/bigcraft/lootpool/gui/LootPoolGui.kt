@@ -18,6 +18,8 @@ import org.bukkit.event.inventory.ClickType
 import org.bukkit.event.inventory.InventoryAction
 import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.inventory.InventoryCloseEvent
+import org.bukkit.event.player.PlayerSwapHandItemsEvent
+import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 
 class LootPoolGui(private val key: String, private val player: Player) : RegisterableListener {
@@ -28,6 +30,7 @@ class LootPoolGui(private val key: String, private val player: Player) : Registe
         0, 1, 1
     )
     private val lootPool = mutableListOf<MutableLoot>().also { it.add(nothingItem) }
+    private var valueMultiplier = 1
 
     private val eventRegistry = EventRegistry(LootPool.instance)
 
@@ -87,9 +90,9 @@ class LootPoolGui(private val key: String, private val player: Player) : Registe
         if (event.isShiftClick) return
         val loot = lootPool[event.slot]
         if (event.isLeftClick)
-            loot.weight--
+            loot.weight -= valueMultiplier
         if (event.isRightClick)
-            loot.weight++
+            loot.weight += valueMultiplier
         run { render() }
     }
 
@@ -100,9 +103,9 @@ class LootPoolGui(private val key: String, private val player: Player) : Registe
         if (!event.isShiftClick) return
         val loot = lootPool[event.slot]
         if (event.isLeftClick)
-            loot.minAmount--
+            loot.minAmount -= valueMultiplier
         if (event.isRightClick)
-            loot.minAmount++
+            loot.minAmount += valueMultiplier
         run { render() }
     }
 
@@ -115,9 +118,9 @@ class LootPoolGui(private val key: String, private val player: Player) : Registe
         if (event.click != ClickType.NUMBER_KEY) return
         val loot = lootPool[event.slot]
         if (event.hotbarButton == 0)
-            loot.maxAmount--
+            loot.maxAmount -= valueMultiplier
         if (event.hotbarButton == 1)
-            loot.maxAmount++
+            loot.maxAmount += valueMultiplier
         run { render() }
     }
 
@@ -131,6 +134,14 @@ class LootPoolGui(private val key: String, private val player: Player) : Registe
         lootPool.removeAt(event.slot)
         inventory.clear()
         run { render() }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    private fun onF(event: InventoryClickEvent) {
+        if (!validateClick(event)) return
+        if (!validateModificationClick(event)) return
+        if (event.click != ClickType.SWAP_OFFHAND) return
+        valueMultiplier = if (valueMultiplier == 1) 10 else 1
     }
 
     @EventHandler(ignoreCancelled = true)
