@@ -19,7 +19,7 @@ class ReloadCommand(plugin: LootPool) : SubCommand("reload") {
         .executes(CommandExecutor { sender, _ ->
             plugin.reload()
             sender.placeholderComponent("success-plugin-reload").sendMessage(sender)
-            LootPool.log.info("Plugin reloaded")
+            LootPool.logger.info("Plugin reloaded")
         })
 }
 

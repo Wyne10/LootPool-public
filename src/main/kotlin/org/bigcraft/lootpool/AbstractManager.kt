@@ -25,10 +25,10 @@ abstract class AbstractManager<V> : Loadable {
         loadedMap.clear()
         val section = config.getConfigurationSection(sectionKey) ?: return
         section.getKeys(false).forEach { key ->
-            LootPool.log.debug("Loading key '{}' from '{}'", key, sectionKey)
+            LootPool.logger.debug("Loading key '{}' from '{}'", key, sectionKey)
             runCatching {
                 loadedMap[key] = valueLoader.fromConfig(key, section)
-            }.onFailure { LootPool.log.error("Failed loading '{}' from '{}'", key, sectionKey, it) }
+            }.onFailure { LootPool.logger.error("Failed loading '{}' from '{}'", key, sectionKey, it) }
         }
     }
 
@@ -38,10 +38,10 @@ abstract class AbstractManager<V> : Loadable {
         directory.listFiles()
             ?.forEach { file ->
                 val key = file.nameWithoutExtension
-                LootPool.log.debug("Loading key '{}' from '{}'", key, directory.name)
+                LootPool.logger.debug("Loading key '{}' from '{}'", key, directory.name)
                 runCatching {
                     loadedMap[key] = valueLoader.fromConfig(key, YamlConfiguration.loadConfiguration(file))
-                }.onFailure { LootPool.log.error("Failed loading '{}' from '{}'", key, directory.name, it) }
+                }.onFailure { LootPool.logger.error("Failed loading '{}' from '{}'", key, directory.name, it) }
             }
     }
 

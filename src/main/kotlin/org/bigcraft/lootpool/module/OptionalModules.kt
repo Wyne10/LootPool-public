@@ -17,7 +17,7 @@ private class OptionalModule(
             Class.forName(className)
             modules.forEach { bind(it) }
         } catch (e: ClassNotFoundException) {
-            LootPool.log.warn(exceptionMessage)
+            LootPool.logger.warn(exceptionMessage)
         }
     }
 }
