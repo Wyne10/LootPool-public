@@ -8,6 +8,7 @@ class AbstractMenusRegistry {
 
     init {
         Types.registerItemProperty("keyedLoot", KeyedLootProperty::class.java, KeyedLootProperty.Factory)
+        Types.registerItemProperty("lootPool", LootPoolProperty::class.java, LootPoolProperty.Factory)
         Types.registerCatalog("LOOTPOOL", LootPoolCatalog::class.java, LootPoolCatalog.Factory)
     }
 
