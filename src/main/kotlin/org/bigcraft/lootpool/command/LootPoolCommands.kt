@@ -74,6 +74,7 @@ class InfoCommand(lootPoolManager: LootPoolManager) : SubCommand("info") {
                     sender.placeholderComponent(
                         "info-lootpool-loot",
                         "loot-name" replace I18n.global.component().toString(loot.item.nameComponent),
+                        "loot-type" replace loot.item.type.name,
                         "weight" replace loot.weight,
                         "min-amount" replace loot.minAmount,
                         "max-amount" replace loot.maxAmount,
@@ -83,6 +84,27 @@ class InfoCommand(lootPoolManager: LootPoolManager) : SubCommand("info") {
             sender.placeholderComponent("info-lootpool", "key" replace key)
                 .replace("loot-list" replaceComponent lootList)
                 .sendMessage(sender)
+        })
+}
+
+class CloneCommand(lootPoolManager: LootPoolManager) : SubCommand("clone") {
+    override val command: CommandAPICommand = super.command
+        .withPermission("lootpool.clone")
+        .withArguments(lootPoolKey("key", lootPoolManager))
+        .withArguments(StringArgument("newKey"))
+        .executesPlayer(PlayerCommandExecutor { sender, args ->
+            val key = args.getOrDefaultRaw("key", "")
+            val lootPool = lootPoolManager.getLootPool(key)!!
+            assertLootPoolExists(key, sender, lootPoolManager)
+            val newKey = args.getOrDefaultRaw("newKey", "")
+            if (lootPoolManager.mapKeys.contains(newKey)) {
+                if (sender.hasPermission("lootpool.modify"))
+                    sender.placeholderComponent("info-lootpool-already-exists", "key" replace newKey).sendMessage(sender)
+                else
+                    sender.placeholderComponent("error-lootpool-already-exists", "key" replace newKey).sendMessage(sender)
+                return@PlayerCommandExecutor
+            }
+            LootPoolGui(newKey, sender, lootPool)
         })
 }
 

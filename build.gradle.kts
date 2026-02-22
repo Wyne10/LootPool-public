@@ -84,7 +84,8 @@ bukkit {
     softDepend = listOf("PlaceholderAPI", "CommandAPI", "AbstractMenus")
     permissions {
         register("lootpool.*") {
-            children = listOf("lootpool.reload", "lootpool.create", "lootpool.modify", "lootpool.remove", "lootpool.info")
+            children = listOf("lootpool.reload", "lootpool.create", "lootpool.modify", "lootpool.remove", "lootpool.info", "lootpool.clone",
+                "lootpool.give", "lootpool.drop", "lootpool.insert", "lootpool.fill")
             default = BukkitPluginDescription.Permission.Default.OP
         }
         register("lootpool.reload") {
@@ -101,6 +102,22 @@ bukkit {
         }
         register("lootpool.info") {
             description = "Allows to check info about existing loot pools"
+        }
+        register("lootpool.clone") {
+            description = "Allows to clone existing loot pools"
+        }
+
+        register("lootpool.give") {
+            description = "Allows to give loot pools to players"
+        }
+        register("lootpool.drop") {
+            description = "Allows to drop loot pools on ground"
+        }
+        register("lootpool.insert") {
+            description = "Allows to insert loot pools in container"
+        }
+        register("lootpool.fill") {
+            description = "Allows to fill containers with loot pools"
         }
     }
 }
