@@ -16,6 +16,7 @@ dependencies {
     compileOnly(libs.paperApi)
     compileOnly(libs.placeholderApi)
     compileOnly(libs.commandApi)
+    compileOnly(libs.abstractMenus)
 
     implementation(project(":api"))
 
@@ -80,7 +81,7 @@ bukkit {
     author = findProperty("author").toString()
     main = "org.bigcraft.lootpool.LootPool"
     apiVersion = "1.16"
-    softDepend = listOf("PlaceholderAPI", "CommandAPI")
+    softDepend = listOf("PlaceholderAPI", "CommandAPI", "AbstractMenus")
     permissions {
         register("lootpool.*") {
             children = listOf("lootpool.reload", "lootpool.create", "lootpool.modify", "lootpool.remove", "lootpool.info")

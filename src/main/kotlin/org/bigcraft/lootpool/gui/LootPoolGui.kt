@@ -211,17 +211,19 @@ private data class MutableLoot(var item: ItemStack, private var _weight: Int, pr
     var minAmount: Int
         get() = _minAmount
         set(value) {
-            if (value > maxAmount)
-                maxAmount = value.coerceAtMost(64)
-            _minAmount = value.coerceIn(1, _maxAmount)
+            val set = if (value < 1) 64 else if (value > 64) 1 else value
+            if (set > maxAmount)
+                maxAmount = set.coerceAtMost(64)
+            _minAmount = set.coerceIn(1, _maxAmount)
         }
 
     var maxAmount: Int
         get() = _maxAmount
         set(value) {
-            if (value < minAmount)
-                minAmount = value.coerceAtLeast(1)
-            _maxAmount = value.coerceIn(_minAmount, 64)
+            val set = if (value < 1) 64 else if (value > 64) 1 else value
+            if (set < minAmount)
+                minAmount = set.coerceAtLeast(1)
+            _maxAmount = set.coerceIn(_minAmount, 64)
         }
 
     fun render(player: Player): ItemStack {
