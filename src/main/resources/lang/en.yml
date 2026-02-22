@@ -9,10 +9,12 @@ gui-nothing-item: "Nothing"
 ### Messages
 
 ## Info
-info-lootpool-already-exists: "Loot pool '<key>' already exists [<hover:show_text:'<green>Click to modify'><click:run_command:/lootpool modify <key>><green><u>Modify<white>]"
-info-loot-already-exists: "Loot '<key>' already exists [<hover:show_text:'<green>Click to modify'><click:run_command:/lootpool modify-loot <key>><green><u>Modify<white>]"
-info-loot: "- <loot-name><reset> [<min-amount>..<max-amount>]"
-info-lootpool-loot: "- <loot-name><reset> [<min-amount>..<max-amount>] - <gold><weight> <aqua>(<percentage>%)"
+info-lootpool-already-exists: "Loot pool '<key>' already exists [<hover:show_text:'<green>Click to modify'><click:run_command:/lootpool pool modify <key>><green><u>Modify<white>]"
+info-loot-already-exists: "Loot '<key>' already exists [<hover:show_text:'<green>Click to modify'><click:run_command:/lootpool item modify <key>><green><u>Modify<white>]"
+info-loot:
+  - "Loot '<key>':"
+  - "- <loot-name> <reset>(<loot-type>) [<min-amount>..<max-amount>]"
+info-lootpool-loot: "- <loot-name> <reset>(<loot-type>) [<min-amount>..<max-amount>] - <gold><weight> <aqua>(<percentage>%)"
 info-lootpool:
   - "Loot pool '<key>':"
   - "<loot-list>"

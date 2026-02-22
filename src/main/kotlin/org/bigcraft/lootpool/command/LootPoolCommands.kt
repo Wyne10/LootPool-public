@@ -74,6 +74,7 @@ class InfoCommand(lootPoolManager: LootPoolManager) : SubCommand("info") {
                     sender.placeholderComponent(
                         "info-lootpool-loot",
                         "loot-name" replace I18n.global.component().toString(loot.item.nameComponent),
+                        "loot-type" replace loot.item.type.name,
                         "weight" replace loot.weight,
                         "min-amount" replace loot.minAmount,
                         "max-amount" replace loot.maxAmount,
