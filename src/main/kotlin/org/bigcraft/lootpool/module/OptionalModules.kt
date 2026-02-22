@@ -3,6 +3,7 @@ package org.bigcraft.lootpool.module
 import com.google.inject.AbstractModule
 import org.bigcraft.lootpool.LootPool
 import org.bigcraft.lootpool.command.LootPoolCommand
+import org.bigcraft.lootpool.menu.AbstractMenusRegistry
 
 //region Implementations
 
@@ -27,4 +28,10 @@ val CommandModule: AbstractModule = OptionalModule(
     className = "dev.jorel.commandapi.CommandAPI",
     exceptionMessage = "CommandAPI not found, commands are not registered",
     LootPoolCommand::class.java
+)
+
+val AbstractMenusModule: AbstractModule = OptionalModule(
+    className = "ru.abstractmenus.api.AbstractMenusPlugin",
+    exceptionMessage = "AbstractMenus not found, catalog and property are not registered",
+    AbstractMenusRegistry::class.java
 )

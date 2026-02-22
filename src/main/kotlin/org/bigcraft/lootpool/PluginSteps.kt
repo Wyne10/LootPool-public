@@ -18,6 +18,7 @@ import me.wyne.wutils.log.*
 import net.kyori.adventure.platform.bukkit.BukkitAudiences
 import org.bigcraft.lootpool.LootPool.Companion.EMPTY_CONFIGURATION
 import org.bigcraft.lootpool.LootPool.Companion.log
+import org.bigcraft.lootpool.module.AbstractMenusModule
 import org.bigcraft.lootpool.module.ApiModule
 import org.bigcraft.lootpool.module.CommandModule
 import org.bigcraft.lootpool.module.LootPoolModule
@@ -82,7 +83,8 @@ object InitializeInjector : PluginStep<LootPool> {
                 PluginModule(plugin),
                 LootPoolModule,
                 ApiModule,
-                CommandModule
+                CommandModule,
+                AbstractMenusModule
             )
         } catch (e: CreationException) {
             log.error("Guice injector creation exception", e)
