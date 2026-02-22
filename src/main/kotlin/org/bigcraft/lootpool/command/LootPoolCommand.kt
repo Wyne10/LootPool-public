@@ -32,6 +32,7 @@ class LootPoolCommand @Inject constructor(
                     .withSubcommand(ModifyCommand(lootPoolManager)())
                     .withSubcommand(RemoveCommand(lootPoolManager)())
                     .withSubcommand(InfoCommand(lootPoolManager)())
+                    .withSubcommand(CloneCommand(lootPoolManager)())
                     .withSubcommand(GiveCommand(lootPoolManager)())
                     .withSubcommand(DropCommand(lootPoolManager)())
                     .withSubcommand(InsertCommand(lootPoolManager)())

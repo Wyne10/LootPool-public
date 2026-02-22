@@ -86,6 +86,27 @@ class InfoCommand(lootPoolManager: LootPoolManager) : SubCommand("info") {
         })
 }
 
+class CloneCommand(lootPoolManager: LootPoolManager) : SubCommand("clone") {
+    override val command: CommandAPICommand = super.command
+        .withPermission("lootpool.clone")
+        .withArguments(lootPoolKey("key", lootPoolManager))
+        .withArguments(StringArgument("newKey"))
+        .executesPlayer(PlayerCommandExecutor { sender, args ->
+            val key = args.getOrDefaultRaw("key", "")
+            val lootPool = lootPoolManager.getLootPool(key)!!
+            assertLootPoolExists(key, sender, lootPoolManager)
+            val newKey = args.getOrDefaultRaw("newKey", "")
+            if (lootPoolManager.mapKeys.contains(newKey)) {
+                if (sender.hasPermission("lootpool.modify"))
+                    sender.placeholderComponent("info-lootpool-already-exists", "key" replace newKey).sendMessage(sender)
+                else
+                    sender.placeholderComponent("error-lootpool-already-exists", "key" replace newKey).sendMessage(sender)
+                return@PlayerCommandExecutor
+            }
+            LootPoolGui(newKey, sender, lootPool)
+        })
+}
+
 fun lootPoolKey(nodeName: String, lootPoolManager: LootPoolManager): Argument<String> =
     StringArgument(nodeName)
         .replaceSuggestions(ArgumentSuggestions.stringCollection { _ -> lootPoolManager.mapKeys })
