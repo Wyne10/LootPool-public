@@ -5,9 +5,11 @@ import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.NumberConversions;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 public record Loot(@NotNull ItemStack item, int weight, int minAmount, int maxAmount) implements ConfigurationSerializable {
@@ -43,6 +45,33 @@ public record Loot(@NotNull ItemStack item, int weight, int minAmount, int maxAm
         var item = this.item.clone();
         item.setAmount(ThreadLocalRandom.current().nextInt(minAmount, maxAmount + 1));
         return item;
+    }
+
+    @NotNull
+    public ItemStack create(@Nullable Amount amount) {
+        var item = this.item.clone();
+        var finalAmount = ThreadLocalRandom.current().nextInt(minAmount, maxAmount + 1);
+        if (amount != null) {
+            switch (amount) {
+                case MIN -> finalAmount = minAmount;
+                case MAX -> finalAmount = maxAmount;
+            }
+        }
+        item.setAmount(finalAmount);
+        return item;
+    }
+
+    @NotNull
+    public ItemStack create(int amount) {
+        var item = this.item.clone();
+        item.setAmount(amount);
+        return item;
+    }
+
+    public enum Amount {
+        MIN,
+        MAX,
+        RANDOM
     }
 
 }

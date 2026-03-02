@@ -49,7 +49,7 @@ public record LootPool(@NotNull String key, @NotNull List<@NotNull Loot> lootPoo
     }
 
     @NotNull
-    public Loot getRandom() {
+    public static Loot getRandom(@NotNull List<@NotNull Loot> lootPool) {
         int totalWeight = 0;
         for (Loot loot : lootPool) {
             totalWeight += loot.weight();
@@ -71,40 +71,80 @@ public record LootPool(@NotNull String key, @NotNull List<@NotNull Loot> lootPoo
         return Loot.EMPTY;
     }
 
+    public Loot getRandom() {
+        return getRandom(lootPool);
+    }
+
     @NotNull
-    public List<@NotNull ItemStack> populate(int slots) {
+    public static List<@NotNull ItemStack> populate(@NotNull List<@NotNull Loot> lootPool, int slots) {
         List<ItemStack> result = new ArrayList<>();
         for (int i = 0; i < slots; i++) {
-            result.add(getRandom().create());
+            result.add(getRandom(lootPool).create());
         }
         return result;
     }
 
+    public List<@NotNull ItemStack> populate(int slots) {
+        return populate(lootPool, slots);
+    }
+
     @SuppressWarnings("DataFlowIssue")
-    public void populate(@NotNull Inventory inventory, int slots) {
+    public static void populate(@NotNull List<@NotNull ItemStack> itemPool, @NotNull Inventory inventory) {
+        List<ItemStack> itemList = new ArrayList<>(itemPool);
+        Queue<Integer> emptySlots = getEmptySlots(inventory);
+        int toPopulate = Math.min(emptySlots.size(), itemPool.size());
+        while (toPopulate > 0) {
+            int slot = emptySlots.poll();
+            inventory.setItem(slot, itemList.remove(0));
+            toPopulate--;
+        }
+    }
+    @SuppressWarnings("DataFlowIssue")
+    public static void populate(@NotNull List<@NotNull Loot> lootPool, @NotNull Inventory inventory, int slots) {
         Queue<Integer> emptySlots = getEmptySlots(inventory);
         int toPopulate = Math.min(emptySlots.size(), slots);
         while (toPopulate > 0) {
             int slot = emptySlots.poll();
-            inventory.setItem(slot, getRandom().create());
+            inventory.setItem(slot, getRandom(lootPool).create());
             toPopulate--;
         }
     }
 
-    public void populateRandomly(@NotNull Inventory inventory, int slots) {
+    public void populate(@NotNull Inventory inventory, int slots) {
+        populate(lootPool, inventory, slots);
+    }
+
+    public static void populateRandomly(@NotNull List<@NotNull ItemStack> itemPool, @NotNull Inventory inventory) {
+        List<ItemStack> itemList = new ArrayList<>(itemPool);
+        var emptySlots = getEmptySlots(inventory);
+        int toPopulate = Math.min(emptySlots.size(), itemPool.size());
+        while (toPopulate > 0) {
+            int index = ThreadLocalRandom.current().nextInt(emptySlots.size());
+            int slot = emptySlots.get(index);
+            emptySlots.remove(index);
+            inventory.setItem(slot, itemList.remove(0));
+            toPopulate--;
+        }
+    }
+
+    public static void populateRandomly(@NotNull List<@NotNull Loot> lootPool, @NotNull Inventory inventory, int slots) {
         var emptySlots = getEmptySlots(inventory);
         int toPopulate = Math.min(emptySlots.size(), slots);
         while (toPopulate > 0) {
             int index = ThreadLocalRandom.current().nextInt(emptySlots.size());
             int slot = emptySlots.get(index);
             emptySlots.remove(index);
-            inventory.setItem(slot, getRandom().create());
+            inventory.setItem(slot, getRandom(lootPool).create());
             toPopulate--;
         }
     }
 
+    public void populateRandomly(@NotNull Inventory inventory, int slots) {
+        populateRandomly(lootPool, inventory, slots);
+    }
+
     @NotNull
-    private LinkedList<Integer> getEmptySlots(@NotNull Inventory inventory) {
+    public static LinkedList<Integer> getEmptySlots(@NotNull Inventory inventory) {
         var slots = new LinkedList<Integer>();
         for (int i = 0; i < inventory.getSize(); i++) {
             var item = inventory.getItem(i);
