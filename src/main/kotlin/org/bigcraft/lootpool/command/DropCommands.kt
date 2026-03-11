@@ -12,6 +12,7 @@ import dev.jorel.commandapi.arguments.LocationType
 import dev.jorel.commandapi.arguments.StringArgument
 import dev.jorel.commandapi.executors.CommandExecutor
 import me.wyne.wutils.common.kotlin.inventory.addOrDrop
+import me.wyne.wutils.common.kotlin.item.isNotNullOrAir
 import me.wyne.wutils.i18n.kotlin.placeholderComponent
 import me.wyne.wutils.i18n.kotlin.replace
 import org.bigcraft.lootpool.api.CommonLootProvider
@@ -71,9 +72,11 @@ class DropCommand(commonLootProvider: CommonLootProvider) : SubCommand("drop") {
                     it.item.clone().apply { this.amount = getAmount(amount, it) }
                 }
             }
-            populated.forEach {
-                location.world.dropItem(location, it)
-            }
+            populated
+                .filter { it.isNotNullOrAir() }
+                .forEach {
+                    location.world.dropItem(location, it)
+                }
             sender.placeholderComponent("success-loot-drop", "key" replace key, "amount" replace slots).sendMessage(sender)
         })
 }
