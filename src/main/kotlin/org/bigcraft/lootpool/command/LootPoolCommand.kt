@@ -26,6 +26,7 @@ class LootPoolCommand @Inject constructor(
             .withSubcommand(DropCommand(commonLootManager)())
             .withSubcommand(InsertCommand(commonLootManager)())
             .withSubcommand(FillCommand(commonLootManager)())
+            .withSubcommand(ProjectCommand(commonLootManager)())
             .withSubcommand(
                 CommandAPICommand("pool")
                     .withSubcommand(CreateCommand(lootPoolManager)())
@@ -37,6 +38,7 @@ class LootPoolCommand @Inject constructor(
                     .withSubcommand(DropCommand(lootPoolManager)())
                     .withSubcommand(InsertCommand(lootPoolManager)())
                     .withSubcommand(FillCommand(lootPoolManager)())
+                    .withSubcommand(ProjectCommand(lootPoolManager)())
             )
             .withSubcommand(
                 CommandAPICommand("item")
@@ -48,6 +50,7 @@ class LootPoolCommand @Inject constructor(
                     .withSubcommand(DropCommand(lootManager)())
                     .withSubcommand(InsertCommand(lootManager)())
                     .withSubcommand(FillCommand(lootManager)())
+                    .withSubcommand(ProjectCommand(lootManager)())
             )
             .withSubcommand(ReloadCommand(plugin)())
             .register(plugin)

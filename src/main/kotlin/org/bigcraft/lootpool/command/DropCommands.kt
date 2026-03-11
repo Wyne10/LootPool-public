@@ -19,10 +19,10 @@ import org.bigcraft.lootpool.api.CommonLootProvider
 import org.bigcraft.lootpool.api.Loot
 import org.bigcraft.lootpool.api.LootPool
 import org.bukkit.Location
-import org.bukkit.Material
 import org.bukkit.block.Container
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
+import org.bukkit.inventory.ItemStack
 import kotlin.random.Random
 
 class GiveCommand(commonLootProvider: CommonLootProvider) : SubCommand("give") {
@@ -142,6 +142,29 @@ class FillCommand(commonLootProvider: CommonLootProvider) : SubCommand("fill") {
             val lootPool = LootPool("dummy", lootList)
             lootPool.populate(container.inventory, container.inventory.size)
             sender.placeholderComponent("success-loot-drop", "key" replace key, "amount" replace container.inventory.size).sendMessage(sender)
+        })
+}
+
+class ProjectCommand(commonLootProvider: CommonLootProvider) : SubCommand("project") {
+    override val command: CommandAPICommand = super.command
+        .withPermission("lootpool.give")
+        .withArguments(lootKey("key", commonLootProvider))
+        .withArguments(EntitySelectorArgument.OnePlayer("target"))
+        .withOptionalArguments(amountArgument("amount"))
+        .executes(CommandExecutor { sender, args ->
+            val key = args.getOrDefaultRaw("key", "")
+            assertLootExists(key, sender, commonLootProvider)
+            val target = args.getByClass("target", Player::class.java)!!
+            val amount = args.getByClass("amount", String::class.java)
+            val lootList = commonLootProvider.getLootList(key)!!
+            val populated = mutableListOf<ItemStack>()
+            lootList.forEach {
+                populated.add(
+                    it.item.clone().apply { this.amount = getAmount(amount, it) }
+                )
+            }
+            target.addOrDrop(*populated.toTypedArray())
+            sender.placeholderComponent("success-loot-drop", "key" replace key, "amount" replace lootList.size).sendMessage(sender)
         })
 }
 
