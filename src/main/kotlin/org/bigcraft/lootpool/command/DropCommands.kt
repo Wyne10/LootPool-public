@@ -28,27 +28,25 @@ class GiveCommand(commonLootProvider: CommonLootProvider) : SubCommand("give") {
     override val command: CommandAPICommand = super.command
         .withPermission("lootpool.give")
         .withArguments(lootKey("key", commonLootProvider))
-        .withArguments(EntitySelectorArgument.ManyPlayers("targets"))
+        .withArguments(EntitySelectorArgument.OnePlayer("target"))
         .withOptionalArguments(amountArgument("amount"), BooleanArgument("unique"), IntegerArgument("slots", 0))
         .executes(CommandExecutor { sender, args ->
             val key = args.getOrDefaultRaw("key", "")
             assertLootExists(key, sender, commonLootProvider)
-            val targets = args.getByClass("targets", List::class.java) as List<Player>
+            val target = args.getByClass("target", Player::class.java)!!
             val amount = args.getByClass("amount", String::class.java)
             val lootList = commonLootProvider.getLootList(key)!!
             val unique = args.getByClass("unique", Boolean::class.java) ?: false
             val slots = args.getByClass("slots", Int::class.java) ?: lootList.size
             val lootPool = LootPool("dummy", lootList.toMutableList())
-            targets.forEach { target ->
-                val populated = List(slots) {
-                    lootPool.random.let {
-                        if (unique) lootPool.lootPool.remove(it)
-                        it.item.clone().apply { this.amount = getAmount(amount, it) }
-                    }
+            val populated = List(slots) {
+                lootPool.random.let {
+                    if (unique) lootPool.lootPool.remove(it)
+                    it.item.clone().apply { this.amount = getAmount(amount, it) }
                 }
-                target.addOrDrop(*populated.toTypedArray())
             }
-            sender.placeholderComponent("success-loot-drop", "key" replace key, "amount" replace lootList.size).sendMessage(sender)
+            target.addOrDrop(*populated.toTypedArray())
+            sender.placeholderComponent("success-loot-drop", "key" replace key, "amount" replace slots).sendMessage(sender)
         })
 }
 
@@ -76,7 +74,7 @@ class DropCommand(commonLootProvider: CommonLootProvider) : SubCommand("drop") {
             populated.forEach {
                 location.world.dropItem(location, it)
             }
-            sender.placeholderComponent("success-loot-drop", "key" replace key, "amount" replace lootList.size).sendMessage(sender)
+            sender.placeholderComponent("success-loot-drop", "key" replace key, "amount" replace slots).sendMessage(sender)
         })
 }
 
@@ -102,7 +100,6 @@ class InsertCommand(commonLootProvider: CommonLootProvider) : SubCommand("insert
                         "z" replace location.blockZ).bungee()
                 )
             val lootList = commonLootProvider.getLootList(key)!!
-                .filterNot { it.item().type == Material.AIR }
             val unique = args.getByClass("unique", Boolean::class.java) ?: false
             val slots = args.getByClass("slots", Int::class.java) ?: lootList.size
             val random = args.getByClass("random", Boolean::class.java) ?: false
@@ -117,7 +114,7 @@ class InsertCommand(commonLootProvider: CommonLootProvider) : SubCommand("insert
                 LootPool.populateRandomly(populated, container.inventory)
             else
                 LootPool.populate(populated, container.inventory)
-            sender.placeholderComponent("success-loot-drop", "key" replace key, "amount" replace lootList.size).sendMessage(sender)
+            sender.placeholderComponent("success-loot-drop", "key" replace key, "amount" replace slots).sendMessage(sender)
         })
 }
 

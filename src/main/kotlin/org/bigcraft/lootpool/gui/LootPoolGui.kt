@@ -18,8 +18,6 @@ import org.bukkit.event.inventory.ClickType
 import org.bukkit.event.inventory.InventoryAction
 import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.inventory.InventoryCloseEvent
-import org.bukkit.event.player.PlayerSwapHandItemsEvent
-import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 
 class LootPoolGui(private val key: String, private val player: Player) : RegisterableListener {
@@ -38,6 +36,13 @@ class LootPoolGui(private val key: String, private val player: Player) : Registe
         lootPool.lootPool
             .filter { it.item.isNotNullOrAir() }
             .forEach { this.lootPool.add(it.asMutable()) }
+        lootPool.lootPool
+            .firstOrNull { it.item.type == Material.AIR }
+            ?.let {
+                nothingItem.weight = it.weight
+                nothingItem.minAmount = it.minAmount
+                nothingItem.maxAmount = it.maxAmount
+            }
     }
 
     init {
