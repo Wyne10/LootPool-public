@@ -18,6 +18,7 @@ import org.bukkit.event.inventory.ClickType
 import org.bukkit.event.inventory.InventoryAction
 import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.inventory.InventoryCloseEvent
+import org.bukkit.event.inventory.InventoryType
 import org.bukkit.inventory.ItemStack
 
 class LootPoolGui(private val key: String, private val player: Player) : RegisterableListener {
@@ -31,6 +32,8 @@ class LootPoolGui(private val key: String, private val player: Player) : Registe
     private var valueMultiplier = 1
 
     private val eventRegistry = EventRegistry(LootPool.instance)
+
+    private var currentPage = 0
 
     constructor(key: String, player: Player, lootPool: org.bigcraft.lootpool.api.LootPool) : this(key, player) {
         lootPool.lootPool
@@ -166,6 +169,17 @@ class LootPoolGui(private val key: String, private val player: Player) : Registe
         player.placeholderComponent("success-lootpool-create", "key" replace key).sendMessage(player)
     }
 
+    @EventHandler(ignoreCancelled = true)
+    private fun onPage(event: InventoryClickEvent) {
+        if (event.inventory != inventory) return
+        if (event.click == ClickType.LEFT && event.slotType == InventoryType.SlotType.OUTSIDE)
+            currentPage = (currentPage - 1).coerceAtLeast(0)
+        else if (event.click == ClickType.RIGHT && event.slotType == InventoryType.SlotType.OUTSIDE)
+            currentPage = (currentPage + 1).coerceIn(0, lootPool.size / (9 * 6))
+        inventory.clear()
+        run { render() }
+    }
+
     private fun validateClick(event: InventoryClickEvent): Boolean {
         if (event.inventory != inventory) return false
         if (event.action in CANCELLED_ACTIONS) {
@@ -192,9 +206,12 @@ class LootPoolGui(private val key: String, private val player: Player) : Registe
     }
 
     private fun render() {
-        lootPool.forEachIndexed { index, loot ->
-            inventory.setItem(index, loot.render(player))
-        }
+        lootPool
+            .drop(9 * 6 * currentPage)
+            .take(9 * 6)
+            .forEachIndexed { index, loot ->
+                inventory.setItem(index, loot.render(player))
+            }
     }
 
     private fun run(runnable: Runnable) {
