@@ -20,6 +20,7 @@ import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.inventory.InventoryCloseEvent
 import org.bukkit.event.inventory.InventoryType
 import org.bukkit.inventory.ItemStack
+import java.util.LinkedList
 
 class LootPoolGui(private val key: String, private val player: Player) : RegisterableListener {
 
@@ -163,7 +164,7 @@ class LootPoolGui(private val key: String, private val player: Player) : Registe
             lootPool.removeAt(0)
         LootPoolManager.instance.writeLootPool(org.bigcraft.lootpool.api.LootPool(
                 key,
-                listOf(*lootPool.map { it.asImmutable() }.toTypedArray())
+                LinkedList(lootPool.map { it.asImmutable() })
             )
         )
         player.placeholderComponent("success-lootpool-create", "key" replace key).sendMessage(player)
