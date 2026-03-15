@@ -222,7 +222,7 @@ class LootPoolGui(private val key: String, private val player: Player) : Registe
     }
 
     private val InventoryClickEvent.index: Int
-        get() = slot * (9 * 6 * currentPage + 1)
+        get() = (9 * 6 * currentPage) + slot
 
     companion object {
         private val CANCELLED_ACTIONS = setOf(
