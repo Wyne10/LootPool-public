@@ -176,6 +176,8 @@ class LootPoolGui(private val key: String, private val player: Player) : Registe
             currentPage = (currentPage - 1).coerceAtLeast(0)
         else if (event.click == ClickType.RIGHT && event.slotType == InventoryType.SlotType.OUTSIDE)
             currentPage = (currentPage + 1).coerceIn(0, lootPool.size / (9 * 6))
+        else
+            return
         inventory.clear()
         run { render() }
     }
