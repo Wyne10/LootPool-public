@@ -248,7 +248,7 @@ private data class MutableLoot(var item: ItemStack, private var _weight: Int, pr
         set(value) {
             val set = if (value < 1) 64 else if (value > 64) 1 else value
             if (set > maxAmount)
-                maxAmount = set.coerceAtMost(64)
+                maxAmount = set.coerceAtMost(item.maxStackSize)
             _minAmount = set.coerceIn(1, _maxAmount)
         }
 
@@ -258,7 +258,7 @@ private data class MutableLoot(var item: ItemStack, private var _weight: Int, pr
             val set = if (value < 1) 64 else if (value > 64) 1 else value
             if (set < minAmount)
                 minAmount = set.coerceAtLeast(1)
-            _maxAmount = set.coerceIn(_minAmount, 64)
+            _maxAmount = set.coerceIn(_minAmount, item.maxStackSize)
         }
 
     fun render(player: Player): ItemStack {
