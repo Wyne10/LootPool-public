@@ -80,10 +80,10 @@ class LootPoolGui(private val key: String, private val player: Player) : Registe
         // Replace loot pool item with item on a cursor
         if (event.clickedInventory == inventory && event.currentItem.isNotNullOrAir() && event.cursor.isNotNullOrAir()) {
             event.isCancelled = true
-            val slot = event.slot
-            val previousLoot = lootPool[slot]
+            val index = event.index
+            val previousLoot = lootPool[index]
             val previousItem = previousLoot.item.clone()
-            lootPool[slot] = MutableLoot(event.cursor!!.clone(), previousLoot.weight, previousLoot.minAmount, previousLoot.maxAmount)
+            lootPool[index] = MutableLoot(event.cursor!!.clone(), previousLoot.weight, previousLoot.minAmount, previousLoot.maxAmount)
             run {
                 event.cursor = previousItem
                 render()
@@ -96,7 +96,7 @@ class LootPoolGui(private val key: String, private val player: Player) : Registe
         if (!validateClick(event)) return
         if (!validateModificationClick(event)) return
         if (event.isShiftClick) return
-        val loot = lootPool[event.slot]
+        val loot = lootPool[event.index]
         if (event.isLeftClick)
             loot.weight -= valueMultiplier
         if (event.isRightClick)
@@ -109,7 +109,7 @@ class LootPoolGui(private val key: String, private val player: Player) : Registe
         if (!validateClick(event)) return
         if (!validateModificationClick(event)) return
         if (!event.isShiftClick) return
-        val loot = lootPool[event.slot]
+        val loot = lootPool[event.index]
         if (event.isLeftClick)
             loot.minAmount -= valueMultiplier
         if (event.isRightClick)
@@ -124,7 +124,7 @@ class LootPoolGui(private val key: String, private val player: Player) : Registe
         if (event.action != InventoryAction.HOTBAR_SWAP &&
             event.action != InventoryAction.HOTBAR_MOVE_AND_READD) return
         if (event.click != ClickType.NUMBER_KEY) return
-        val loot = lootPool[event.slot]
+        val loot = lootPool[event.index]
         if (event.hotbarButton == 0)
             loot.maxAmount -= valueMultiplier
         if (event.hotbarButton == 1)
@@ -139,7 +139,7 @@ class LootPoolGui(private val key: String, private val player: Player) : Registe
         if (event.slot == 0) return
         if (event.action != InventoryAction.DROP_ONE_SLOT &&
             event.action != InventoryAction.DROP_ALL_SLOT) return
-        lootPool.removeAt(event.slot)
+        lootPool.removeAt(event.index)
         inventory.clear()
         run { render() }
     }
@@ -219,6 +219,9 @@ class LootPoolGui(private val key: String, private val player: Player) : Registe
     private fun run(runnable: Runnable) {
         Bukkit.getScheduler().runTask(LootPool.instance, runnable)
     }
+
+    private val InventoryClickEvent.index: Int
+        get() = slot * (9 * 6 * currentPage + 1)
 
     companion object {
         private val CANCELLED_ACTIONS = setOf(
