@@ -246,7 +246,7 @@ private data class MutableLoot(var item: ItemStack, private var _weight: Int, pr
     var minAmount: Int
         get() = _minAmount
         set(value) {
-            val set = if (value < 1) 64 else if (value > 64) 1 else value
+            val set = if (value < 1) 64 else if (value > item.maxStackSize) 1 else value
             if (set > maxAmount)
                 maxAmount = set.coerceAtMost(item.maxStackSize)
             _minAmount = set.coerceIn(1, _maxAmount)
@@ -255,7 +255,7 @@ private data class MutableLoot(var item: ItemStack, private var _weight: Int, pr
     var maxAmount: Int
         get() = _maxAmount
         set(value) {
-            val set = if (value < 1) 64 else if (value > 64) 1 else value
+            val set = if (value < 1) 64 else if (value > item.maxStackSize) 1 else value
             if (set < minAmount)
                 minAmount = set.coerceAtLeast(1)
             _maxAmount = set.coerceIn(_minAmount, item.maxStackSize)
@@ -263,7 +263,7 @@ private data class MutableLoot(var item: ItemStack, private var _weight: Int, pr
 
     fun render(player: Player): ItemStack {
         val render = item.clone()
-        render.amount = minAmount
+        render.amount = maxAmount
         render.editMeta { meta ->
             meta.loreComponents = player.placeholderComponents(
                 "gui-loot",
