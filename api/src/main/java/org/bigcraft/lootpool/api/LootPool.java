@@ -35,7 +35,7 @@ public record LootPool(@NotNull String key, @NotNull List<@NotNull Loot> lootPoo
 
     @NotNull
     public static LootPool deserialize(@NotNull Map<String, Object> args) {
-        List<Loot> lootPool = new ArrayList<>();
+        List<Loot> lootPool = new LinkedList<>();
         for (int i = 0; args.containsKey(String.valueOf(i)); i++) {
             Object loot = args.get(String.valueOf(i));
             if (loot instanceof Loot)
