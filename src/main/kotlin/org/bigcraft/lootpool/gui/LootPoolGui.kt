@@ -4,14 +4,18 @@ import me.wyne.wutils.common.event.EventRegistry
 import me.wyne.wutils.common.event.RegisterableListener
 import me.wyne.wutils.common.kotlin.item.isNotNullOrAir
 import me.wyne.wutils.common.kotlin.item.isNullOrAir
+import me.wyne.wutils.i18n.kotlin.bungee
 import me.wyne.wutils.i18n.kotlin.placeholderComponent
 import me.wyne.wutils.i18n.kotlin.placeholderComponents
+import me.wyne.wutils.i18n.kotlin.reduce
 import me.wyne.wutils.i18n.kotlin.replace
+import net.kyori.adventure.text.Component
 import org.bigcraft.lootpool.LootPool
 import org.bigcraft.lootpool.api.Loot
 import org.bigcraft.lootpool.core.LootPoolManager
 import org.bukkit.Bukkit
 import org.bukkit.Material
+import org.bukkit.NamespacedKey
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.inventory.ClickType
@@ -269,11 +273,20 @@ private data class MutableLoot(var item: ItemStack, private var _weight: Int, pr
         val render = item.clone()
         render.amount = maxAmount
         render.editMeta { meta ->
-            meta.loreComponents = player.placeholderComponents(
-                "gui-loot",
-                "weight" replace weight,
-                "min-amount" replace minAmount,
-                "max-amount" replace maxAmount).map { it.bungee() }
+            val lore = mutableListOf<Component>()
+            if (meta.hasEnchants()) {
+                meta.enchants
+                    .filter { it.key.key.namespace != NamespacedKey.MINECRAFT }
+                    .forEach { (enchantment, level) -> lore.add(enchantment.displayName(level)) }
+            }
+            lore.addAll(player.placeholderComponents(
+                    "gui-loot",
+                    "weight" replace weight,
+                    "min-amount" replace minAmount,
+                    "max-amount" replace maxAmount
+                ).map { it.get() }
+            )
+            meta.loreComponents = lore.map { it.bungee }
         }
         return render
     }
