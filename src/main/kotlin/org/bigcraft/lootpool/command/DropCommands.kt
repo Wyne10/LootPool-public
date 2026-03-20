@@ -147,7 +147,7 @@ class FillCommand(commonLootProvider: CommonLootProvider) : SubCommand("fill") {
 
 class ProjectCommand(commonLootProvider: CommonLootProvider) : SubCommand("project") {
     override val command: CommandAPICommand = super.command
-        .withPermission("lootpool.give")
+        .withPermission("lootpool.project")
         .withArguments(lootKey("key", commonLootProvider))
         .withArguments(EntitySelectorArgument.OnePlayer("target"))
         .withOptionalArguments(amountArgument("amount"))

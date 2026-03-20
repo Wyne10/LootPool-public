@@ -25,6 +25,16 @@ publishing {
                 }
             }
         }
+        maven {
+            url = uri("https://git.bigteam.pw/api/v4/projects/43/packages/maven")
+            credentials(HttpHeaderCredentials::class) {
+                name = "Deploy-Token"
+                value = findProperty("gitLabPrivateToken") as String?
+            }
+            authentication {
+                create("header", HttpHeaderAuthentication::class)
+            }
+        }
     }
 
     publications {

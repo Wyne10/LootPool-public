@@ -81,7 +81,7 @@ bukkit {
     author = findProperty("author").toString()
     main = "org.bigcraft.lootpool.LootPool"
     apiVersion = "1.16"
-    softDepend = listOf("PlaceholderAPI", "CommandAPI", "AbstractMenus")
+    softDepend = listOf("PlaceholderAPI", "CommandAPI", "AbstractMenus", "CustomEnchants")
     permissions {
         register("lootpool.*") {
             children = listOf("lootpool.reload", "lootpool.create", "lootpool.modify", "lootpool.remove", "lootpool.info", "lootpool.clone",
@@ -118,6 +118,9 @@ bukkit {
         }
         register("lootpool.fill") {
             description = "Allows to fill containers with loot pools"
+        }
+        register("lootpool.project") {
+            description = "Allows to project loot pools to players"
         }
     }
 }
