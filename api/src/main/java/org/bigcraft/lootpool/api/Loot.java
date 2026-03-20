@@ -9,7 +9,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 public record Loot(@NotNull ItemStack item, int weight, int minAmount, int maxAmount) implements ConfigurationSerializable {
