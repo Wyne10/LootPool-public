@@ -4,10 +4,8 @@ import me.wyne.wutils.common.event.EventRegistry
 import me.wyne.wutils.common.event.RegisterableListener
 import me.wyne.wutils.common.kotlin.item.isNotNullOrAir
 import me.wyne.wutils.common.kotlin.item.isNullOrAir
-import me.wyne.wutils.i18n.kotlin.bungee
 import me.wyne.wutils.i18n.kotlin.placeholderComponent
 import me.wyne.wutils.i18n.kotlin.placeholderComponents
-import me.wyne.wutils.i18n.kotlin.reduce
 import me.wyne.wutils.i18n.kotlin.replace
 import net.kyori.adventure.text.Component
 import org.bigcraft.lootpool.LootPool
@@ -30,7 +28,7 @@ class LootPoolGui(private val key: String, private val player: Player) : Registe
 
     private val inventory = Bukkit.createInventory(player, 9 * 6)
     private val nothingItem = MutableLoot(ItemStack(Material.GRAY_STAINED_GLASS_PANE)
-        .also { it.editMeta { meta -> meta.setDisplayNameComponent(player.placeholderComponent("gui-nothing-item").bungee()) } },
+        .also { it.editMeta { meta -> meta.displayName(player.placeholderComponent("gui-nothing-item").get()) } },
         0, 1, 1
     )
     private val lootPool = mutableListOf<MutableLoot>().also { it.add(nothingItem) }
@@ -286,7 +284,7 @@ private data class MutableLoot(var item: ItemStack, private var _weight: Int, pr
                     "max-amount" replace maxAmount
                 ).map { it.get() }
             )
-            meta.loreComponents = lore.map { it.bungee }
+            meta.lore(lore)
         }
         return render
     }

@@ -95,12 +95,12 @@ class InsertCommand(commonLootProvider: CommonLootProvider) : SubCommand("insert
             val location = args.getByClass("location", Location::class.java)!!
             val amount = args.getByClass("amount", String::class.java)
             val container = location.block.state as? Container
-                ?: throw CommandAPIBukkit.failWithBaseComponents(
-                    *sender.placeholderComponent(
+                ?: throw CommandAPIBukkit.failWithAdventureComponent(
+                    sender.placeholderComponent(
                         "error-not-a-container",
                         "x" replace location.blockX,
                         "y" replace location.blockY,
-                        "z" replace location.blockZ).bungee()
+                        "z" replace location.blockZ).get()
                 )
             val lootList = commonLootProvider.getLootList(key)!!
             val unique = args.getByClass("unique", Boolean::class.java) ?: false
@@ -131,12 +131,12 @@ class FillCommand(commonLootProvider: CommonLootProvider) : SubCommand("fill") {
             assertLootExists(key, sender, commonLootProvider)
             val location = args.getByClass("location", Location::class.java)!!
             val container = location.block.state as? Container
-                ?: throw CommandAPIBukkit.failWithBaseComponents(
-                    *sender.placeholderComponent(
+                ?: throw CommandAPIBukkit.failWithAdventureComponent(
+                    sender.placeholderComponent(
                         "error-not-a-container",
                         "x" replace location.blockX,
                         "y" replace location.blockY,
-                        "z" replace location.blockZ).bungee()
+                        "z" replace location.blockZ).get()
                 )
             val lootList = commonLootProvider.getLootList(key)!!
             val lootPool = LootPool("dummy", lootList)
@@ -187,7 +187,7 @@ fun getAmount(amountArgument: String?, loot: Loot): Int =
 
 fun assertLootExists(key: String, sender: CommandSender, commonLootProvider: CommonLootProvider) {
     if (commonLootProvider.lootKeys.contains(key)) return
-    throw CommandAPIBukkit.failWithBaseComponents(
-        *sender.placeholderComponent("error-lootpool-not-found", "key" replace key).bungee()
+    throw CommandAPIBukkit.failWithAdventureComponent(
+        sender.placeholderComponent("error-lootpool-not-found", "key" replace key).get()
     )
 }

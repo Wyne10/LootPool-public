@@ -73,13 +73,12 @@ class InfoCommand(lootPoolManager: LootPoolManager) : SubCommand("info") {
                 .mapIndexed { index, loot ->
                     sender.placeholderComponent(
                         "info-lootpool-loot",
-                        "loot-name" replace I18n.global.component().toString(loot.item.nameComponent),
                         "loot-type" replace loot.item.type.name,
                         "weight" replace loot.weight,
                         "min-amount" replace loot.minAmount,
                         "max-amount" replace loot.maxAmount,
                         "percentage" replace String.format("%.2f", percentage[index])
-                    )
+                    ).replace("loot-name" replaceComponent loot.item.nameComponent)
                 }.reduce() ?: Component.empty()
             sender.placeholderComponent("info-lootpool", "key" replace key)
                 .replace("loot-list" replaceComponent lootList)
@@ -114,7 +113,7 @@ fun lootPoolKey(nodeName: String, lootPoolManager: LootPoolManager): Argument<St
 
 fun assertLootPoolExists(key: String, sender: CommandSender, lootPoolManager: LootPoolManager) {
     if (lootPoolManager.mapKeys.contains(key)) return
-    throw CommandAPIBukkit.failWithBaseComponents(
-        *sender.placeholderComponent("error-lootpool-not-found", "key" replace key).bungee()
+    throw CommandAPIBukkit.failWithAdventureComponent(
+        sender.placeholderComponent("error-lootpool-not-found", "key" replace key).get()
     )
 }

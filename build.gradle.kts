@@ -21,9 +21,6 @@ dependencies {
     implementation(project(":api"))
 
     implementation(libs.guice)
-    implementation(libs.adventureMini)
-    implementation(libs.adventureBukkit)
-    implementation(libs.adventurePlain)
 
     implementation(libs.wutilsConfig)
     implementation(libs.wutilsLog)
@@ -41,7 +38,6 @@ tasks {
         if (!isDebug) {
             relocate("com.google.inject", "org.bigcraft.lootpool.shadow.google.guice")
             relocate("com.google.common", "org.bigcraft.lootpool.shadow.google.common")
-            relocate("net.kyori", "org.bigcraft.lootpool.shadow.net.kyori")
             relocate("me.wyne.wutils", "org.bigcraft.lootpool.shadow.wutils")
         }
     }

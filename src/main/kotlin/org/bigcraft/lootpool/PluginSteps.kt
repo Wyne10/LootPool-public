@@ -13,10 +13,9 @@ import me.wyne.wutils.common.plugin.StepScope
 import me.wyne.wutils.config.Config
 import me.wyne.wutils.i18n.I18n
 import me.wyne.wutils.i18n.PluginI18nBuilder
-import me.wyne.wutils.i18n.language.component.BukkitComponentAudiences
+import me.wyne.wutils.i18n.language.component.PaperComponentAudiences
 import me.wyne.wutils.i18n.language.interpretation.ComponentInterpreters
 import me.wyne.wutils.i18n.language.validation.EmptyValidator
-import net.kyori.adventure.platform.bukkit.BukkitAudiences
 import org.bigcraft.lootpool.LootPool.Companion.EMPTY_CONFIGURATION
 import org.bigcraft.lootpool.LootPool.Companion.logger
 import org.bigcraft.lootpool.module.AbstractMenusModule
@@ -45,10 +44,10 @@ object InitializeI18n : PluginStep<LootPool> {
     override fun run(plugin: LootPool) {
         I18n.global = PluginI18nBuilder(plugin)
             .setLogger(logger)
-            .setComponentAudience(BukkitComponentAudiences(BukkitAudiences.create(plugin)))
+            .setComponentAudience(PaperComponentAudiences())
             .setComponentInterpreter(
                 ComponentInterpreters.valueOf(
-                    plugin.config.getString("serializer", "MINI_MESSAGE")!!
+                    plugin.config.getString("serializer", "ENHANCED_LEGACY")!!
                 ).get(EmptyValidator())
             )
             .setUsePlayerLanguage(plugin.config.getBoolean("usePlayerLanguage", true))
