@@ -22,6 +22,7 @@ import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.inventory.InventoryCloseEvent
 import org.bukkit.event.inventory.InventoryType
 import org.bukkit.inventory.ItemStack
+import org.bukkit.inventory.meta.EnchantmentStorageMeta
 import java.util.LinkedList
 
 class LootPoolGui(private val key: String, private val player: Player) : RegisterableListener {
@@ -272,7 +273,11 @@ private data class MutableLoot(var item: ItemStack, private var _weight: Int, pr
         render.amount = maxAmount
         render.editMeta { meta ->
             val lore = mutableListOf<Component>()
-            if (meta.hasEnchants()) {
+            if (meta is EnchantmentStorageMeta) {
+                meta.storedEnchants
+                    .filter { it.key.key.namespace != NamespacedKey.MINECRAFT }
+                    .forEach { (enchantment, level) -> lore.add(enchantment.displayName(level)) }
+            } else if (meta.hasEnchants()) {
                 meta.enchants
                     .filter { it.key.key.namespace != NamespacedKey.MINECRAFT }
                     .forEach { (enchantment, level) -> lore.add(enchantment.displayName(level)) }
