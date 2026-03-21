@@ -12,6 +12,7 @@ import me.wyne.wutils.common.kotlin.item.isNotNullOrAir
 import me.wyne.wutils.i18n.I18n
 import me.wyne.wutils.i18n.kotlin.placeholderComponent
 import me.wyne.wutils.i18n.kotlin.replace
+import me.wyne.wutils.i18n.kotlin.replaceComponent
 import org.bigcraft.lootpool.api.KeyedLoot
 import org.bigcraft.lootpool.api.Loot
 import org.bigcraft.lootpool.core.LootManager
@@ -88,11 +89,10 @@ class LootInfoCommand(lootManager: LootManager) : SubCommand("info") {
             sender.placeholderComponent(
                 "info-loot",
                 "key" replace key,
-                "loot-name" replace I18n.global.component().toString(loot.loot.item.nameComponent),
                 "loot-type" replace loot.loot.item.type.name,
                 "min-amount" replace loot.loot.minAmount,
                 "max-amount" replace loot.loot.maxAmount,
-            ).sendMessage(sender)
+            ).replace("loot-name" replaceComponent loot.loot.item.nameComponent).sendMessage(sender)
         })
 }
 
@@ -102,14 +102,14 @@ fun lootKey(nodeName: String, lootManager: LootManager): Argument<String> =
 
 fun assertLootExists(key: String, sender: CommandSender, lootManager: LootManager) {
     if (lootManager.mapKeys.contains(key)) return
-    throw CommandAPIBukkit.failWithBaseComponents(
-        *sender.placeholderComponent("error-lootpool-not-found", "key" replace key).bungee()
+    throw CommandAPIBukkit.failWithAdventureComponent(
+        sender.placeholderComponent("error-lootpool-not-found", "key" replace key).get()
     )
 }
 
 fun assertLootNotNull(key: String, sender: Player) {
     if (sender.inventory.itemInMainHand.isNotNullOrAir()) return
-    throw CommandAPIBukkit.failWithBaseComponents(
-        *sender.placeholderComponent("error-empty-loot", "key" replace key).bungee()
+    throw CommandAPIBukkit.failWithAdventureComponent(
+        sender.placeholderComponent("error-empty-loot", "key" replace key).get()
     )
 }

@@ -27,7 +27,7 @@ val ItemStack.nameComponent: Component
     get() {
         if (itemMeta == null) return Component.translatable(type.translationKey)
         return if (itemMeta.hasDisplayName())
-            itemMeta.displayNameComponent.component
+            itemMeta.displayName()!!
         else
             Component.translatable(type.translationKey)
     }
