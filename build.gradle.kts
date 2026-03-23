@@ -21,6 +21,7 @@ dependencies {
     implementation(project(":api"))
 
     implementation(libs.guice)
+    implementation(libs.enhancedLegacy)
 
     implementation(libs.wutilsConfig)
     implementation(libs.wutilsLog)
@@ -39,6 +40,7 @@ tasks {
             relocate("com.google.inject", "org.bigcraft.lootpool.shadow.google.guice")
             relocate("com.google.common", "org.bigcraft.lootpool.shadow.google.common")
             relocate("me.wyne.wutils", "org.bigcraft.lootpool.shadow.wutils")
+            relocate("dev.vankka", "org.bigcraft.lootpool.shadow.dev.vankka")
         }
     }
 
