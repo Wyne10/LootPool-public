@@ -2,7 +2,6 @@ package org.bigcraft.lootpool.command
 
 import dev.jorel.commandapi.CommandAPICommand
 import dev.jorel.commandapi.executors.CommandExecutor
-import me.wyne.wutils.i18n.kotlin.component
 import me.wyne.wutils.i18n.kotlin.placeholderComponent
 import net.kyori.adventure.text.Component
 import org.bigcraft.lootpool.LootPool

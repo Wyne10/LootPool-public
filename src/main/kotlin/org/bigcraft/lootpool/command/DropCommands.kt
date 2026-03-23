@@ -46,8 +46,8 @@ class GiveCommand(commonLootProvider: CommonLootProvider) : SubCommand("give") {
                     it.item.clone().apply { this.amount = getAmount(amount, it) }
                 }
             }
-            target.addOrDrop(*populated.toTypedArray())
-            sender.placeholderComponent("success-loot-drop", "key" replace key, "amount" replace slots).sendMessage(sender)
+            target.addOrDrop(true, *populated.toTypedArray())
+            sender.placeholderComponent("success-loot-drop", "key" replace key, "amount" replace slots).sendMessagePlayer(sender)
         })
 }
 
@@ -77,7 +77,7 @@ class DropCommand(commonLootProvider: CommonLootProvider) : SubCommand("drop") {
                 .forEach {
                     location.world.dropItem(location, it)
                 }
-            sender.placeholderComponent("success-loot-drop", "key" replace key, "amount" replace slots).sendMessage(sender)
+            sender.placeholderComponent("success-loot-drop", "key" replace key, "amount" replace slots).sendMessagePlayer(sender)
         })
 }
 
@@ -117,7 +117,7 @@ class InsertCommand(commonLootProvider: CommonLootProvider) : SubCommand("insert
                 LootPool.populateRandomly(populated, container.inventory)
             else
                 LootPool.populate(populated, container.inventory)
-            sender.placeholderComponent("success-loot-drop", "key" replace key, "amount" replace slots).sendMessage(sender)
+            sender.placeholderComponent("success-loot-drop", "key" replace key, "amount" replace slots).sendMessagePlayer(sender)
         })
 }
 
@@ -141,7 +141,7 @@ class FillCommand(commonLootProvider: CommonLootProvider) : SubCommand("fill") {
             val lootList = commonLootProvider.getLootList(key)!!
             val lootPool = LootPool("dummy", lootList)
             lootPool.populate(container.inventory, container.inventory.size)
-            sender.placeholderComponent("success-loot-drop", "key" replace key, "amount" replace container.inventory.size).sendMessage(sender)
+            sender.placeholderComponent("success-loot-drop", "key" replace key, "amount" replace container.inventory.size).sendMessagePlayer(sender)
         })
 }
 
@@ -164,7 +164,7 @@ class ProjectCommand(commonLootProvider: CommonLootProvider) : SubCommand("proje
                 )
             }
             target.addOrDrop(*populated.toTypedArray())
-            sender.placeholderComponent("success-loot-drop", "key" replace key, "amount" replace lootList.size).sendMessage(sender)
+            sender.placeholderComponent("success-loot-drop", "key" replace key, "amount" replace lootList.size).sendMessagePlayer(sender)
         })
 }
 

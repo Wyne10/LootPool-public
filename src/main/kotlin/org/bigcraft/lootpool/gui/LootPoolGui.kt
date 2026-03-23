@@ -8,8 +8,12 @@ import me.wyne.wutils.i18n.kotlin.placeholderComponent
 import me.wyne.wutils.i18n.kotlin.placeholderComponents
 import me.wyne.wutils.i18n.kotlin.replace
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.NamedTextColor
+import net.kyori.adventure.text.format.Style
+import net.kyori.adventure.text.format.TextDecoration
 import org.bigcraft.lootpool.LootPool
 import org.bigcraft.lootpool.api.Loot
+import org.bigcraft.lootpool.command.nameComponent
 import org.bigcraft.lootpool.core.LootPoolManager
 import org.bukkit.Bukkit
 import org.bukkit.Material
@@ -33,6 +37,12 @@ class LootPoolGui(private val key: String, private val player: Player) : Registe
         0, 1, 1
     )
     private val lootPool = mutableListOf<MutableLoot>().also { it.add(nothingItem) }
+    private val lootPoolPercentage: List<Double>
+        get() {
+            val totalWeight = lootPool.sumOf { it.weight.toDouble() }
+            val percentage = lootPool.map { (it.weight / totalWeight) * 100 }
+            return percentage
+        }
     private var valueMultiplier = 1
 
     private val eventRegistry = EventRegistry(LootPool.instance)
@@ -216,7 +226,7 @@ class LootPoolGui(private val key: String, private val player: Player) : Registe
             .drop(9 * 6 * currentPage)
             .take(9 * 6)
             .forEachIndexed { index, loot ->
-                inventory.setItem(index, loot.render(player))
+                inventory.setItem(index, loot.render(lootPoolPercentage.getOrElse(index + (9 * 6 * currentPage)) { 0.0 }, player))
             }
     }
 
@@ -268,10 +278,19 @@ private data class MutableLoot(var item: ItemStack, private var _weight: Int, pr
             _maxAmount = set.coerceIn(_minAmount, item.maxStackSize)
         }
 
-    fun render(player: Player): ItemStack {
+    fun render(percentage: Double, player: Player): ItemStack {
         val render = item.clone()
         render.amount = maxAmount
         render.editMeta { meta ->
+            meta.displayName(
+                Component.empty().decoration(TextDecoration.ITALIC, false).append(
+                    render.nameComponent.append(
+                        Component.space()
+                            .decorations(TextDecoration.entries.associateWith { TextDecoration.State.FALSE })
+                            .append(Component.text("(${String.format("%.2f", percentage)})").color(NamedTextColor.AQUA))
+                    )
+                )
+            )
             val lore = mutableListOf<Component>()
             if (meta is EnchantmentStorageMeta) {
                 meta.storedEnchants
