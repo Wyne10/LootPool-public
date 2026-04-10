@@ -9,7 +9,6 @@ import dev.jorel.commandapi.arguments.StringArgument
 import dev.jorel.commandapi.executors.CommandExecutor
 import dev.jorel.commandapi.executors.PlayerCommandExecutor
 import me.wyne.wutils.common.kotlin.item.isNotNullOrAir
-import me.wyne.wutils.i18n.I18n
 import me.wyne.wutils.i18n.kotlin.placeholderComponent
 import me.wyne.wutils.i18n.kotlin.replace
 import me.wyne.wutils.i18n.kotlin.replaceComponent
@@ -28,9 +27,9 @@ class CreateLootCommand(lootManager: LootManager) : SubCommand("create") {
         .withOptionalArguments(IntegerArgument("weight", 0))
         .executesPlayer(PlayerCommandExecutor { sender, args ->
             val key = args.getOrDefaultRaw("key", "")
-            val minAmount = args.getByClassOrDefault("minAmount", Int::class.java, 1)
-            val maxAmount = args.getByClassOrDefault("maxAmount", Int::class.java, 64)
-            val weight = args.getByClassOrDefault("weight", Int::class.java, 1)
+            val minAmount = args.getByClassOrDefault("minAmount", Int::class.java, Loot.EMPTY.minAmount)
+            val maxAmount = args.getByClassOrDefault("maxAmount", Int::class.java, Loot.EMPTY.maxAmount)
+            val weight = args.getByClassOrDefault("weight", Int::class.java, Loot.EMPTY.weight)
             assertLootNotNull(key, sender)
             if (lootManager.mapKeys.contains(key)) {
                 if (sender.hasPermission("lootpool.modify"))
