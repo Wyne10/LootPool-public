@@ -1,14 +1,16 @@
 package org.bigcraft.lootpool.api;
 
-import org.bukkit.Keyed;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-public record KeyedLoot(@NotNull String key, @NotNull Loot loot) implements ConfigurationSerializable, Keyed {
+public record KeyedLoot(@NotNull String key, @NotNull Loot loot) implements ConfigurationSerializable, LootPool {
 
     public KeyedLoot(@NotNull KeyedLoot keyedLoot) {
         this(keyedLoot.key(), keyedLoot.loot());
@@ -32,9 +34,35 @@ public record KeyedLoot(@NotNull String key, @NotNull Loot loot) implements Conf
         return new KeyedLoot((String) args.get("key"), (Loot) args.get("loot"));
     }
 
+    @Override
+    public @NotNull List<@NotNull Loot> getLootList() {
+        return List.of(loot);
+    }
+
+    @Override
+    public @NotNull Loot getRandom() {
+        return loot;
+    }
+
+    @Override
+    public @NotNull List<@NotNull ItemStack> populate(int slots) {
+        return LootPool.populate(getLootList(), slots);
+    }
+
+    @Override
+    public void populate(@NotNull Inventory inventory, int slots) {
+        LootPool.populate(getLootList(), inventory, slots);
+    }
+
+    @Override
+    public void populateRandomly(@NotNull Inventory inventory, int slots) {
+        LootPool.populateRandomly(getLootList(), inventory, slots);
+    }
+
     @SuppressWarnings("DataFlowIssue")
     @Override
     public @NotNull NamespacedKey getKey() {
         return NamespacedKey.fromString("lootpool:" + key);
     }
+
 }

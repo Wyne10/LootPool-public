@@ -5,9 +5,11 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
-public interface LootPoolProvider extends CommonLootProvider {
+public interface LootPoolProvider {
     @NotNull
     Map<@NotNull String, @NotNull LootPool> getLootPoolMap();
+    @NotNull
+    Map<@NotNull String, @NotNull LootPool> getMapOf(@NotNull Class<? extends LootPool> clazz);
     @Nullable
     LootPool getLootPool(@NotNull String key);
     @Nullable

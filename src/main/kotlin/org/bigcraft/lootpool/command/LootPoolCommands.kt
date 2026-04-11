@@ -7,12 +7,12 @@ import dev.jorel.commandapi.arguments.ArgumentSuggestions
 import dev.jorel.commandapi.arguments.StringArgument
 import dev.jorel.commandapi.executors.CommandExecutor
 import dev.jorel.commandapi.executors.PlayerCommandExecutor
-import me.wyne.wutils.i18n.I18n
 import me.wyne.wutils.i18n.kotlin.placeholderComponent
 import me.wyne.wutils.i18n.kotlin.reduce
 import me.wyne.wutils.i18n.kotlin.replace
 import me.wyne.wutils.i18n.kotlin.replaceComponent
 import net.kyori.adventure.text.Component
+import org.bigcraft.lootpool.api.BasicLootPool
 import org.bigcraft.lootpool.core.LootPoolManager
 import org.bigcraft.lootpool.gui.LootPoolGui
 import org.bukkit.command.CommandSender
@@ -66,7 +66,7 @@ class InfoCommand(lootPoolManager: LootPoolManager) : SubCommand("info") {
             val key = args.getOrDefaultRaw("key", "")
             assertLootPoolExists(key, sender, lootPoolManager)
             val lootPool = lootPoolManager.getLootPool(key)!!
-            val weightSorted = lootPool.lootPool.sortedByDescending { it.weight }
+            val weightSorted = lootPool.lootList.sortedByDescending { it.weight }
             val totalWeight = weightSorted.sumOf { it.weight.toDouble() }
             val percentage = weightSorted.map { (it.weight / totalWeight) * 100 }
             val lootList = weightSorted
@@ -109,10 +109,10 @@ class CloneCommand(lootPoolManager: LootPoolManager) : SubCommand("clone") {
 
 fun lootPoolKey(nodeName: String, lootPoolManager: LootPoolManager): Argument<String> =
     StringArgument(nodeName)
-        .replaceSuggestions(ArgumentSuggestions.stringCollection { _ -> lootPoolManager.mapKeys })
+        .replaceSuggestions(ArgumentSuggestions.stringCollection { _ -> lootPoolManager.getMapOf(BasicLootPool::class.java).keys })
 
 fun assertLootPoolExists(key: String, sender: CommandSender, lootPoolManager: LootPoolManager) {
-    if (lootPoolManager.mapKeys.contains(key)) return
+    if (lootPoolManager.getMapOf(BasicLootPool::class.java).containsKey(key)) return
     throw CommandAPIBukkit.failWithAdventureComponent(
         sender.placeholderComponent("error-lootpool-not-found", "key" replace key).get()
     )

@@ -2,8 +2,6 @@ package org.bigcraft.lootpool.module
 
 import com.google.inject.AbstractModule
 import org.bigcraft.lootpool.LootPoolApi
-import org.bigcraft.lootpool.core.CommonLootManager
-import org.bigcraft.lootpool.core.LootManager
 import org.bigcraft.lootpool.core.LootPoolManager
 
 //region Implementations
@@ -16,7 +14,7 @@ private class CoreModule(private vararg val modules: Class<out Any>) : AbstractM
 
 //endregion
 
-val LootPoolModule: AbstractModule = CoreModule(CommonLootManager::class.java, LootPoolManager::class.java, LootManager::class.java)
+val LootPoolModule: AbstractModule = CoreModule(LootPoolManager::class.java)
 
 val ApiModule: AbstractModule = CoreModule(LootPoolApi::class.java)
 

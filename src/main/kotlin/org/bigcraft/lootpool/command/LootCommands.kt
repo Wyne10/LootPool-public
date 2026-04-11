@@ -14,11 +14,11 @@ import me.wyne.wutils.i18n.kotlin.replace
 import me.wyne.wutils.i18n.kotlin.replaceComponent
 import org.bigcraft.lootpool.api.KeyedLoot
 import org.bigcraft.lootpool.api.Loot
-import org.bigcraft.lootpool.core.LootManager
+import org.bigcraft.lootpool.core.LootPoolManager
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 
-class CreateLootCommand(lootManager: LootManager) : SubCommand("create") {
+class CreateLootCommand(lootPoolManager: LootPoolManager) : SubCommand("create") {
     override val command: CommandAPICommand = super.command
         .withPermission("lootpool.create")
         .withArguments(StringArgument("key"))
@@ -31,60 +31,60 @@ class CreateLootCommand(lootManager: LootManager) : SubCommand("create") {
             val maxAmount = args.getByClassOrDefault("maxAmount", Int::class.java, Loot.EMPTY.maxAmount)
             val weight = args.getByClassOrDefault("weight", Int::class.java, Loot.EMPTY.weight)
             assertLootNotNull(key, sender)
-            if (lootManager.mapKeys.contains(key)) {
+            if (lootPoolManager.mapKeys.contains(key)) {
                 if (sender.hasPermission("lootpool.modify"))
                     sender.placeholderComponent("info-loot-already-exists", "key" replace key).sendMessage(sender)
                 else
                     sender.placeholderComponent("error-loot-already-exists", "key" replace key).sendMessage(sender)
                 return@PlayerCommandExecutor
             }
-            lootManager.writeLoot(KeyedLoot(key, Loot(sender.inventory.itemInMainHand.clone().apply { amount = 1 }, weight,
+            lootPoolManager.writeLootPool(KeyedLoot(key, Loot(sender.inventory.itemInMainHand.clone().apply { amount = 1 }, weight,
                         minAmount.coerceAtMost(maxAmount), maxAmount.coerceAtLeast(minAmount))))
             sender.placeholderComponent("success-loot-create", "key" replace key).sendMessage(sender)
         })
 }
 
-class ModifyLootCommand(lootManager: LootManager) : SubCommand("modify") {
+class ModifyLootCommand(lootPoolManager: LootPoolManager) : SubCommand("modify") {
     override val command: CommandAPICommand = super.command
         .withPermission("lootpool.modify")
-        .withArguments(lootKey("key", lootManager))
+        .withArguments(lootKey("key", lootPoolManager))
         .withOptionalArguments(IntegerArgument("minAmount", 1, 64))
         .withOptionalArguments(IntegerArgument("maxAmount", 1, 64))
         .withOptionalArguments(IntegerArgument("weight", 0))
         .executesPlayer(PlayerCommandExecutor { sender, args ->
             val key = args.getOrDefaultRaw("key", "")
-            assertLootExists(key, sender, lootManager)
+            assertLootExists(key, sender, lootPoolManager)
             assertLootNotNull(key, sender)
-            val loot = lootManager.getLoot(key)!!
+            val loot = lootPoolManager.getLootPool(key)!! as KeyedLoot
             val minAmount = args.getByClassOrDefault("minAmount", Int::class.java, loot.loot.minAmount)
             val maxAmount = args.getByClassOrDefault("maxAmount", Int::class.java, loot.loot.maxAmount)
             val weight = args.getByClassOrDefault("weight", Int::class.java, 1)
-            lootManager.writeLoot(KeyedLoot(key, Loot(sender.inventory.itemInMainHand.clone().apply { amount = 1 }, weight,
+            lootPoolManager.writeLootPool(KeyedLoot(key, Loot(sender.inventory.itemInMainHand.clone().apply { amount = 1 }, weight,
                         minAmount.coerceAtMost(maxAmount), maxAmount.coerceAtLeast(minAmount))))
             sender.placeholderComponent("success-loot-create", "key" replace key).sendMessage(sender)
         })
 }
 
-class RemoveLootCommand(lootManager: LootManager) : SubCommand("remove") {
+class RemoveLootCommand(lootPoolManager: LootPoolManager) : SubCommand("remove") {
     override val command: CommandAPICommand = super.command
         .withPermission("lootpool.remove")
-        .withArguments(lootKey("key", lootManager))
+        .withArguments(lootKey("key", lootPoolManager))
         .executes(CommandExecutor { sender, args ->
             val key = args.getOrDefaultRaw("key", "")
-            assertLootExists(key, sender, lootManager)
-            lootManager.removeLoot(key)
+            assertLootExists(key, sender, lootPoolManager)
+            lootPoolManager.removeLootPool(key)
             sender.placeholderComponent("success-loot-remove", "key" replace key).sendMessage(sender)
         })
 }
 
-class LootInfoCommand(lootManager: LootManager) : SubCommand("info") {
+class LootInfoCommand(lootPoolManager: LootPoolManager) : SubCommand("info") {
     override val command: CommandAPICommand = super.command
         .withPermission("lootpool.info")
-        .withArguments(lootKey("key", lootManager))
+        .withArguments(lootKey("key", lootPoolManager))
         .executes(CommandExecutor { sender, args ->
             val key = args.getOrDefaultRaw("key", "")
-            assertLootExists(key, sender, lootManager)
-            val loot = lootManager.getLoot(key)!!
+            assertLootExists(key, sender, lootPoolManager)
+            val loot = lootPoolManager.getLootPool(key)!! as KeyedLoot
             sender.placeholderComponent(
                 "info-loot",
                 "key" replace key,
@@ -95,18 +95,18 @@ class LootInfoCommand(lootManager: LootManager) : SubCommand("info") {
         })
 }
 
-fun lootKey(nodeName: String, lootManager: LootManager): Argument<String> =
+fun lootKey(nodeName: String, lootPoolManager: LootPoolManager): Argument<String> =
     StringArgument(nodeName)
-        .replaceSuggestions(ArgumentSuggestions.stringCollection { _ -> lootManager.mapKeys })
+        .replaceSuggestions(ArgumentSuggestions.stringCollection { _ -> lootPoolManager.getMapOf(KeyedLoot::class.java).keys })
 
-fun assertLootExists(key: String, sender: CommandSender, lootManager: LootManager) {
-    if (lootManager.mapKeys.contains(key)) return
+fun assertLootExists(key: String, sender: CommandSender, lootPoolManager: LootPoolManager) {
+    if (lootPoolManager.getMapOf(KeyedLoot::class.java).containsKey(key)) return
     throw CommandAPIBukkit.failWithAdventureComponent(
-        sender.placeholderComponent("error-lootpool-not-found", "key" replace key).get()
+        sender.placeholderComponent("error-loot-not-found", "key" replace key).get()
     )
 }
 
-fun assertLootNotNull(key: String, sender: Player) {
+private fun assertLootNotNull(key: String, sender: Player) {
     if (sender.inventory.itemInMainHand.isNotNullOrAir()) return
     throw CommandAPIBukkit.failWithAdventureComponent(
         sender.placeholderComponent("error-empty-loot", "key" replace key).get()
