@@ -27,6 +27,8 @@ class InfoCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType
             val key = args.getOrDefaultRaw("key", "")
             assertLootPoolExists(key, sender, lootPoolProvider.getMapOf(lootPoolType))
             val lootPool = lootPoolProvider.getLootPool(key)!!
+            if (lootPool is CompositeLootPool)
+                return@CommandExecutor displayCompositeInfo(sender, lootPool)
             val weightSorted = lootPool.lootList.sortedByDescending { it.weight }
             val totalWeight = weightSorted.sumOf { it.weight.toDouble() }
             val percentage = weightSorted.map { (it.weight / totalWeight) * 100 }
