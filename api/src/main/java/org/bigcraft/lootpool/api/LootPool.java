@@ -6,7 +6,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.loot.LootContext;
 import org.bukkit.loot.LootTable;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
@@ -15,7 +14,7 @@ public interface LootPool extends LootTable {
     @NotNull
     List<@NotNull Loot> getLootList();
 
-    @Nullable
+    @NotNull
     Loot getRandom();
 
     @NotNull

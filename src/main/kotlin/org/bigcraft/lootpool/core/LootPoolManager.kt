@@ -6,10 +6,12 @@ import org.bigcraft.lootpool.AbstractManager
 import org.bigcraft.lootpool.ConfigurableFactory
 import org.bigcraft.lootpool.ReloadConfig
 import org.bigcraft.lootpool.api.BasicLootPool
+import org.bigcraft.lootpool.api.CompositeLootPool
 import org.bigcraft.lootpool.api.KeyedLoot
 import org.bigcraft.lootpool.api.Loot
 import org.bigcraft.lootpool.api.LootPool
 import org.bigcraft.lootpool.api.LootPoolProvider
+import org.bigcraft.lootpool.command.LootPoolCommand
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.configuration.serialization.ConfigurationSerialization
@@ -28,13 +30,14 @@ class LootPoolManager @Inject constructor(private val plugin: org.bigcraft.lootp
         ConfigurationSerialization.registerClass(Loot::class.java)
         ConfigurationSerialization.registerClass(KeyedLoot::class.java)
         ConfigurationSerialization.registerClass(BasicLootPool::class.java)
+        ConfigurationSerialization.registerClass(CompositeLootPool::class.java)
     }
 
     override fun getLootPoolMap(): Map<String, LootPool> =
         loadedMap.toMap()
 
     override fun getMapOf(clazz: Class<out LootPool?>): Map<String, LootPool> =
-        loadedMap.filter { it.value.javaClass == clazz }.toMap()
+        loadedMap.filter { clazz.isAssignableFrom(it.value.javaClass) }.toMap()
 
     override fun getLootPool(key: String) =
         loadedMap[key]
@@ -52,7 +55,7 @@ class LootPoolManager @Inject constructor(private val plugin: org.bigcraft.lootp
     }
 
     override fun writeLootPool(lootPool: LootPool) {
-        loadedMap[lootPool.key.key] = lootPool
+        addLootPool(lootPool)
         val file = File(lootPoolDirectory, "${lootPool.key.key}.yml")
         val config = YamlConfiguration.loadConfiguration(file)
         config.set(lootPool.key.key, lootPool)

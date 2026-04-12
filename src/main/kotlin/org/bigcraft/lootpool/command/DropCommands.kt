@@ -1,3 +1,5 @@
+@file:Suppress("UNCHECKED_CAST")
+
 package org.bigcraft.lootpool.command
 
 import dev.jorel.commandapi.CommandAPIBukkit
@@ -17,35 +19,33 @@ import me.wyne.wutils.i18n.kotlin.placeholderComponent
 import me.wyne.wutils.i18n.kotlin.replace
 import org.bigcraft.lootpool.api.Loot
 import org.bigcraft.lootpool.api.BasicLootPool
-import org.bigcraft.lootpool.api.KeyedLoot
 import org.bigcraft.lootpool.api.LootPool
-import org.bigcraft.lootpool.core.LootPoolManager
+import org.bigcraft.lootpool.api.LootPoolProvider
 import org.bukkit.Location
 import org.bukkit.block.Container
-import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import kotlin.random.Random
 
-class GiveCommand(lootPoolManager: LootPoolManager) : SubCommand("give") {
+class GiveCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType: Class<T> = LootPool::class.java as Class<T>) : SubCommand("give") {
     override val command: CommandAPICommand = super.command
         .withPermission("lootpool.give")
-        .withArguments(key("key", lootPoolManager))
+        .withArguments(lootPoolKey("key") { lootPoolProvider.getMapOf(lootPoolType) })
         .withArguments(EntitySelectorArgument.OnePlayer("target"))
         .withOptionalArguments(amountArgument("amount"), BooleanArgument("unique"), IntegerArgument("slots", 0))
         .executes(CommandExecutor { sender, args ->
             val key = args.getOrDefaultRaw("key", "")
-            assertExists(key, sender, lootPoolManager)
+            assertLootPoolExists(key, sender, lootPoolProvider.getMapOf(lootPoolType))
             val target = args.getByClass("target", Player::class.java)!!
             val amount = args.getByClass("amount", String::class.java)
-            val lootList = lootPoolManager.getLootPool(key)!!.lootList
+            val lootList = lootPoolProvider.getLootPool(key)!!.lootList
             val unique = args.getByClass("unique", Boolean::class.java) ?: false
             val slots = args.getByClass("slots", Int::class.java) ?: lootList.size
             val lootPool = BasicLootPool("dummy", lootList.toMutableList())
             val populated = List(slots) {
                 lootPool.random.let {
                     if (unique) lootPool.lootPool.remove(it)
-                    it!!.item.clone().apply { this.amount = getAmount(amount, it) }
+                    it.item.clone().apply { this.amount = getAmount(amount, it) }
                 }
             }
             target.addOrDrop(true, *populated.toTypedArray())
@@ -53,25 +53,25 @@ class GiveCommand(lootPoolManager: LootPoolManager) : SubCommand("give") {
         })
 }
 
-class DropCommand(lootPoolManager: LootPoolManager) : SubCommand("drop") {
+class DropCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType: Class<T> = LootPool::class.java as Class<T>) : SubCommand("drop") {
     override val command: CommandAPICommand = super.command
         .withPermission("lootpool.drop")
-        .withArguments(key("key", lootPoolManager))
+        .withArguments(lootPoolKey("key") { lootPoolProvider.getMapOf(lootPoolType) })
         .withArguments(LocationArgument("location", LocationType.PRECISE_POSITION))
         .withOptionalArguments(amountArgument("amount"), BooleanArgument("unique"), IntegerArgument("slots", 0))
         .executes(CommandExecutor { sender, args ->
             val key = args.getOrDefaultRaw("key", "")
-            assertExists(key, sender, lootPoolManager)
+            assertLootPoolExists(key, sender, lootPoolProvider.getMapOf(lootPoolType))
             val location = args.getByClass("location", Location::class.java)!!
             val amount = args.getByClass("amount", String::class.java)
-            val lootList = lootPoolManager.getLootPool(key)!!.lootList
+            val lootList = lootPoolProvider.getLootPool(key)!!.lootList
             val unique = args.getByClass("unique", Boolean::class.java) ?: false
             val slots = args.getByClass("slots", Int::class.java) ?: lootList.size
             val lootPool = BasicLootPool("dummy", lootList.toMutableList())
             val populated = List(slots) {
                 lootPool.random.let {
                     if (unique) lootPool.lootPool.remove(it)
-                    it!!.item.clone().apply { this.amount = getAmount(amount, it) }
+                    it.item.clone().apply { this.amount = getAmount(amount, it) }
                 }
             }
             populated
@@ -83,17 +83,17 @@ class DropCommand(lootPoolManager: LootPoolManager) : SubCommand("drop") {
         })
 }
 
-class InsertCommand(lootPoolManager: LootPoolManager) : SubCommand("insert") {
+class InsertCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType: Class<T> = LootPool::class.java as Class<T>) : SubCommand("insert") {
     override val command: CommandAPICommand = super.command
         .withPermission("lootpool.insert")
-        .withArguments(key("key", lootPoolManager))
+        .withArguments(lootPoolKey("key") { lootPoolProvider.getMapOf(lootPoolType) })
         .withArguments(LocationArgument("location", LocationType.BLOCK_POSITION))
         .withOptionalArguments(
             amountArgument("amount"), BooleanArgument("random"),
             BooleanArgument("unique"), IntegerArgument("slots", 0))
         .executes(CommandExecutor { sender, args ->
             val key = args.getOrDefaultRaw("key", "")
-            assertExists(key, sender, lootPoolManager)
+            assertLootPoolExists(key, sender, lootPoolProvider.getMapOf(lootPoolType))
             val location = args.getByClass("location", Location::class.java)!!
             val amount = args.getByClass("amount", String::class.java)
             val container = location.block.state as? Container
@@ -104,7 +104,7 @@ class InsertCommand(lootPoolManager: LootPoolManager) : SubCommand("insert") {
                         "y" replace location.blockY,
                         "z" replace location.blockZ).get()
                 )
-            val lootList = lootPoolManager.getLootPool(key)!!.lootList
+            val lootList = lootPoolProvider.getLootPool(key)!!.lootList
             val unique = args.getByClass("unique", Boolean::class.java) ?: false
             val slots = args.getByClass("slots", Int::class.java) ?: lootList.size
             val random = args.getByClass("random", Boolean::class.java) ?: false
@@ -112,7 +112,7 @@ class InsertCommand(lootPoolManager: LootPoolManager) : SubCommand("insert") {
             val populated = List(slots) {
                 lootPool.random.let {
                     if (unique) lootPool.lootPool.remove(it)
-                    it!!.item.clone().apply { this.amount = getAmount(amount, it) }
+                    it.item.clone().apply { this.amount = getAmount(amount, it) }
                 }
             }
             if (random)
@@ -123,14 +123,14 @@ class InsertCommand(lootPoolManager: LootPoolManager) : SubCommand("insert") {
         })
 }
 
-class FillCommand(lootPoolManager: LootPoolManager) : SubCommand("fill") {
+class FillCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType: Class<T> = LootPool::class.java as Class<T>) : SubCommand("fill") {
     override val command: CommandAPICommand = super.command
         .withPermission("lootpool.fill")
-        .withArguments(key("key", lootPoolManager))
+        .withArguments(lootPoolKey("key") { lootPoolProvider.getMapOf(lootPoolType) })
         .withArguments(LocationArgument("location", LocationType.BLOCK_POSITION))
         .executes(CommandExecutor { sender, args ->
             val key = args.getOrDefaultRaw("key", "")
-            assertExists(key, sender, lootPoolManager)
+            assertLootPoolExists(key, sender, lootPoolProvider.getMapOf(lootPoolType))
             val location = args.getByClass("location", Location::class.java)!!
             val container = location.block.state as? Container
                 ?: throw CommandAPIBukkit.failWithAdventureComponent(
@@ -140,24 +140,24 @@ class FillCommand(lootPoolManager: LootPoolManager) : SubCommand("fill") {
                         "y" replace location.blockY,
                         "z" replace location.blockZ).get()
                 )
-            val lootPool = lootPoolManager.getLootPool(key)!!
+            val lootPool = lootPoolProvider.getLootPool(key)!!
             lootPool.populate(container.inventory)
             sender.placeholderComponent("success-loot-drop", "key" replace key, "amount" replace container.inventory.size).sendMessagePlayer(sender)
         })
 }
 
-class ProjectCommand(lootPoolManager: LootPoolManager) : SubCommand("project") {
+class ProjectCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType: Class<T> = LootPool::class.java as Class<T>) : SubCommand("project") {
     override val command: CommandAPICommand = super.command
         .withPermission("lootpool.project")
-        .withArguments(key("key", lootPoolManager))
+        .withArguments(lootPoolKey("key") { lootPoolProvider.getMapOf(lootPoolType) })
         .withArguments(EntitySelectorArgument.OnePlayer("target"))
         .withOptionalArguments(amountArgument("amount"))
         .executes(CommandExecutor { sender, args ->
             val key = args.getOrDefaultRaw("key", "")
-            assertExists(key, sender, lootPoolManager)
+            assertLootPoolExists(key, sender, lootPoolProvider.getMapOf(lootPoolType))
             val target = args.getByClass("target", Player::class.java)!!
             val amount = args.getByClass("amount", String::class.java)
-            val lootList = lootPoolManager.getLootPool(key)!!.lootList
+            val lootList = lootPoolProvider.getLootPool(key)!!.lootList
             val populated = mutableListOf<ItemStack>()
             lootList.forEach {
                 populated.add(
@@ -181,14 +181,3 @@ fun getAmount(amountArgument: String?, loot: Loot): Int =
         null -> Random.nextInt(loot.minAmount, loot.maxAmount + 1)
         else -> amountArgument.toIntOrNull() ?: 1
     }
-
-fun key(nodeName: String, lootPoolManager: LootPoolManager): Argument<String> =
-    StringArgument(nodeName)
-        .replaceSuggestions(ArgumentSuggestions.stringCollection { _ -> lootPoolManager.mapKeys })
-
-private fun assertExists(key: String, sender: CommandSender, lootPoolManager: LootPoolManager) {
-    if (lootPoolManager.mapKeys.contains(key)) return
-    throw CommandAPIBukkit.failWithAdventureComponent(
-        sender.placeholderComponent("error-lootpool-not-found", "key" replace key).get()
-    )
-}
