@@ -1,72 +1,35 @@
+@file:Suppress("UNCHECKED_CAST")
+
 package org.bigcraft.lootpool.command
 
 import dev.jorel.commandapi.CommandAPIBukkit
 import dev.jorel.commandapi.CommandAPICommand
 import dev.jorel.commandapi.arguments.Argument
 import dev.jorel.commandapi.arguments.ArgumentSuggestions
+import dev.jorel.commandapi.arguments.MapArgumentBuilder
 import dev.jorel.commandapi.arguments.StringArgument
 import dev.jorel.commandapi.executors.CommandExecutor
-import dev.jorel.commandapi.executors.PlayerCommandExecutor
-import me.wyne.wutils.i18n.I18n
 import me.wyne.wutils.i18n.kotlin.placeholderComponent
 import me.wyne.wutils.i18n.kotlin.reduce
 import me.wyne.wutils.i18n.kotlin.replace
 import me.wyne.wutils.i18n.kotlin.replaceComponent
 import net.kyori.adventure.text.Component
-import org.bigcraft.lootpool.core.LootPoolManager
-import org.bigcraft.lootpool.gui.LootPoolGui
+import org.bigcraft.lootpool.api.CompositeLootPool
+import org.bigcraft.lootpool.api.LootPool
+import org.bigcraft.lootpool.api.LootPoolProvider
 import org.bukkit.command.CommandSender
 
-class CreateCommand(lootPoolManager: LootPoolManager) : SubCommand("create") {
-    override val command: CommandAPICommand = super.command
-        .withPermission("lootpool.create")
-        .withArguments(StringArgument("key"))
-        .executesPlayer(PlayerCommandExecutor { sender, args ->
-            val key = args.getOrDefaultRaw("key", "")
-            if (lootPoolManager.mapKeys.contains(key)) {
-                if (sender.hasPermission("lootpool.modify"))
-                    sender.placeholderComponent("info-lootpool-already-exists", "key" replace key).sendMessage(sender)
-                else
-                    sender.placeholderComponent("error-lootpool-already-exists", "key" replace key).sendMessage(sender)
-                return@PlayerCommandExecutor
-            }
-            LootPoolGui(key, sender)
-        })
-}
-
-class ModifyCommand(lootPoolManager: LootPoolManager) : SubCommand("modify") {
-    override val command: CommandAPICommand = super.command
-        .withPermission("lootpool.modify")
-        .withArguments(lootPoolKey("key", lootPoolManager))
-        .executesPlayer(PlayerCommandExecutor { sender, args ->
-            val key = args.getOrDefaultRaw("key", "")
-            assertLootPoolExists(key, sender, lootPoolManager)
-            val lootPool = lootPoolManager.getLootPool(key)
-            LootPoolGui(key, sender, lootPool!!)
-        })
-}
-
-class RemoveCommand(lootPoolManager: LootPoolManager) : SubCommand("remove") {
-    override val command: CommandAPICommand = super.command
-        .withPermission("lootpool.remove")
-        .withArguments(lootPoolKey("key", lootPoolManager))
-        .executes(CommandExecutor { sender, args ->
-            val key = args.getOrDefaultRaw("key", "")
-            assertLootPoolExists(key, sender, lootPoolManager)
-            lootPoolManager.removeLootPool(key)
-            sender.placeholderComponent("success-lootpool-remove", "key" replace key).sendMessage(sender)
-        })
-}
-
-class InfoCommand(lootPoolManager: LootPoolManager) : SubCommand("info") {
+class InfoCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType: Class<T> = LootPool::class.java as Class<T>) : SubCommand("info") {
     override val command: CommandAPICommand = super.command
         .withPermission("lootpool.info")
-        .withArguments(lootPoolKey("key", lootPoolManager))
+        .withArguments(lootPoolKey("key") { lootPoolProvider.getMapOf(lootPoolType) })
         .executes(CommandExecutor { sender, args ->
             val key = args.getOrDefaultRaw("key", "")
-            assertLootPoolExists(key, sender, lootPoolManager)
-            val lootPool = lootPoolManager.getLootPool(key)!!
-            val weightSorted = lootPool.lootPool.sortedByDescending { it.weight }
+            assertLootPoolExists(key, sender, lootPoolProvider.getMapOf(lootPoolType))
+            val lootPool = lootPoolProvider.getLootPool(key)!!
+            if (lootPool is CompositeLootPool)
+                return@CommandExecutor displayCompositeInfo(sender, lootPool)
+            val weightSorted = lootPool.lootList.sortedByDescending { it.weight }
             val totalWeight = weightSorted.sumOf { it.weight.toDouble() }
             val percentage = weightSorted.map { (it.weight / totalWeight) * 100 }
             val lootList = weightSorted
@@ -86,34 +49,52 @@ class InfoCommand(lootPoolManager: LootPoolManager) : SubCommand("info") {
         })
 }
 
-class CloneCommand(lootPoolManager: LootPoolManager) : SubCommand("clone") {
+class RemoveCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType: Class<T> = LootPool::class.java as Class<T>) : SubCommand("remove") {
     override val command: CommandAPICommand = super.command
-        .withPermission("lootpool.clone")
-        .withArguments(lootPoolKey("key", lootPoolManager))
-        .withArguments(StringArgument("newKey"))
-        .executesPlayer(PlayerCommandExecutor { sender, args ->
+        .withPermission("lootpool.remove")
+        .withArguments(lootPoolKey("key") { lootPoolProvider.getMapOf(lootPoolType) })
+        .executes(CommandExecutor { sender, args ->
             val key = args.getOrDefaultRaw("key", "")
-            val lootPool = lootPoolManager.getLootPool(key)!!
-            assertLootPoolExists(key, sender, lootPoolManager)
-            val newKey = args.getOrDefaultRaw("newKey", "")
-            if (lootPoolManager.mapKeys.contains(newKey)) {
-                if (sender.hasPermission("lootpool.modify"))
-                    sender.placeholderComponent("info-lootpool-already-exists", "key" replace newKey).sendMessage(sender)
-                else
-                    sender.placeholderComponent("error-lootpool-already-exists", "key" replace newKey).sendMessage(sender)
-                return@PlayerCommandExecutor
-            }
-            LootPoolGui(newKey, sender, lootPool)
+            assertLootPoolExists(key, sender, lootPoolProvider.getMapOf(lootPoolType))
+            lootPoolProvider.removeLootPool(key)
+            sender.placeholderComponent("success-lootpool-remove", "key" replace key).sendMessage(sender)
         })
 }
 
-fun lootPoolKey(nodeName: String, lootPoolManager: LootPoolManager): Argument<String> =
-    StringArgument(nodeName)
-        .replaceSuggestions(ArgumentSuggestions.stringCollection { _ -> lootPoolManager.mapKeys })
+class ComposeCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType: Class<T> = LootPool::class.java as Class<T>) : SubCommand("compose") {
+    override val command: CommandAPICommand = super.command
+        .withPermission("lootpool.create")
+        .withArguments(StringArgument("key"))
+        .withArguments(
+            MapArgumentBuilder<String, Int>("pools")
+                .withKeyMapper { s -> s }
+                .withValueMapper { s -> s.toInt() }
+                .withKeyList { lootPoolProvider.getMapOf(lootPoolType).keys.toList() }
+                .withoutValueList(true)
+                .build())
+        .executes(CommandExecutor { sender, args ->
+            val key = args.getOrDefaultRaw("key", "")
+            assertLootPoolNotExists(key, sender, lootPoolProvider.getMapOf(lootPoolType))
+            val pools = args.getByClassOrDefault("pools", Map::class.java, emptyMap<String, Int>()) as Map<String, Int>
+            lootPoolProvider.writeLootPool(CompositeLootPool(key, pools.toMap()))
+            sender.placeholderComponent("success-lootpool-create", "key" replace key).sendMessage(sender)
+        })
+}
 
-fun assertLootPoolExists(key: String, sender: CommandSender, lootPoolManager: LootPoolManager) {
-    if (lootPoolManager.mapKeys.contains(key)) return
+fun lootPoolKey(nodeName: String, lootPoolMap: () -> Map<String, LootPool>): Argument<String> =
+    StringArgument(nodeName)
+        .replaceSuggestions(ArgumentSuggestions.stringCollection { _ -> lootPoolMap().keys })
+
+fun assertLootPoolExists(key: String, sender: CommandSender, lootPoolMap: Map<String, LootPool>) {
+    if (lootPoolMap.containsKey(key)) return
     throw CommandAPIBukkit.failWithAdventureComponent(
         sender.placeholderComponent("error-lootpool-not-found", "key" replace key).get()
+    )
+}
+
+fun assertLootPoolNotExists(key: String, sender: CommandSender, lootPoolMap: Map<String, LootPool>) {
+    if (!lootPoolMap.containsKey(key)) return
+    throw CommandAPIBukkit.failWithAdventureComponent(
+        sender.placeholderComponent("error-lootpool-already-exists", "key" replace key).get()
     )
 }

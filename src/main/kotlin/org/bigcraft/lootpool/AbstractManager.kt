@@ -15,7 +15,7 @@ abstract class AbstractManager<V> : Loadable {
     protected val loadedMap: MutableMap<String, V> = HashMap()
 
     val mapKeys
-        get() = loadedMap.keys
+        get() = loadedMap.keys.toSet()
 
     init {
         Loader.global.registerLoadable(this)

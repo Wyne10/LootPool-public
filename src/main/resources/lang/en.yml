@@ -9,11 +9,8 @@ gui-nothing-item: "Nothing"
 ### Messages
 
 ## Info
-info-lootpool-already-exists: "Loot pool '<key>' already exists [[hover:show_text:[green]Click to modify][click:run_command:/lootpool pool modify <key>][green][underline:true]Modify[underline][click][hover][white]]"
-info-loot-already-exists: "Loot '<key>' already exists [[hover:show_text:[green]Click to modify][click:run_command:/lootpool item modify <key>][green][underline:true]Modify[underline][click][hover][white]]"
-info-loot:
-  - "Loot '<key>':"
-  - "- <loot-name> [color](<loot-type>) [<min-amount>..<max-amount>]"
+info-lootpool-already-exists: "[white]Loot pool '<key>' already exists [[hover:show_text:[green]Click to modify][click:run_command:/lootpool pool modify <key>][green][underline:true]Modify[underline][click][hover][white]]"
+info-loot-already-exists: "[white]Loot '<key>' already exists [[hover:show_text:[green]Click to modify][click:run_command:/lootpool item modify <key>][green][underline:true]Modify[underline][click][hover][white]]"
 info-lootpool-loot: "- <loot-name> [color](<loot-type>) [<min-amount>..<max-amount>] - [gold]<weight> [aqua](<percentage>%)"
 info-lootpool:
   - "Loot pool '<key>':"
@@ -23,8 +20,6 @@ info-lootpool:
 error-lootpool-not-found: "[red]Loot pool '<key>' doesn't exist!"
 error-lootpool-already-exists: "[red]Loot pool '<key>' already exists!"
 
-error-loot-not-found: "[red]Loot '<key>' doesn't exist!"
-error-loot-already-exists: "[red]Loot pool '<key>' already exists!"
 error-empty-loot: "[red]Loot can't be empty!"
 
 error-not-a-container: "[red]Target position <x>, <y>, <z> is not a container"
@@ -33,8 +28,5 @@ error-not-a-container: "[red]Target position <x>, <y>, <z> is not a container"
 success-plugin-reload: "[green]Plugin reloaded!"
 success-lootpool-create: "[green]Loot pool '<key>' created"
 success-lootpool-remove: "[green]Loot pool '<key>' [red]removed"
-
-success-loot-create: "[green]Loot '<key>' created"
-success-loot-remove: "[green]Loot '<key>' [red]removed"
 
 success-loot-drop: "Dropped <amount> items"

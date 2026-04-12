@@ -49,7 +49,7 @@ object LootExtractor : ValueExtractor {
 
 class LootPoolCatalog(private val lootPoolKey: String) : Catalog<Loot> {
     override fun snapshot(player: Player, menu: Menu): Collection<Loot> =
-        LootPoolManager.instance.getLootList(lootPoolKey) ?: emptyList()
+        LootPoolManager.instance.getLootPool(lootPoolKey)?.lootList ?: emptyList()
 
     override fun extractor(): ValueExtractor = LootExtractor
 

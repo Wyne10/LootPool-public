@@ -9,9 +9,9 @@ import me.wyne.wutils.i18n.kotlin.placeholderComponents
 import me.wyne.wutils.i18n.kotlin.replace
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
-import net.kyori.adventure.text.format.Style
 import net.kyori.adventure.text.format.TextDecoration
 import org.bigcraft.lootpool.LootPool
+import org.bigcraft.lootpool.api.BasicLootPool
 import org.bigcraft.lootpool.api.Loot
 import org.bigcraft.lootpool.command.nameComponent
 import org.bigcraft.lootpool.core.LootPoolManager
@@ -50,10 +50,10 @@ class LootPoolGui(private val key: String, private val player: Player) : Registe
     private var currentPage = 0
 
     constructor(key: String, player: Player, lootPool: org.bigcraft.lootpool.api.LootPool) : this(key, player) {
-        lootPool.lootPool
+        lootPool.lootList
             .filter { it.item.isNotNullOrAir() }
             .forEach { this.lootPool.add(it.asMutable()) }
-        lootPool.lootPool
+        lootPool.lootList
             .firstOrNull { it.item.type == Material.AIR }
             ?.let {
                 nothingItem.weight = it.weight
@@ -175,7 +175,8 @@ class LootPoolGui(private val key: String, private val player: Player) : Registe
             lootPool[0] = MutableLoot(ItemStack(Material.AIR), nothingItem.weight, nothingItem.minAmount, nothingItem.maxAmount)
         else
             lootPool.removeAt(0)
-        LootPoolManager.instance.writeLootPool(org.bigcraft.lootpool.api.LootPool(
+        LootPoolManager.instance.writeLootPool(
+            BasicLootPool(
                 key,
                 LinkedList(lootPool.map { it.asImmutable() })
             )
