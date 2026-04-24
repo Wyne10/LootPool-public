@@ -55,8 +55,12 @@ public record SnapshotLootPool(@NotNull String key, @NotNull SortedMap<@NotNull 
         lootPool.entrySet().stream()
                 .limit(slots)
                 .forEach(entry -> {
+                    if (inventory.getSize() <= entry.getKey()) {
+                        exceed.add(entry.getValue().create());
+                        return;
+                    }
                     var item = inventory.getItem(entry.getKey());
-                    if (item != null && item.getType() != Material.AIR) {
+                    if ((item != null && item.getType() != Material.AIR)) {
                         exceed.add(entry.getValue().create());
                         return;
                     }
