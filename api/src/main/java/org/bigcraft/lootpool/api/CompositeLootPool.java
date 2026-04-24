@@ -79,13 +79,13 @@ public record CompositeLootPool(@NotNull String key, @NotNull Map<@NotNull Strin
     }
 
     @Override
-    public void populate(@NotNull Inventory inventory, int slots) {
-        getRandomLootPool().populate(inventory, slots);
+    public @NotNull List<@NotNull ItemStack> populate(@NotNull Inventory inventory, int slots) {
+        return getRandomLootPool().populate(inventory, slots);
     }
 
     @Override
-    public void populateRandomly(@NotNull Inventory inventory, int slots) {
-        getRandomLootPool().populateRandomly(inventory, slots);
+    public @NotNull List<@NotNull ItemStack> populateRandomly(@NotNull Inventory inventory, int slots) {
+        return getRandomLootPool().populateRandomly(inventory, slots);
     }
 
     @SuppressWarnings("DataFlowIssue")

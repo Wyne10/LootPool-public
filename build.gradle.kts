@@ -117,6 +117,9 @@ bukkit {
         register("lootpool.fill") {
             description = "Allows to fill containers with loot pools"
         }
+        register("lootpool.populate") {
+            description = "Allows to populate player inventories with loot pools"
+        }
         register("lootpool.project") {
             description = "Allows to project loot pools to players"
         }

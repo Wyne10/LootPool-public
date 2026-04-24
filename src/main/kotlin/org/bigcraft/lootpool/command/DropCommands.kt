@@ -146,6 +146,24 @@ class FillCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType
         })
 }
 
+class PopulateCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType: Class<T> = LootPool::class.java as Class<T>) : SubCommand("populate") {
+    override val command: CommandAPICommand = super.command
+        .withPermission("lootpool.populate")
+        .withArguments(lootPoolKey("key") { lootPoolProvider.getMapOf(lootPoolType) })
+        .withArguments(EntitySelectorArgument.OnePlayer("target"))
+        .withOptionalArguments(IntegerArgument("slots", 0))
+        .executes(CommandExecutor { sender, args ->
+            val key = args.getOrDefaultRaw("key", "")
+            assertLootPoolExists(key, sender, lootPoolProvider.getMapOf(lootPoolType))
+            val target = args.getByClass("target", Player::class.java)!!
+            val lootPool = lootPoolProvider.getLootPool(key)!!
+            val slots = args.getByClass("slots", Int::class.java) ?: lootPool.lootList.size
+            val exceed = lootPool.populate(target.inventory, slots)
+            target.addOrDrop(*exceed.toTypedArray())
+            sender.placeholderComponent("success-loot-drop", "key" replace key, "amount" replace slots).sendMessagePlayer(sender)
+        })
+}
+
 class ProjectCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType: Class<T> = LootPool::class.java as Class<T>) : SubCommand("project") {
     override val command: CommandAPICommand = super.command
         .withPermission("lootpool.project")
