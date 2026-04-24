@@ -63,13 +63,13 @@ public record BasicLootPool(@NotNull String key, @NotNull List<@NotNull Loot> lo
     }
 
     @Override
-    public void populate(@NotNull Inventory inventory, int slots) {
-        LootPool.populate(lootPool, inventory, slots);
+    public @NotNull List<@NotNull ItemStack> populate(@NotNull Inventory inventory, int slots) {
+        return LootPool.populate(lootPool, inventory, slots);
     }
 
     @Override
-    public void populateRandomly(@NotNull Inventory inventory, int slots) {
-        LootPool.populateRandomly(lootPool, inventory, slots);
+    public @NotNull List<@NotNull ItemStack> populateRandomly(@NotNull Inventory inventory, int slots) {
+        return LootPool.populateRandomly(lootPool, inventory, slots);
     }
 
     @SuppressWarnings("DataFlowIssue")

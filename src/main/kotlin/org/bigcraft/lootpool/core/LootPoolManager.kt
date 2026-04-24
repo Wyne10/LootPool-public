@@ -11,6 +11,7 @@ import org.bigcraft.lootpool.api.KeyedLoot
 import org.bigcraft.lootpool.api.Loot
 import org.bigcraft.lootpool.api.LootPool
 import org.bigcraft.lootpool.api.LootPoolProvider
+import org.bigcraft.lootpool.api.SnapshotLootPool
 import org.bigcraft.lootpool.command.LootPoolCommand
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.configuration.file.YamlConfiguration
@@ -31,6 +32,7 @@ class LootPoolManager @Inject constructor(private val plugin: org.bigcraft.lootp
         ConfigurationSerialization.registerClass(KeyedLoot::class.java)
         ConfigurationSerialization.registerClass(BasicLootPool::class.java)
         ConfigurationSerialization.registerClass(CompositeLootPool::class.java)
+        ConfigurationSerialization.registerClass(SnapshotLootPool::class.java)
     }
 
     override fun getLootPoolMap(): Map<String, LootPool> =
@@ -68,49 +70,8 @@ class LootPoolManager @Inject constructor(private val plugin: org.bigcraft.lootp
     }
 
     override fun load(config: ConfigurationSection) {
-        migrateLoot()
-        lootPoolDirectory.listFiles()
-            ?.forEach { migrateLootPool(it) }
         super.load(config)
         loadFiles(lootPoolDirectory)
-    }
-
-    private fun migrateLoot() {
-        val oldDirectory = File(plugin.dataFolder, "loot/")
-        if (oldDirectory.exists() && oldDirectory.isDirectory) {
-            lootPoolDirectory.mkdirs()
-            oldDirectory.listFiles()?.forEach {
-                var target = File(lootPoolDirectory, "${it.nameWithoutExtension}-loot.${it.extension}")
-                var counter = 1
-                while (target.exists()) {
-                    val nameWithoutExt = it.nameWithoutExtension
-                    val ext = it.extension
-                    target = File(lootPoolDirectory, "${nameWithoutExt}_$counter.$ext")
-                    counter++
-                }
-                it.renameTo(target)
-                val content = target.readText()
-                val lines = content.lines().toMutableList()
-                if (lines.isNotEmpty()) {
-                    lines[0] = "${target.nameWithoutExtension}:"
-                }
-                val migrated = lines.joinToString("\n")
-                    .replace("key: ${it.nameWithoutExtension}", "key: ${target.nameWithoutExtension}")
-                target.writeText(migrated)
-            }
-            oldDirectory.delete()
-        }
-    }
-
-    private fun migrateLootPool(file: File) {
-        val content = file.readText()
-        val migrated = content.replace(
-            Regex("""(?m)^(\s*)==:\s*org\.bigcraft\.lootpool\.api\.LootPool\s*$"""),
-            "$1==: org.bigcraft.lootpool.api.BasicLootPool"
-        )
-        if (migrated != content) {
-            file.writeText(migrated)
-        }
     }
 
     companion object {

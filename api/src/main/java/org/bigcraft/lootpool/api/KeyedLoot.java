@@ -50,13 +50,13 @@ public record KeyedLoot(@NotNull String key, @NotNull Loot loot) implements Conf
     }
 
     @Override
-    public void populate(@NotNull Inventory inventory, int slots) {
-        LootPool.populate(getLootList(), inventory, slots);
+    public @NotNull List<@NotNull ItemStack> populate(@NotNull Inventory inventory, int slots) {
+        return LootPool.populate(getLootList(), inventory, slots);
     }
 
     @Override
-    public void populateRandomly(@NotNull Inventory inventory, int slots) {
-        LootPool.populateRandomly(getLootList(), inventory, slots);
+    public @NotNull List<@NotNull ItemStack> populateRandomly(@NotNull Inventory inventory, int slots) {
+        return LootPool.populateRandomly(getLootList(), inventory, slots);
     }
 
     @SuppressWarnings("DataFlowIssue")

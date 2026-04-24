@@ -20,16 +20,20 @@ public interface LootPool extends LootTable {
     @NotNull
     List<@NotNull ItemStack> populate(int slots);
 
-    void populate(@NotNull Inventory inventory, int slots);
+    @NotNull
+    List<@NotNull ItemStack> populate(@NotNull Inventory inventory, int slots);
 
-    default void populate(@NotNull Inventory inventory) {
-        populate(inventory, inventory.getSize());
+    @NotNull
+    default List<@NotNull ItemStack> populate(@NotNull Inventory inventory) {
+        return populate(inventory, inventory.getSize());
     }
 
-    void populateRandomly(@NotNull Inventory inventory, int slots);
+    @NotNull
+    List<@NotNull ItemStack> populateRandomly(@NotNull Inventory inventory, int slots);
 
-    default void populateRandomly(@NotNull Inventory inventory)  {
-        populateRandomly(inventory, inventory.getSize());
+    @NotNull
+    default List<@NotNull ItemStack> populateRandomly(@NotNull Inventory inventory)  {
+        return populateRandomly(inventory, inventory.getSize());
     }
 
     @Override
@@ -75,7 +79,8 @@ public interface LootPool extends LootTable {
     }
 
     @SuppressWarnings("DataFlowIssue")
-    static void populate(@NotNull List<@NotNull ItemStack> itemPool, @NotNull Inventory inventory) {
+    @NotNull
+    static List<@NotNull ItemStack> populate(@NotNull List<@NotNull ItemStack> itemPool, @NotNull Inventory inventory) {
         List<ItemStack> itemList = new ArrayList<>(itemPool);
         Queue<Integer> emptySlots = getEmptySlots(inventory);
         int toPopulate = Math.min(emptySlots.size(), itemPool.size());
@@ -84,20 +89,25 @@ public interface LootPool extends LootTable {
             inventory.setItem(slot, itemList.remove(0));
             toPopulate--;
         }
+        return itemList;
     }
 
     @SuppressWarnings("DataFlowIssue")
-    static void populate(@NotNull List<@NotNull Loot> lootPool, @NotNull Inventory inventory, int slots) {
+    @NotNull
+    static List<@NotNull ItemStack> populate(@NotNull List<@NotNull Loot> lootPool, @NotNull Inventory inventory, int slots) {
         Queue<Integer> emptySlots = getEmptySlots(inventory);
+        int exceed = slots - emptySlots.size();
         int toPopulate = Math.min(emptySlots.size(), slots);
         while (toPopulate > 0) {
             int slot = emptySlots.poll();
             inventory.setItem(slot, getRandom(lootPool).create());
             toPopulate--;
         }
+        return populate(lootPool, exceed);
     }
 
-    static void populateRandomly(@NotNull List<@NotNull ItemStack> itemPool, @NotNull Inventory inventory) {
+    @NotNull
+    static List<@NotNull ItemStack> populateRandomly(@NotNull List<@NotNull ItemStack> itemPool, @NotNull Inventory inventory) {
         List<ItemStack> itemList = new ArrayList<>(itemPool);
         var emptySlots = getEmptySlots(inventory);
         int toPopulate = Math.min(emptySlots.size(), itemPool.size());
@@ -108,10 +118,13 @@ public interface LootPool extends LootTable {
             inventory.setItem(slot, itemList.remove(0));
             toPopulate--;
         }
+        return itemList;
     }
 
-    static void populateRandomly(@NotNull List<@NotNull Loot> lootPool, @NotNull Inventory inventory, int slots) {
+    @NotNull
+    static List<@NotNull ItemStack> populateRandomly(@NotNull List<@NotNull Loot> lootPool, @NotNull Inventory inventory, int slots) {
         var emptySlots = getEmptySlots(inventory);
+        int exceed = slots - emptySlots.size();
         int toPopulate = Math.min(emptySlots.size(), slots);
         while (toPopulate > 0) {
             int index = ThreadLocalRandom.current().nextInt(emptySlots.size());
@@ -120,6 +133,7 @@ public interface LootPool extends LootTable {
             inventory.setItem(slot, getRandom(lootPool).create());
             toPopulate--;
         }
+        return populate(lootPool, exceed);
     }
 
     @NotNull
