@@ -13,7 +13,7 @@ info-lootpool-already-exists: "[white]Лут пул '<key>' уже сущест�
 info-loot-already-exists: "[white]Лут '<key>' уже существует [[hover:show_text:[green]Нажмите чтобы модифицировать][click:run_command:/lootpool item modify <key>][green][underline:true]Модифицировать[underline][click][hover][white]]"
 info-lootpool-loot: "- <loot-name> [color](<loot-type>) [<min-amount>..<max-amount>] - [gold]<weight> [aqua](<percentage>%)"
 info-lootpool:
-  - "Лут пул '<key>':"
+  - "Лут пул '<key>' (<type>):"
   - "<loot-list>"
 
 ## Error

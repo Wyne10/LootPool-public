@@ -3,8 +3,6 @@ package org.bigcraft.lootpool.command
 import com.google.inject.Inject
 import com.google.inject.Singleton
 import dev.jorel.commandapi.CommandAPICommand
-import org.bigcraft.lootpool.api.BasicLootPool
-import org.bigcraft.lootpool.api.KeyedLoot
 import org.bigcraft.lootpool.api.LootPool
 import org.bigcraft.lootpool.core.LootPoolManager
 
@@ -30,6 +28,7 @@ class LootPoolCommand @Inject constructor(
             .withSubcommand(FillCommand<LootPool>(lootPoolManager)())
             .withSubcommand(PopulateCommand<LootPool>(lootPoolManager)())
             .withSubcommand(ProjectCommand<LootPool>(lootPoolManager)())
+            .withSubcommand(PreviewCommand<LootPool>(lootPoolManager)())
             .withSubcommand(
                 CommandAPICommand("pool")
                     .withSubcommand(CreateBasicCommand(lootPoolManager)())

@@ -46,7 +46,7 @@ tasks {
 
     runServer {
         val minecraftVersion: String = if (Os.isFamily(Os.FAMILY_WINDOWS) || isDebug) "1.19.4" else "1.16.5"
-        val viaVersion = "5.8.1"
+        val viaVersion = "5.9.0"
         val commandApiVersion = "9.4.3"
         downloadPlugins {
             url("https://download.luckperms.net/1631/bukkit/loader/LuckPerms-Bukkit-5.5.42.jar")
