@@ -6,9 +6,11 @@ import dev.jorel.commandapi.CommandAPIBukkit
 import dev.jorel.commandapi.CommandAPICommand
 import dev.jorel.commandapi.arguments.Argument
 import dev.jorel.commandapi.arguments.ArgumentSuggestions
+import dev.jorel.commandapi.arguments.IntegerArgument
 import dev.jorel.commandapi.arguments.MapArgumentBuilder
 import dev.jorel.commandapi.arguments.StringArgument
 import dev.jorel.commandapi.executors.CommandExecutor
+import dev.jorel.commandapi.executors.PlayerCommandExecutor
 import me.wyne.wutils.i18n.kotlin.placeholderComponent
 import me.wyne.wutils.i18n.kotlin.reduce
 import me.wyne.wutils.i18n.kotlin.replace
@@ -17,6 +19,7 @@ import net.kyori.adventure.text.Component
 import org.bigcraft.lootpool.api.CompositeLootPool
 import org.bigcraft.lootpool.api.LootPool
 import org.bigcraft.lootpool.api.LootPoolProvider
+import org.bukkit.Bukkit
 import org.bukkit.command.CommandSender
 
 class InfoCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType: Class<T> = LootPool::class.java as Class<T>) : SubCommand("info") {
@@ -43,7 +46,7 @@ class InfoCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType
                         "percentage" replace String.format("%.2f", percentage[index])
                     ).replace("loot-name" replaceComponent loot.item.nameComponent)
                 }.reduce() ?: Component.empty()
-            sender.placeholderComponent("info-lootpool", "key" replace key)
+            sender.placeholderComponent("info-lootpool", "key" replace key, "type" replace lootPool.javaClass.simpleName)
                 .replace("loot-list" replaceComponent lootList)
                 .sendMessage(sender)
         })
@@ -78,6 +81,22 @@ class ComposeCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolT
             val pools = args.getByClassOrDefault("pools", Map::class.java, emptyMap<String, Int>()) as Map<String, Int>
             lootPoolProvider.writeLootPool(CompositeLootPool(key, pools.toMap()))
             sender.placeholderComponent("success-lootpool-create", "key" replace key).sendMessage(sender)
+        })
+}
+
+class PreviewCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType: Class<T> = LootPool::class.java as Class<T>) : SubCommand("preview") {
+    override val command: CommandAPICommand = super.command
+        .withPermission("lootpool.info")
+        .withArguments(lootPoolKey("key") { lootPoolProvider.getMapOf(lootPoolType) })
+        .withOptionalArguments(IntegerArgument("size", 1, 6))
+        .executesPlayer(PlayerCommandExecutor { sender, args ->
+            val key = args.getOrDefaultRaw("key", "")
+            assertLootPoolExists(key, sender, lootPoolProvider.getMapOf(lootPoolType))
+            val lootPool = lootPoolProvider.getLootPool(key)!!
+            val size = args.getByClassOrDefault("size", Int::class.java, 3)
+            val inventory = Bukkit.createInventory(sender, size * 9, Component.text(lootPool.key.key))
+            lootPool.populate(inventory)
+            sender.openInventory(inventory)
         })
 }
 

@@ -13,7 +13,7 @@ info-lootpool-already-exists: "[white]Loot pool '<key>' already exists [[hover:s
 info-loot-already-exists: "[white]Loot '<key>' already exists [[hover:show_text:[green]Click to modify][click:run_command:/lootpool item modify <key>][green][underline:true]Modify[underline][click][hover][white]]"
 info-lootpool-loot: "- <loot-name> [color](<loot-type>) [<min-amount>..<max-amount>] - [gold]<weight> [aqua](<percentage>%)"
 info-lootpool:
-  - "Loot pool '<key>':"
+  - "Loot pool '<key>' (<type>):"
   - "<loot-list>"
 
 ## Error

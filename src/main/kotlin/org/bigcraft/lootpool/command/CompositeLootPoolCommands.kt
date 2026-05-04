@@ -25,7 +25,7 @@ fun displayCompositeInfo(sender: CommandSender, lootPool: CompositeLootPool) {
                 "percentage" replace String.format("%.2f", percentage[entry.key])
             )
         }.reduce() ?: Component.empty()
-    sender.placeholderComponent("info-lootpool", "key" replace lootPool.key.key)
+    sender.placeholderComponent("info-lootpool", "key" replace lootPool.key.key, "type" replace lootPool.javaClass.simpleName)
         .replace("loot-list" replaceComponent lootList)
         .sendMessage(sender)
 }
