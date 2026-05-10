@@ -34,7 +34,7 @@ class GiveCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType
         .withArguments(EntitySelectorArgument.OnePlayer("target"))
         .withOptionalArguments(amountArgument("amount"), BooleanArgument("unique"), IntegerArgument("slots", 0))
         .executes(CommandExecutor { sender, args ->
-            val key = args.getOrDefaultRaw("key", "")
+            val key = args.getByClass("key", String::class.java)!!
             assertLootPoolExists(key, sender, lootPoolProvider.getMapOf(lootPoolType))
             val target = args.getByClass("target", Player::class.java)!!
             val amount = args.getByClass("amount", String::class.java)
@@ -60,7 +60,7 @@ class DropCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType
         .withArguments(LocationArgument("location", LocationType.PRECISE_POSITION))
         .withOptionalArguments(amountArgument("amount"), BooleanArgument("unique"), IntegerArgument("slots", 0))
         .executes(CommandExecutor { sender, args ->
-            val key = args.getOrDefaultRaw("key", "")
+            val key = args.getByClass("key", String::class.java)!!
             assertLootPoolExists(key, sender, lootPoolProvider.getMapOf(lootPoolType))
             val location = args.getByClass("location", Location::class.java)!!
             val amount = args.getByClass("amount", String::class.java)
@@ -92,7 +92,7 @@ class InsertCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolTy
             amountArgument("amount"), BooleanArgument("random"),
             BooleanArgument("unique"), IntegerArgument("slots", 0))
         .executes(CommandExecutor { sender, args ->
-            val key = args.getOrDefaultRaw("key", "")
+            val key = args.getByClass("key", String::class.java)!!
             assertLootPoolExists(key, sender, lootPoolProvider.getMapOf(lootPoolType))
             val location = args.getByClass("location", Location::class.java)!!
             val amount = args.getByClass("amount", String::class.java)
@@ -129,7 +129,7 @@ class FillCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType
         .withArguments(lootPoolKey("key") { lootPoolProvider.getMapOf(lootPoolType) })
         .withArguments(LocationArgument("location", LocationType.BLOCK_POSITION))
         .executes(CommandExecutor { sender, args ->
-            val key = args.getOrDefaultRaw("key", "")
+            val key = args.getByClass("key", String::class.java)!!
             assertLootPoolExists(key, sender, lootPoolProvider.getMapOf(lootPoolType))
             val location = args.getByClass("location", Location::class.java)!!
             val container = location.block.state as? Container
@@ -153,7 +153,7 @@ class PopulateCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPool
         .withArguments(EntitySelectorArgument.OnePlayer("target"))
         .withOptionalArguments(IntegerArgument("slots", 0))
         .executes(CommandExecutor { sender, args ->
-            val key = args.getOrDefaultRaw("key", "")
+            val key = args.getByClass("key", String::class.java)!!
             assertLootPoolExists(key, sender, lootPoolProvider.getMapOf(lootPoolType))
             val target = args.getByClass("target", Player::class.java)!!
             val lootPool = lootPoolProvider.getLootPool(key)!!
@@ -171,7 +171,7 @@ class ProjectCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolT
         .withArguments(EntitySelectorArgument.OnePlayer("target"))
         .withOptionalArguments(amountArgument("amount"))
         .executes(CommandExecutor { sender, args ->
-            val key = args.getOrDefaultRaw("key", "")
+            val key = args.getByClass("key", String::class.java)!!
             assertLootPoolExists(key, sender, lootPoolProvider.getMapOf(lootPoolType))
             val target = args.getByClass("target", Player::class.java)!!
             val amount = args.getByClass("amount", String::class.java)

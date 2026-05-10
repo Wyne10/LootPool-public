@@ -17,7 +17,7 @@ class CreateBasicCommand(lootPoolProvider: LootPoolProvider) : SubCommand("creat
         .withPermission("lootpool.create")
         .withArguments(StringArgument("key"))
         .executesPlayer(PlayerCommandExecutor { sender, args ->
-            val key = args.getOrDefaultRaw("key", "")
+            val key = args.getByClass("key", String::class.java)!!
             assertBasicLootPoolNotExists(key, sender, lootPoolProvider.lootPoolMap)
             LootPoolGui(key, sender)
         })
@@ -28,7 +28,7 @@ class ModifyBasicCommand(lootPoolProvider: LootPoolProvider) : SubCommand("modif
         .withPermission("lootpool.modify")
         .withArguments(lootPoolKey("key") { lootPoolProvider.getMapOf(BasicLootPool::class.java) })
         .executesPlayer(PlayerCommandExecutor { sender, args ->
-            val key = args.getOrDefaultRaw("key", "")
+            val key = args.getByClass("key", String::class.java)!!
             assertLootPoolExists(key, sender, lootPoolProvider.getMapOf(BasicLootPool::class.java))
             val lootPool = lootPoolProvider.getLootPool(key)
             LootPoolGui(key, sender, lootPool!!)
@@ -41,10 +41,10 @@ class CloneBasicCommand(lootPoolProvider: LootPoolProvider) : SubCommand("clone"
         .withArguments(lootPoolKey("key") { lootPoolProvider.getMapOf(BasicLootPool::class.java) })
         .withArguments(StringArgument("newKey"))
         .executesPlayer(PlayerCommandExecutor { sender, args ->
-            val key = args.getOrDefaultRaw("key", "")
+            val key = args.getByClass("key", String::class.java)!!
             val lootPool = lootPoolProvider.getLootPool(key)!!
             assertLootPoolExists(key, sender, lootPoolProvider.getMapOf(BasicLootPool::class.java))
-            val newKey = args.getOrDefaultRaw("newKey", "")
+            val newKey = args.getByClass("newKey", String::class.java)!!
             assertBasicLootPoolNotExists(newKey, sender, lootPoolProvider.lootPoolMap)
             LootPoolGui(newKey, sender, lootPool)
         })

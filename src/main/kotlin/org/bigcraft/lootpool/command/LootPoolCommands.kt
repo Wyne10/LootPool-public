@@ -27,7 +27,7 @@ class InfoCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType
         .withPermission("lootpool.info")
         .withArguments(lootPoolKey("key") { lootPoolProvider.getMapOf(lootPoolType) })
         .executes(CommandExecutor { sender, args ->
-            val key = args.getOrDefaultRaw("key", "")
+            val key = args.getByClass("key", String::class.java)!!
             assertLootPoolExists(key, sender, lootPoolProvider.getMapOf(lootPoolType))
             val lootPool = lootPoolProvider.getLootPool(key)!!
             if (lootPool is CompositeLootPool)
@@ -57,7 +57,7 @@ class RemoveCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolTy
         .withPermission("lootpool.remove")
         .withArguments(lootPoolKey("key") { lootPoolProvider.getMapOf(lootPoolType) })
         .executes(CommandExecutor { sender, args ->
-            val key = args.getOrDefaultRaw("key", "")
+            val key = args.getByClass("key", String::class.java)!!
             assertLootPoolExists(key, sender, lootPoolProvider.getMapOf(lootPoolType))
             lootPoolProvider.removeLootPool(key)
             sender.placeholderComponent("success-lootpool-remove", "key" replace key).sendMessage(sender)
@@ -76,7 +76,7 @@ class ComposeCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolT
                 .withoutValueList(true)
                 .build())
         .executes(CommandExecutor { sender, args ->
-            val key = args.getOrDefaultRaw("key", "")
+            val key = args.getByClass("key", String::class.java)!!
             assertLootPoolNotExists(key, sender, lootPoolProvider.getMapOf(lootPoolType))
             val pools = args.getByClassOrDefault("pools", Map::class.java, emptyMap<String, Int>()) as Map<String, Int>
             lootPoolProvider.writeLootPool(CompositeLootPool(key, pools.toMap()))
@@ -90,7 +90,7 @@ class PreviewCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolT
         .withArguments(lootPoolKey("key") { lootPoolProvider.getMapOf(lootPoolType) })
         .withOptionalArguments(IntegerArgument("size", 1, 6))
         .executesPlayer(PlayerCommandExecutor { sender, args ->
-            val key = args.getOrDefaultRaw("key", "")
+            val key = args.getByClass("key", String::class.java)!!
             assertLootPoolExists(key, sender, lootPoolProvider.getMapOf(lootPoolType))
             val lootPool = lootPoolProvider.getLootPool(key)!!
             val size = args.getByClassOrDefault("size", Int::class.java, 3)

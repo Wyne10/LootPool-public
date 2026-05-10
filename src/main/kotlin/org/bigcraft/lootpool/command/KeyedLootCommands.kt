@@ -23,13 +23,13 @@ class CreateLootCommand(lootPoolProvider: LootPoolProvider) : SubCommand("create
         .withOptionalArguments(IntegerArgument("maxAmount", 1, 64))
         .withOptionalArguments(IntegerArgument("weight", 0))
         .executesPlayer(PlayerCommandExecutor { sender, args ->
-            val key = args.getOrDefaultRaw("key", "")
+            val key = args.getByClass("key", String::class.java)!!
             val minAmount = args.getByClassOrDefault("minAmount", Int::class.java, Loot.EMPTY.minAmount)
             val maxAmount = args.getByClassOrDefault("maxAmount", Int::class.java, Loot.EMPTY.maxAmount)
             val weight = args.getByClassOrDefault("weight", Int::class.java, Loot.EMPTY.weight)
             assertLootNotNull(key, sender)
             assertLootNotExists(key, sender, lootPoolProvider.lootPoolMap)
-            lootPoolProvider.writeLootPool(KeyedLoot(key, Loot(sender.inventory.itemInMainHand.clone().apply { amount = 1 }, weight,
+            lootPoolProvider.writeLootPool(KeyedLoot(key, Loot(sender.inventory.itemInMainHand.clone(), weight,
                         minAmount.coerceAtMost(maxAmount), maxAmount.coerceAtLeast(minAmount))))
             sender.placeholderComponent("success-lootpool-create", "key" replace key).sendMessage(sender)
         })
@@ -43,14 +43,14 @@ class ModifyLootCommand(lootPoolProvider: LootPoolProvider) : SubCommand("modify
         .withOptionalArguments(IntegerArgument("maxAmount", 1, 64))
         .withOptionalArguments(IntegerArgument("weight", 0))
         .executesPlayer(PlayerCommandExecutor { sender, args ->
-            val key = args.getOrDefaultRaw("key", "")
+            val key = args.getByClass("key", String::class.java)!!
             assertLootPoolExists(key, sender, lootPoolProvider.getMapOf(KeyedLoot::class.java))
             assertLootNotNull(key, sender)
             val loot = lootPoolProvider.getLootPool(key)!! as KeyedLoot
             val minAmount = args.getByClassOrDefault("minAmount", Int::class.java, loot.loot.minAmount)
             val maxAmount = args.getByClassOrDefault("maxAmount", Int::class.java, loot.loot.maxAmount)
             val weight = args.getByClassOrDefault("weight", Int::class.java, 1)
-            lootPoolProvider.writeLootPool(KeyedLoot(key, Loot(sender.inventory.itemInMainHand.clone().apply { amount = 1 }, weight,
+            lootPoolProvider.writeLootPool(KeyedLoot(key, Loot(sender.inventory.itemInMainHand.clone(), weight,
                         minAmount.coerceAtMost(maxAmount), maxAmount.coerceAtLeast(minAmount))))
             sender.placeholderComponent("success-lootpool-create", "key" replace key).sendMessage(sender)
         })

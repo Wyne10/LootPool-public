@@ -22,7 +22,7 @@ class SnapshotCommand(lootPoolProvider: LootPoolProvider) : SubCommand("snapshot
         .withArguments(StringArgument("key"))
         .withOptionalArguments(LocationArgument("location", LocationType.BLOCK_POSITION))
         .executesPlayer(PlayerCommandExecutor { sender, args ->
-            val key = args.getOrDefaultRaw("key", "")
+            val key = args.getByClass("key", String::class.java)!!
             assertLootPoolNotExists(key, sender, lootPoolProvider.lootPoolMap)
             val location = args.getByClass("location", Location::class.java)
             var container: Container? = null
@@ -41,7 +41,7 @@ class SnapshotCommand(lootPoolProvider: LootPoolProvider) : SubCommand("snapshot
             inventoryHolder.inventory
                 .forEachIndexed { slot, item ->
                     if (item.isNullOrAir()) return@forEachIndexed
-                    lootPool[slot] = Loot(item, 1, item.amount, item.amount)
+                    lootPool[slot] = Loot(item.clone(), 1, item.amount, item.amount)
                 }
             lootPoolProvider.writeLootPool(SnapshotLootPool(key, lootPool))
             sender.placeholderComponent("success-lootpool-create", "key" replace key).sendMessage(sender)
