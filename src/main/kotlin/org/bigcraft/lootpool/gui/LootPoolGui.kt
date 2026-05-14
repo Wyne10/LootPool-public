@@ -90,7 +90,7 @@ class LootPoolGui(private val key: String, private val player: Player) : Registe
     @EventHandler(ignoreCancelled = true)
     private fun onReplace(event: InventoryClickEvent) {
         if (!validateClick(event)) return
-        if (event.slot == 0) return
+        if (event.slot == 0 && currentPage == 0) return
         // Replace loot pool item with item on a cursor
         if (event.clickedInventory == inventory && event.currentItem.isNotNullOrAir() && event.cursor.isNotNullOrAir()) {
             event.isCancelled = true
@@ -150,12 +150,14 @@ class LootPoolGui(private val key: String, private val player: Player) : Registe
     private fun onQ(event: InventoryClickEvent) {
         if (!validateClick(event)) return
         if (!validateModificationClick(event)) return
-        if (event.slot == 0) return
+        if (event.slot == 0 && currentPage == 0) return
         if (event.action != InventoryAction.DROP_ONE_SLOT &&
             event.action != InventoryAction.DROP_ALL_SLOT) return
         lootPool.removeAt(event.index)
         inventory.clear()
-        run { render() }
+        Bukkit.getScheduler().runTaskLater(LootPool.instance, Runnable {
+            render()
+        }, 2)
     }
 
     @EventHandler(ignoreCancelled = true)
