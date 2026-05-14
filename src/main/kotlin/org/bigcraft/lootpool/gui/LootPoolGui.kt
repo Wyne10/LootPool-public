@@ -31,7 +31,7 @@ import java.util.LinkedList
 
 class LootPoolGui(private val key: String, private val player: Player) : RegisterableListener {
 
-    private val inventory = Bukkit.createInventory(player, 9 * 6)
+    private val inventory = Bukkit.createInventory(player, 9 * 6, Component.text(key))
     private val nothingItem = MutableLoot(ItemStack(Material.GRAY_STAINED_GLASS_PANE)
         .also { it.editMeta { meta -> meta.displayName(player.placeholderComponent("gui-nothing-item").get()) } },
         0, 1, 1

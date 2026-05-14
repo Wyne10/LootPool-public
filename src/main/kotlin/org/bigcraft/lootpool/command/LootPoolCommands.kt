@@ -7,6 +7,7 @@ import dev.jorel.commandapi.CommandAPICommand
 import dev.jorel.commandapi.arguments.Argument
 import dev.jorel.commandapi.arguments.ArgumentSuggestions
 import dev.jorel.commandapi.arguments.IntegerArgument
+import dev.jorel.commandapi.arguments.ListArgumentBuilder
 import dev.jorel.commandapi.arguments.MapArgumentBuilder
 import dev.jorel.commandapi.arguments.StringArgument
 import dev.jorel.commandapi.executors.CommandExecutor
@@ -19,6 +20,7 @@ import net.kyori.adventure.text.Component
 import org.bigcraft.lootpool.api.CompositeLootPool
 import org.bigcraft.lootpool.api.LootPool
 import org.bigcraft.lootpool.api.LootPoolProvider
+import org.bigcraft.lootpool.api.MultiLootPool
 import org.bukkit.Bukkit
 import org.bukkit.command.CommandSender
 
@@ -80,6 +82,24 @@ class ComposeCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolT
             assertLootPoolNotExists(key, sender, lootPoolProvider.getMapOf(lootPoolType))
             val pools = args.getByClassOrDefault("pools", Map::class.java, emptyMap<String, Int>()) as Map<String, Int>
             lootPoolProvider.writeLootPool(CompositeLootPool(key, pools.toMap()))
+            sender.placeholderComponent("success-lootpool-create", "key" replace key).sendMessage(sender)
+        })
+}
+
+class IncludeCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType: Class<T> = LootPool::class.java as Class<T>) : SubCommand("include") {
+    override val command: CommandAPICommand = super.command
+        .withPermission("lootpool.create")
+        .withArguments(StringArgument("key"))
+        .withArguments(
+            ListArgumentBuilder<String>("pools")
+                .withList { _ -> lootPoolProvider.getMapOf(lootPoolType).keys }
+                .withStringMapper()
+                .buildGreedy())
+        .executes(CommandExecutor { sender, args ->
+            val key = args.getByClass("key", String::class.java)!!
+            assertLootPoolNotExists(key, sender, lootPoolProvider.getMapOf(lootPoolType))
+            val pools = args.getByClassOrDefault("pools", List::class.java, emptyList<String>()) as List<String>
+            lootPoolProvider.writeLootPool(MultiLootPool(key, pools.toSet()))
             sender.placeholderComponent("success-lootpool-create", "key" replace key).sendMessage(sender)
         })
 }
