@@ -36,6 +36,7 @@ class LootPoolCommand @Inject constructor(
                     .withSubcommand(ModifyBasicCommand(lootPoolManager)())
                     .withSubcommand(CloneBasicCommand(lootPoolManager)())
                     .withSubcommand(MergeBasicCommand(lootPoolManager)())
+                    .withSubcommand(WeightBasicCommand(lootPoolManager)())
             )
             .withSubcommand(
                 CommandAPICommand("item")
