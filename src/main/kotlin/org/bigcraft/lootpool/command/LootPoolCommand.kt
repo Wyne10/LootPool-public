@@ -20,6 +20,7 @@ class LootPoolCommand @Inject constructor(
         CommandAPICommand("lootpool")
             .withSubcommand(RemoveCommand<LootPool>(lootPoolManager)())
             .withSubcommand(ComposeCommand<LootPool>(lootPoolManager)())
+            .withSubcommand(IncludeCommand<LootPool>(lootPoolManager)())
             .withSubcommand(SnapshotCommand(lootPoolManager)())
             .withSubcommand(InfoCommand<LootPool>(lootPoolManager)())
             .withSubcommand(GiveCommand<LootPool>(lootPoolManager)())
