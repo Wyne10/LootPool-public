@@ -22,8 +22,7 @@ public record MultiLootPool(@NotNull String key, @NotNull Set<@NotNull String> l
 
     @NotNull
     public static MultiLootPool deserialize(@NotNull Map<String, Object> args) {
-        Set<String> lootPools = new HashSet<>();
-        return new MultiLootPool((String) args.get("key"), Set.copyOf((List<String>) args.get("pools")));
+        return new MultiLootPool((String) args.get("key"), new LinkedHashSet<>((List<String>) args.get("pools")));
     }
 
     @SuppressWarnings("DataFlowIssue")
