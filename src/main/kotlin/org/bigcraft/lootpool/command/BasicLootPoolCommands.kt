@@ -2,11 +2,16 @@ package org.bigcraft.lootpool.command
 
 import dev.jorel.commandapi.CommandAPIBukkit
 import dev.jorel.commandapi.CommandAPICommand
+import dev.jorel.commandapi.arguments.GreedyStringArgument
 import dev.jorel.commandapi.arguments.StringArgument
+import dev.jorel.commandapi.arguments.TextArgument
+import dev.jorel.commandapi.executors.CommandExecutor
 import dev.jorel.commandapi.executors.PlayerCommandExecutor
+import me.wyne.wutils.common.operation.Operations
 import me.wyne.wutils.i18n.kotlin.placeholderComponent
 import me.wyne.wutils.i18n.kotlin.replace
 import org.bigcraft.lootpool.api.BasicLootPool
+import org.bigcraft.lootpool.api.Loot
 import org.bigcraft.lootpool.api.LootPool
 import org.bigcraft.lootpool.api.LootPoolProvider
 import org.bigcraft.lootpool.gui.LootPoolGui
@@ -42,8 +47,8 @@ class CloneBasicCommand(lootPoolProvider: LootPoolProvider) : SubCommand("clone"
         .withArguments(StringArgument("newKey"))
         .executesPlayer(PlayerCommandExecutor { sender, args ->
             val key = args.getByClass("key", String::class.java)!!
-            val lootPool = lootPoolProvider.getLootPool(key)!!
             assertLootPoolExists(key, sender, lootPoolProvider.getMapOf(BasicLootPool::class.java))
+            val lootPool = lootPoolProvider.getLootPool(key)!!
             val newKey = args.getByClass("newKey", String::class.java)!!
             assertBasicLootPoolNotExists(newKey, sender, lootPoolProvider.lootPoolMap)
             LootPoolGui(newKey, sender, lootPool)
@@ -65,6 +70,24 @@ class MergeBasicCommand(lootPoolProvider: LootPoolProvider) : SubCommand("merge"
             val mergedLootList = destination.lootList + source.lootList
             val newLootPool = BasicLootPool(destinationKey, mergedLootList)
             LootPoolGui(destinationKey, sender, newLootPool)
+        })
+}
+
+class WeightBasicCommand(lootPoolProvider: LootPoolProvider) : SubCommand("weight") {
+    override val command: CommandAPICommand = super.command
+        .withPermission("lootpool.modify")
+        .withArguments(lootPoolKey("key") { lootPoolProvider.getMapOf(BasicLootPool::class.java) })
+        .withArguments(GreedyStringArgument("operation"))
+        .executesPlayer(PlayerCommandExecutor { sender, args ->
+            val key = args.getByClass("key", String::class.java)!!
+            assertLootPoolExists(key, sender, lootPoolProvider.getMapOf(BasicLootPool::class.java))
+            val lootPool = lootPoolProvider.getLootPool(key)!!
+            val operationString = args.getByClass("operation", String::class.java)!!
+            val operation = Operations.getIntOperation(operationString)
+            val modifiedLootList = lootPool.getLootList()
+                .map { Loot(it.item, operation.evaluate(it.weight), it.minAmount, it.maxAmount) }
+            val newLootPool = BasicLootPool(key, modifiedLootList)
+            LootPoolGui(key, sender, newLootPool)
         })
 }
 

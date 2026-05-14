@@ -155,9 +155,7 @@ class LootPoolGui(private val key: String, private val player: Player) : Registe
             event.action != InventoryAction.DROP_ALL_SLOT) return
         lootPool.removeAt(event.index)
         inventory.clear()
-        Bukkit.getScheduler().runTaskLater(LootPool.instance, Runnable {
-            render()
-        }, 2)
+        run { render() }
     }
 
     @EventHandler(ignoreCancelled = true)
