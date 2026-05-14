@@ -16,7 +16,7 @@ public record MultiLootPool(@NotNull String key, @NotNull Set<@NotNull String> l
     public Map<String, Object> serialize() {
         Map<String, Object> data = new HashMap<>();
         data.put("key", key);
-        data.put("pools", List.of(lootPools));
+        data.put("pools", new ArrayList<>(lootPools));
         return data;
     }
 
