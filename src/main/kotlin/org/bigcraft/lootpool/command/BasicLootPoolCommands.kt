@@ -50,6 +50,24 @@ class CloneBasicCommand(lootPoolProvider: LootPoolProvider) : SubCommand("clone"
         })
 }
 
+class MergeBasicCommand(lootPoolProvider: LootPoolProvider) : SubCommand("merge") {
+    override val command: CommandAPICommand = super.command
+        .withPermission("lootpool.create")
+        .withArguments(lootPoolKey("destination") { lootPoolProvider.getMapOf(BasicLootPool::class.java) })
+        .withArguments(lootPoolKey("source") { lootPoolProvider.getMapOf(LootPool::class.java) })
+        .executesPlayer(PlayerCommandExecutor { sender, args ->
+            val destinationKey = args.getByClass("destination", String::class.java)!!
+            assertLootPoolExists(destinationKey, sender, lootPoolProvider.getMapOf(BasicLootPool::class.java))
+            val sourceKey = args.getByClass("source", String::class.java)!!
+            assertLootPoolExists(sourceKey, sender, lootPoolProvider.getMapOf(LootPool::class.java))
+            val destination = lootPoolProvider.getLootPool(destinationKey)!!
+            val source = lootPoolProvider.getLootPool(sourceKey)!!
+            val mergedLootList = destination.lootList + source.lootList
+            val newLootPool = BasicLootPool(destinationKey, mergedLootList)
+            LootPoolGui(destinationKey, sender, newLootPool)
+        })
+}
+
 private fun assertBasicLootPoolNotExists(key: String, sender: CommandSender, lootPoolMap: Map<String, LootPool>) {
     if (lootPoolMap.contains(key)) {
         if (sender.hasPermission("lootpool.modify") && lootPoolMap[key] is BasicLootPool)
