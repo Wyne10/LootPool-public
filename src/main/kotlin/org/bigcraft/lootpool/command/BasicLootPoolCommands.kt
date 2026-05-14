@@ -3,14 +3,17 @@ package org.bigcraft.lootpool.command
 import dev.jorel.commandapi.CommandAPIBukkit
 import dev.jorel.commandapi.CommandAPICommand
 import dev.jorel.commandapi.arguments.GreedyStringArgument
+import dev.jorel.commandapi.arguments.MapArgumentBuilder
 import dev.jorel.commandapi.arguments.StringArgument
 import dev.jorel.commandapi.arguments.TextArgument
 import dev.jorel.commandapi.executors.CommandExecutor
 import dev.jorel.commandapi.executors.PlayerCommandExecutor
+import me.wyne.wutils.common.operation.IntOperation
 import me.wyne.wutils.common.operation.Operations
 import me.wyne.wutils.i18n.kotlin.placeholderComponent
 import me.wyne.wutils.i18n.kotlin.replace
 import org.bigcraft.lootpool.api.BasicLootPool
+import org.bigcraft.lootpool.api.CompositeLootPool
 import org.bigcraft.lootpool.api.Loot
 import org.bigcraft.lootpool.api.LootPool
 import org.bigcraft.lootpool.api.LootPoolProvider
@@ -88,6 +91,30 @@ class WeightBasicCommand(lootPoolProvider: LootPoolProvider) : SubCommand("weigh
                 .map { Loot(it.item, operation.evaluate(it.weight), it.minAmount, it.maxAmount) }
             val newLootPool = BasicLootPool(key, modifiedLootList)
             LootPoolGui(key, sender, newLootPool)
+        })
+}
+
+class FlattenBasicCommand(lootPoolProvider: LootPoolProvider) : SubCommand("flatten") {
+    override val command: CommandAPICommand = super.command
+        .withPermission("lootpool.create")
+        .withArguments(StringArgument("key"))
+        .withArguments(
+            MapArgumentBuilder<String, IntOperation>("pools")
+                .withKeyMapper { s -> s }
+                .withValueMapper { s -> Operations.getIntOperation(s) }
+                .withKeyList { lootPoolProvider.getMapOf(LootPool::class.java).keys.toList() }
+                .withoutValueList(true)
+                .build())
+        .executesPlayer(PlayerCommandExecutor { sender, args ->
+            val key = args.getByClass("key", String::class.java)!!
+            assertLootPoolNotExists(key, sender, lootPoolProvider.getMapOf(LootPool::class.java))
+            val pools = args.getByClassOrDefault("pools", Map::class.java, emptyMap<String, IntOperation>()) as Map<String, IntOperation>
+            val flattenedLootList = pools
+                .mapKeys { lootPoolProvider.getLootPool(it.key)!! }
+                .flatMap { entry -> entry.key.lootList.map { Loot(it.item, entry.value.evaluate(it.weight), it.minAmount, it.maxAmount) } }
+            val newLootPool = BasicLootPool(key, flattenedLootList)
+            LootPoolGui(key, sender, newLootPool)
+            sender.placeholderComponent("success-lootpool-create", "key" replace key).sendMessage(sender)
         })
 }
 
