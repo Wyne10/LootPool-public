@@ -49,7 +49,7 @@ class InfoCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType
             val lootPool = lootPoolProvider.getLootPool(key)!!
             if (lootPool is CompositeLootPool)
                 return@CommandExecutor displayCompositeInfo(sender, lootPool)
-            val amount = args.getByClassOrDefault("amount", Int::class.java, DEFAULT_INFO_AMOUNT)
+            val amount = args.getByClassOrDefault("amount", Int::class.java, 15)
             val sort = LootSort.fromArgument(args.getByClass("sort", String::class.java))
             val totalWeight = lootPool.lootList.sumOf { it.weight.toDouble() }
             val sorted = sort.sort(lootPool.lootList)
@@ -171,8 +171,6 @@ class PreviewCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolT
             sender.openInventory(inventory)
         })
 }
-
-private const val DEFAULT_INFO_AMOUNT = 15
 
 enum class LootSort(val argument: String) {
     DEFAULT("default") {

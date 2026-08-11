@@ -22,8 +22,8 @@ class CreateBasicCommand(lootPoolProvider: LootPoolProvider) : SubCommand("creat
         .withShortDescription("Create a basic loot.")
         .withFullDescription(
             """
-                Create a new basic loot pool. 
-                Basic loot pool is modified using GUI 
+                Create a new basic loot pool.
+                Basic loot pool is modified using GUI
                 setting each individual item weight, minimum and maximum amounts.
             """.trimIndent()
         )
@@ -41,7 +41,7 @@ class ModifyBasicCommand(lootPoolProvider: LootPoolProvider) : SubCommand("modif
         .withShortDescription("Modify a basic loot pool.")
         .withFullDescription(
             """
-                Modify an existing basic loot pool. 
+                Modify an existing basic loot pool.
                 Opens up a GUI, changes are saved upon GUI closing.
             """.trimIndent()
         )
@@ -60,7 +60,7 @@ class CloneBasicCommand(lootPoolProvider: LootPoolProvider) : SubCommand("clone"
         .withShortDescription("Clone a basic loot pool.")
         .withFullDescription(
             """
-                Clone an existing basic loot pool 
+                Clone an existing basic loot pool
                 to an identical loot pool with a new key.
             """.trimIndent()
         )
@@ -82,11 +82,11 @@ class MergeBasicCommand(lootPoolProvider: LootPoolProvider) : SubCommand("merge"
         .withShortDescription("Merge two loot pools.")
         .withFullDescription(
             """
-                Merge two existing loot pools. 
-                Destination loot pool must be a basic loot pool 
-                and source pool can be any other pool. 
-                This effectively constructs a new basic loot pool with the same key as destination pool 
-                Original destination pool is destroyed and source loot pool loses any 
+                Merge two existing loot pools.
+                Destination loot pool must be a basic loot pool
+                and source pool can be any other pool.
+                This effectively constructs a new basic loot pool with the same key as destination pool
+                Original destination pool is destroyed and source loot pool loses any
                 special characteristics preserving only a loot list (Original source loot pool is preserved).
             """.trimIndent()
         )
@@ -111,8 +111,8 @@ class WeightBasicCommand(lootPoolProvider: LootPoolProvider) : SubCommand("weigh
         .withShortDescription("Modify basic loot pool item weights.")
         .withFullDescription(
             """
-                Applies provided operation to all item weights in a loot pool. 
-                Operation examples: "+5", "-1", "*1000", "=10", "**2", "/3" 
+                Applies provided operation to all item weights in a loot pool.
+                Operation examples: "+5", "-1", "*1000", "=10", "**2", "/3"
                 If no operation symbol is provided, the "set" operation will be performed.
             """.trimIndent()
         )
@@ -137,12 +137,12 @@ class FlattenBasicCommand(lootPoolProvider: LootPoolProvider) : SubCommand("flat
         .withShortDescription("Flatten multiple loot pools.")
         .withFullDescription(
             """
-                Flatten multiple loot pools into a single new basic loot pool. 
-                Combines the merge and weight commands: for each provided pool 
-                an operation is applied to all of its item weights before merging. 
-                Provide a new unique key followed by a map of pools and their weight operations, 
-                e.g. "pool1:*2 pool2:+5 pool3:=10". 
-                Source pools can be of any type but only their loot lists are preserved, 
+                Flatten multiple loot pools into a single new basic loot pool.
+                Combines the merge and weight commands: for each provided pool
+                an operation is applied to all of its item weights before merging.
+                Provide a new unique key followed by a map of pools and their weight operations,
+                e.g. "pool1:*2 pool2:+5 pool3:=10".
+                Source pools can be of any type but only their loot lists are preserved,
                 losing any special characteristics. Original source pools are not modified.
             """.trimIndent()
         )

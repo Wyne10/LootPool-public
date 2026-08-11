@@ -44,6 +44,7 @@ class LootPoolCommand @Inject constructor(
             ComposeCommand<LootPool>(lootPoolManager)(),
             IncludeCommand<LootPool>(lootPoolManager)(),
             SnapshotCommand(lootPoolManager)(),
+            RegisterCommand(lootPoolManager)(),
             InfoCommand<LootPool>(lootPoolManager)(),
             GiveCommand<LootPool>(lootPoolManager)(),
             DropCommand<LootPool>(lootPoolManager)(),

@@ -32,10 +32,10 @@ class GiveCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType
         .withShortDescription("Give rolled loot to a player.")
         .withFullDescription(
             """
-                Roll loot from a loot pool and give it to a target player. 
-                "amount" controls each item's stack size: "min-amount", "max-amount", 
-                "random-amount" or an exact number (defaults to a random amount). 
-                "unique" prevents the same loot entry from being rolled more than once. 
+                Roll loot from a loot pool and give it to a target player.
+                "amount" controls each item's stack size: "min-amount", "max-amount",
+                "random-amount" or an exact number (defaults to a random amount).
+                "unique" prevents the same loot entry from being rolled more than once.
                 "slots" is how many rolls to perform (defaults to the number of entries in the pool).
             """.trimIndent()
         )
@@ -68,10 +68,10 @@ class DropCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType
         .withShortDescription("Drop rolled loot at a location.")
         .withFullDescription(
             """
-                Roll loot from a loot pool and drop it as items at the given world location. 
-                "amount" controls each item's stack size: "min-amount", "max-amount", 
-                "random-amount" or an exact number (defaults to a random amount). 
-                "unique" prevents the same loot entry from being rolled more than once. 
+                Roll loot from a loot pool and drop it as items at the given world location.
+                "amount" controls each item's stack size: "min-amount", "max-amount",
+                "random-amount" or an exact number (defaults to a random amount).
+                "unique" prevents the same loot entry from being rolled more than once.
                 "slots" is how many rolls to perform (defaults to the number of entries in the pool).
             """.trimIndent()
         )
@@ -108,12 +108,12 @@ class InsertCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolTy
         .withShortDescription("Insert rolled loot into a container.")
         .withFullDescription(
             """
-                Roll loot from a loot pool and insert it into the container at the given block location. 
-                The targeted block must be a container (chest, barrel, etc.). 
-                "amount" controls each item's stack size: "min-amount", "max-amount", 
-                "random-amount" or an exact number (defaults to a random amount). 
-                "random" scatters the loot across random slots instead of filling them in order. 
-                "unique" prevents the same loot entry from being rolled more than once. 
+                Roll loot from a loot pool and insert it into the container at the given block location.
+                The targeted block must be a container (chest, barrel, etc.).
+                "amount" controls each item's stack size: "min-amount", "max-amount",
+                "random-amount" or an exact number (defaults to a random amount).
+                "random" scatters the loot across random slots instead of filling them in order.
+                "unique" prevents the same loot entry from being rolled more than once.
                 "slots" is how many rolls to perform (defaults to the number of entries in the pool).
             """.trimIndent()
         )
@@ -160,9 +160,9 @@ class FillCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType
         .withShortDescription("Fill a container using a loot pool.")
         .withFullDescription(
             """
-                Populate the container at the given block location using the loot pool's own logic. 
-                The targeted block must be a container (chest, barrel, etc.). 
-                Unlike "insert", this fills the whole container inventory as defined by the pool 
+                Populate the container at the given block location using the loot pool's own logic.
+                The targeted block must be a container (chest, barrel, etc.).
+                Unlike "insert", this fills the whole container inventory as defined by the pool
                 rather than rolling a fixed number of slots.
             """.trimIndent()
         )
@@ -192,8 +192,8 @@ class PopulateCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPool
         .withShortDescription("Populate a player's inventory using a loot pool.")
         .withFullDescription(
             """
-                Populate a target player's inventory using the loot pool's own logic. 
-                Any items that do not fit are added where possible or dropped at the player's feet. 
+                Populate a target player's inventory using the loot pool's own logic.
+                Any items that do not fit are added where possible or dropped at the player's feet.
                 "slots" is how many slots to populate (defaults to the number of entries in the pool).
             """.trimIndent()
         )
@@ -218,10 +218,10 @@ class ProjectCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolT
         .withShortDescription("Give one of every item in a loot pool.")
         .withFullDescription(
             """
-                Give a target player one of every item in the loot pool, ignoring weights and randomness. 
-                Useful for previewing the full contents of a pool. 
-                Items are added to the player's inventory, dropping at their feet if it is full. 
-                "amount" controls each item's stack size: "min-amount", "max-amount", 
+                Give a target player one of every item in the loot pool, ignoring weights and randomness.
+                Useful for previewing the full contents of a pool.
+                Items are added to the player's inventory, dropping at their feet if it is full.
+                "amount" controls each item's stack size: "min-amount", "max-amount",
                 "random-amount" or an exact number (defaults to a random amount).
             """.trimIndent()
         )

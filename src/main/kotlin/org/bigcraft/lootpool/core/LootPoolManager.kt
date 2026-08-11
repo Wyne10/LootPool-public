@@ -12,6 +12,7 @@ import org.bigcraft.lootpool.api.LootPool
 import org.bigcraft.lootpool.api.LootPoolProvider
 import org.bigcraft.lootpool.api.MultiLootPool
 import org.bigcraft.lootpool.api.SnapshotLootPool
+import org.bigcraft.lootpool.api.VanillaLootPool
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.configuration.serialization.ConfigurationSerialization
@@ -30,6 +31,7 @@ class LootPoolManager @Inject constructor(private val plugin: org.bigcraft.lootp
         ConfigurationSerialization.registerClass(CompositeLootPool::class.java)
         ConfigurationSerialization.registerClass(SnapshotLootPool::class.java)
         ConfigurationSerialization.registerClass(MultiLootPool::class.java)
+        ConfigurationSerialization.registerClass(VanillaLootPool::class.java)
     }
 
     override fun getLootPoolMap(): Map<String, LootPool> =
