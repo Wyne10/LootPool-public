@@ -21,8 +21,7 @@ import kotlin.random.Random
 object LootExtractor : ValueExtractor {
     override fun extract(obj: Any, placeholder: String): String? {
         if (obj !is Loot) return null
-        val loot = obj
-        val item = loot.item.clone()
+        val item = obj.item.clone()
 
         if (placeholder.startsWith("name"))
             return I18n.style(item.nameComponent, "name", placeholder)
@@ -38,10 +37,10 @@ object LootExtractor : ValueExtractor {
         return when(placeholder) {
             "serialized" -> encodeStack(item)
             "material" -> item.type.name
-            "weight" -> loot.weight.toString()
-            "minAmount" -> loot.minAmount.toString()
-            "maxAmount" -> loot.maxAmount.toString()
-            "randomAmount" -> Random.nextInt(loot.minAmount, loot.maxAmount + 1).toString()
+            "weight" -> obj.weight.toString()
+            "minAmount" -> obj.minAmount.toString()
+            "maxAmount" -> obj.maxAmount.toString()
+            "randomAmount" -> Random.nextInt(obj.minAmount, obj.maxAmount + 1).toString()
             else -> null
         }
     }

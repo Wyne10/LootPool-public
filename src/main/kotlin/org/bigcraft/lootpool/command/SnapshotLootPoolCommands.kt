@@ -18,6 +18,15 @@ import java.util.TreeMap
 
 class SnapshotCommand(lootPoolProvider: LootPoolProvider) : SubCommand("snapshot") {
     override val command: CommandAPICommand = super.command
+        .withShortDescription("Snapshot an inventory into a loot pool.")
+        .withFullDescription(
+            """
+                Create a new snapshot loot pool by capturing the contents of an inventory.
+                A snapshot loot pool preserves each item in its original slot and amount.
+                Provide a new unique key, optionally followed by the block location of a container
+                (chest, barrel, etc.) to capture. If no location is given, your own inventory is captured.
+            """.trimIndent()
+        )
         .withPermission("lootpool.create")
         .withArguments(StringArgument("key"))
         .withOptionalArguments(LocationArgument("location", LocationType.BLOCK_POSITION))

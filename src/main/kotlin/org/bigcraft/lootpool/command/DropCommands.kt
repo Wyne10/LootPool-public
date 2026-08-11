@@ -29,6 +29,16 @@ import kotlin.random.Random
 
 class GiveCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType: Class<T> = LootPool::class.java as Class<T>) : SubCommand("give") {
     override val command: CommandAPICommand = super.command
+        .withShortDescription("Give rolled loot to a player.")
+        .withFullDescription(
+            """
+                Roll loot from a loot pool and give it to a target player. 
+                "amount" controls each item's stack size: "min-amount", "max-amount", 
+                "random-amount" or an exact number (defaults to a random amount). 
+                "unique" prevents the same loot entry from being rolled more than once. 
+                "slots" is how many rolls to perform (defaults to the number of entries in the pool).
+            """.trimIndent()
+        )
         .withPermission("lootpool.give")
         .withArguments(lootPoolKey("key") { lootPoolProvider.getMapOf(lootPoolType) })
         .withArguments(EntitySelectorArgument.OnePlayer("target"))
@@ -55,6 +65,16 @@ class GiveCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType
 
 class DropCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType: Class<T> = LootPool::class.java as Class<T>) : SubCommand("drop") {
     override val command: CommandAPICommand = super.command
+        .withShortDescription("Drop rolled loot at a location.")
+        .withFullDescription(
+            """
+                Roll loot from a loot pool and drop it as items at the given world location. 
+                "amount" controls each item's stack size: "min-amount", "max-amount", 
+                "random-amount" or an exact number (defaults to a random amount). 
+                "unique" prevents the same loot entry from being rolled more than once. 
+                "slots" is how many rolls to perform (defaults to the number of entries in the pool).
+            """.trimIndent()
+        )
         .withPermission("lootpool.drop")
         .withArguments(lootPoolKey("key") { lootPoolProvider.getMapOf(lootPoolType) })
         .withArguments(LocationArgument("location", LocationType.PRECISE_POSITION))
@@ -85,6 +105,18 @@ class DropCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType
 
 class InsertCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType: Class<T> = LootPool::class.java as Class<T>) : SubCommand("insert") {
     override val command: CommandAPICommand = super.command
+        .withShortDescription("Insert rolled loot into a container.")
+        .withFullDescription(
+            """
+                Roll loot from a loot pool and insert it into the container at the given block location. 
+                The targeted block must be a container (chest, barrel, etc.). 
+                "amount" controls each item's stack size: "min-amount", "max-amount", 
+                "random-amount" or an exact number (defaults to a random amount). 
+                "random" scatters the loot across random slots instead of filling them in order. 
+                "unique" prevents the same loot entry from being rolled more than once. 
+                "slots" is how many rolls to perform (defaults to the number of entries in the pool).
+            """.trimIndent()
+        )
         .withPermission("lootpool.insert")
         .withArguments(lootPoolKey("key") { lootPoolProvider.getMapOf(lootPoolType) })
         .withArguments(LocationArgument("location", LocationType.BLOCK_POSITION))
@@ -125,6 +157,15 @@ class InsertCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolTy
 
 class FillCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType: Class<T> = LootPool::class.java as Class<T>) : SubCommand("fill") {
     override val command: CommandAPICommand = super.command
+        .withShortDescription("Fill a container using a loot pool.")
+        .withFullDescription(
+            """
+                Populate the container at the given block location using the loot pool's own logic. 
+                The targeted block must be a container (chest, barrel, etc.). 
+                Unlike "insert", this fills the whole container inventory as defined by the pool 
+                rather than rolling a fixed number of slots.
+            """.trimIndent()
+        )
         .withPermission("lootpool.fill")
         .withArguments(lootPoolKey("key") { lootPoolProvider.getMapOf(lootPoolType) })
         .withArguments(LocationArgument("location", LocationType.BLOCK_POSITION))
@@ -148,6 +189,14 @@ class FillCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType
 
 class PopulateCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType: Class<T> = LootPool::class.java as Class<T>) : SubCommand("populate") {
     override val command: CommandAPICommand = super.command
+        .withShortDescription("Populate a player's inventory using a loot pool.")
+        .withFullDescription(
+            """
+                Populate a target player's inventory using the loot pool's own logic. 
+                Any items that do not fit are added where possible or dropped at the player's feet. 
+                "slots" is how many slots to populate (defaults to the number of entries in the pool).
+            """.trimIndent()
+        )
         .withPermission("lootpool.populate")
         .withArguments(lootPoolKey("key") { lootPoolProvider.getMapOf(lootPoolType) })
         .withArguments(EntitySelectorArgument.OnePlayer("target"))
@@ -166,6 +215,16 @@ class PopulateCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPool
 
 class ProjectCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType: Class<T> = LootPool::class.java as Class<T>) : SubCommand("project") {
     override val command: CommandAPICommand = super.command
+        .withShortDescription("Give one of every item in a loot pool.")
+        .withFullDescription(
+            """
+                Give a target player one of every item in the loot pool, ignoring weights and randomness. 
+                Useful for previewing the full contents of a pool. 
+                Items are added to the player's inventory, dropping at their feet if it is full. 
+                "amount" controls each item's stack size: "min-amount", "max-amount", 
+                "random-amount" or an exact number (defaults to a random amount).
+            """.trimIndent()
+        )
         .withPermission("lootpool.project")
         .withArguments(lootPoolKey("key") { lootPoolProvider.getMapOf(lootPoolType) })
         .withArguments(EntitySelectorArgument.OnePlayer("target"))

@@ -15,6 +15,7 @@ info-lootpool-loot: "- <loot-name> [color](<loot-type>) [<min-amount>..<max-amou
 info-lootpool:
   - "Лут пул '<key>' (<type>):"
   - "<loot-list>"
+info-lootpool-more: "- И x<amount>..."
 
 ## Error
 error-lootpool-not-found: "[red]Лут пул '<key>' не существует!"

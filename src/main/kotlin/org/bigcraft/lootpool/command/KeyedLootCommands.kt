@@ -17,6 +17,15 @@ import org.bukkit.entity.Player
 
 class CreateLootCommand(lootPoolProvider: LootPoolProvider) : SubCommand("create") {
     override val command: CommandAPICommand = super.command
+        .withShortDescription("Create a keyed loot.")
+        .withFullDescription(
+            """
+                Create a new keyed loot from the item held in your main hand.
+                A keyed loot is a single loot entry stored under its own key.
+                "minAmount" and "maxAmount" set the item's amount range (1-64, defaults to the item's own amount).
+                "weight" sets the loot weight used when this loot is rolled from a pool (defaults to the empty loot weight - 0).
+            """.trimIndent()
+        )
         .withPermission("lootpool.create")
         .withArguments(StringArgument("key"))
         .withOptionalArguments(IntegerArgument("minAmount", 1, 64))
@@ -37,6 +46,15 @@ class CreateLootCommand(lootPoolProvider: LootPoolProvider) : SubCommand("create
 
 class ModifyLootCommand(lootPoolProvider: LootPoolProvider) : SubCommand("modify") {
     override val command: CommandAPICommand = super.command
+        .withShortDescription("Modify a keyed loot.")
+        .withFullDescription(
+            """
+                Modify an existing keyed loot, replacing its item with the one held in your main hand.
+                "minAmount" and "maxAmount" set the item's amount range.
+                "weight" sets the loot weight used when this loot is rolled from a pool.
+                All parameters default to previous loot values.
+            """.trimIndent()
+        )
         .withPermission("lootpool.modify")
         .withArguments(lootPoolKey("key") { lootPoolProvider.getMapOf(KeyedLoot::class.java) })
         .withOptionalArguments(IntegerArgument("minAmount", 1, 64))
@@ -49,7 +67,7 @@ class ModifyLootCommand(lootPoolProvider: LootPoolProvider) : SubCommand("modify
             val loot = lootPoolProvider.getLootPool(key)!! as KeyedLoot
             val minAmount = args.getByClassOrDefault("minAmount", Int::class.java, loot.loot.minAmount)
             val maxAmount = args.getByClassOrDefault("maxAmount", Int::class.java, loot.loot.maxAmount)
-            val weight = args.getByClassOrDefault("weight", Int::class.java, 1)
+            val weight = args.getByClassOrDefault("weight", Int::class.java, loot.loot.weight)
             lootPoolProvider.writeLootPool(KeyedLoot(key, Loot(sender.inventory.itemInMainHand.clone(), weight,
                         minAmount.coerceAtMost(maxAmount), maxAmount.coerceAtLeast(minAmount))))
             sender.placeholderComponent("success-lootpool-create", "key" replace key).sendMessage(sender)

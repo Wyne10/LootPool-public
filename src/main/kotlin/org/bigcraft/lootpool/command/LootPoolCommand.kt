@@ -17,34 +17,49 @@ class LootPoolCommand @Inject constructor(
     }
 
     private fun registerCommand() {
+        val poolSubcommands = listOf(
+            CreateBasicCommand(lootPoolManager)(),
+            ModifyBasicCommand(lootPoolManager)(),
+            CloneBasicCommand(lootPoolManager)(),
+            MergeBasicCommand(lootPoolManager)(),
+            WeightBasicCommand(lootPoolManager)(),
+            FlattenBasicCommand(lootPoolManager)(),
+        )
+        val poolCommand = CommandAPICommand("pool")
+            .withShortDescription("Manage basic loot pools.")
+            .apply { poolSubcommands.forEach { withSubcommand(it) } }
+            .withSubcommand(helpCommand("lootpool pool", poolSubcommands))
+
+        val itemSubcommands = listOf(
+            CreateLootCommand(lootPoolManager)(),
+            ModifyLootCommand(lootPoolManager)(),
+        )
+        val itemCommand = CommandAPICommand("item")
+            .withShortDescription("Manage keyed loot items.")
+            .apply { itemSubcommands.forEach { withSubcommand(it) } }
+            .withSubcommand(helpCommand("lootpool item", itemSubcommands))
+
+        val rootSubcommands = listOf(
+            RemoveCommand<LootPool>(lootPoolManager)(),
+            ComposeCommand<LootPool>(lootPoolManager)(),
+            IncludeCommand<LootPool>(lootPoolManager)(),
+            SnapshotCommand(lootPoolManager)(),
+            InfoCommand<LootPool>(lootPoolManager)(),
+            GiveCommand<LootPool>(lootPoolManager)(),
+            DropCommand<LootPool>(lootPoolManager)(),
+            InsertCommand<LootPool>(lootPoolManager)(),
+            FillCommand<LootPool>(lootPoolManager)(),
+            PopulateCommand<LootPool>(lootPoolManager)(),
+            ProjectCommand<LootPool>(lootPoolManager)(),
+            PreviewCommand<LootPool>(lootPoolManager)(),
+            poolCommand,
+            itemCommand,
+            ReloadCommand(plugin)(),
+        )
+
         CommandAPICommand("lootpool")
-            .withSubcommand(RemoveCommand<LootPool>(lootPoolManager)())
-            .withSubcommand(ComposeCommand<LootPool>(lootPoolManager)())
-            .withSubcommand(IncludeCommand<LootPool>(lootPoolManager)())
-            .withSubcommand(SnapshotCommand(lootPoolManager)())
-            .withSubcommand(InfoCommand<LootPool>(lootPoolManager)())
-            .withSubcommand(GiveCommand<LootPool>(lootPoolManager)())
-            .withSubcommand(DropCommand<LootPool>(lootPoolManager)())
-            .withSubcommand(InsertCommand<LootPool>(lootPoolManager)())
-            .withSubcommand(FillCommand<LootPool>(lootPoolManager)())
-            .withSubcommand(PopulateCommand<LootPool>(lootPoolManager)())
-            .withSubcommand(ProjectCommand<LootPool>(lootPoolManager)())
-            .withSubcommand(PreviewCommand<LootPool>(lootPoolManager)())
-            .withSubcommand(
-                CommandAPICommand("pool")
-                    .withSubcommand(CreateBasicCommand(lootPoolManager)())
-                    .withSubcommand(ModifyBasicCommand(lootPoolManager)())
-                    .withSubcommand(CloneBasicCommand(lootPoolManager)())
-                    .withSubcommand(MergeBasicCommand(lootPoolManager)())
-                    .withSubcommand(WeightBasicCommand(lootPoolManager)())
-                    .withSubcommand(FlattenBasicCommand(lootPoolManager)())
-            )
-            .withSubcommand(
-                CommandAPICommand("item")
-                    .withSubcommand(CreateLootCommand(lootPoolManager)())
-                    .withSubcommand(ModifyLootCommand(lootPoolManager)())
-            )
-            .withSubcommand(ReloadCommand(plugin)())
+            .apply { rootSubcommands.forEach { withSubcommand(it) } }
+            .withSubcommand(helpCommand("lootpool", rootSubcommands))
             .register(plugin)
     }
 

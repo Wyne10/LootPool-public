@@ -4,15 +4,11 @@ import com.google.inject.AbstractModule
 import org.bigcraft.lootpool.LootPoolApi
 import org.bigcraft.lootpool.core.LootPoolManager
 
-//region Implementations
-
 private class CoreModule(private vararg val modules: Class<out Any>) : AbstractModule() {
     override fun configure() {
         modules.forEach { bind(it) }
     }
 }
-
-//endregion
 
 val LootPoolModule: AbstractModule = CoreModule(LootPoolManager::class.java)
 

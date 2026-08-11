@@ -5,8 +5,6 @@ import org.bigcraft.lootpool.LootPool
 import org.bigcraft.lootpool.command.LootPoolCommand
 import org.bigcraft.lootpool.menu.AbstractMenusRegistry
 
-//region Implementations
-
 private class OptionalModule(
     private val className: String,
     private val exceptionMessage: String = "$className not found, module ignored",
@@ -21,8 +19,6 @@ private class OptionalModule(
         }
     }
 }
-
-//endregion
 
 val CommandModule: AbstractModule = OptionalModule(
     className = "dev.jorel.commandapi.CommandAPI",
