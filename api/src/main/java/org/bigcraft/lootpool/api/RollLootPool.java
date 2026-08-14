@@ -7,22 +7,19 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.loot.LootContext;
 import org.bukkit.util.NumberConversions;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
-public record RollLootPool(@NotNull String key, @NotNull List<@NotNull Loot> lootPool, int minRolls, int maxRolls) implements ConfigurationSerializable, EditableLootPool {
-
-    public RollLootPool(@NotNull LootPool lootPool, int minRolls, int maxRolls) {
-        this(lootPool.getKey().getKey(), lootPool.getLootList(), minRolls, maxRolls);
-    }
+public record RollLootPool(@NotNull String key, @NotNull String pool, int minRolls, int maxRolls) implements ConfigurationSerializable, LootPool {
 
     public RollLootPool(@NotNull Map<String, Object> args) {
         this(RollLootPool.deserialize(args));
     }
 
     private RollLootPool(@NotNull RollLootPool lootPool) {
-        this(lootPool.key, lootPool.lootPool, lootPool.minRolls, lootPool.maxRolls);
+        this(lootPool.key, lootPool.pool, lootPool.minRolls, lootPool.maxRolls);
     }
 
     @Override
@@ -30,27 +27,24 @@ public record RollLootPool(@NotNull String key, @NotNull List<@NotNull Loot> loo
     public Map<String, Object> serialize() {
         Map<String, Object> data = new HashMap<>();
         data.put("key", key);
+        data.put("pool", pool);
         data.put("minRolls", minRolls);
         data.put("maxRolls", maxRolls);
-        for (int i = 0; i < lootPool.size(); i++) {
-            data.put(String.valueOf(i), lootPool.get(i));
-        }
         return data;
     }
 
     @NotNull
     public static RollLootPool deserialize(@NotNull Map<String, Object> args) {
-        List<Loot> lootPool = new LinkedList<>();
-        for (int i = 0; args.containsKey(String.valueOf(i)); i++) {
-            Object loot = args.get(String.valueOf(i));
-            if (loot instanceof Loot)
-                lootPool.add((Loot) loot);
-        }
         return new RollLootPool(
                 (String) args.get("key"),
-                List.copyOf(lootPool),
+                (String) args.get("pool"),
                 NumberConversions.toInt(args.get("minRolls")),
                 NumberConversions.toInt(args.get("maxRolls")));
+    }
+
+    @Nullable
+    public LootPool getLootPool() {
+        return LootPoolApi.getProvider().getLootPool(pool);
     }
 
     public int rollSlots() {
@@ -61,36 +55,36 @@ public record RollLootPool(@NotNull String key, @NotNull List<@NotNull Loot> loo
 
     @Override
     public @NotNull List<@NotNull Loot> getLootList() {
-        return List.copyOf(lootPool);
-    }
-
-    @Override
-    public @NotNull EditableLootPool withLoot(@NotNull String key, @NotNull List<@NotNull Loot> lootList) {
-        return new RollLootPool(key, lootList, minRolls, maxRolls);
+        LootPool lootPool = getLootPool();
+        return lootPool != null ? lootPool.getLootList() : List.of();
     }
 
     @Override
     public @NotNull Loot getRandom() {
-        return LootPool.getRandom(lootPool);
+        LootPool lootPool = getLootPool();
+        return lootPool != null ? lootPool.getRandom() : Loot.EMPTY;
     }
 
     @Override
     public @NotNull List<@NotNull ItemStack> populate(int slots) {
-        return LootPool.populate(lootPool, slots);
+        LootPool lootPool = getLootPool();
+        return lootPool != null ? lootPool.populate(slots) : List.of();
     }
 
     @Override
     public @NotNull List<@NotNull ItemStack> populate(@NotNull Inventory inventory, int slots) {
-        return LootPool.populate(lootPool, inventory, slots);
+        LootPool lootPool = getLootPool();
+        return lootPool != null ? lootPool.populate(inventory, slots) : List.of();
     }
 
     @Override
     public @NotNull List<@NotNull ItemStack> populateRandomly(@NotNull Inventory inventory, int slots) {
-        return LootPool.populateRandomly(lootPool, inventory, slots);
+        LootPool lootPool = getLootPool();
+        return lootPool != null ? lootPool.populateRandomly(inventory, slots) : List.of();
     }
 
     @Override
-    public @NotNull List<@NotNull ItemStack> populate() {
+    public @NotNull List<@NotNull ItemStack> populateList(@NotNull Inventory inventory) {
         return populate(rollSlots());
     }
 

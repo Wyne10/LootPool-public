@@ -24,7 +24,6 @@ class LootPoolCommand @Inject constructor(
             MergeBasicCommand(lootPoolManager)(),
             WeightBasicCommand(lootPoolManager)(),
             AmountBasicCommand(lootPoolManager)(),
-            RollBasicCommand(lootPoolManager)(),
             FlattenBasicCommand(lootPoolManager)(),
         )
         val poolCommand = CommandAPICommand("pool")
@@ -45,6 +44,7 @@ class LootPoolCommand @Inject constructor(
             RemoveCommand<LootPool>(lootPoolManager)(),
             ComposeCommand<LootPool>(lootPoolManager)(),
             IncludeCommand<LootPool>(lootPoolManager)(),
+            RollCommand<LootPool>(lootPoolManager)(),
             SnapshotCommand(lootPoolManager)(),
             RegisterCommand(lootPoolManager)(),
             InfoCommand<LootPool>(lootPoolManager)(),

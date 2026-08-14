@@ -157,6 +157,36 @@ class IncludeCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolT
         })
 }
 
+class RollCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType: Class<T> = LootPool::class.java as Class<T>) : SubCommand("roll") {
+    override val command: CommandAPICommand = super.command
+        .withShortDescription("Wrap a loot pool with a random roll count.")
+        .withFullDescription(
+            """
+                Create a new roll loot pool that wraps an existing loot pool of any type.
+                Provide a new unique key and the pool to wrap.
+                A roll loot pool delegates all loot to the wrapped pool, but when used without an
+                explicit slot count it populates a random amount of slots within the roll range.
+                Optionally provide a minimum and maximum number of rolls; omit the maximum to roll a
+                fixed amount, or omit both to default to a single roll.
+                The wrapped pool keeps existing on its own and can still be used directly.
+            """.trimIndent()
+        )
+        .withPermission("lootpool.create")
+        .withArguments(StringArgument("key"))
+        .withArguments(lootPoolKey("pool") { lootPoolProvider.getMapOf(lootPoolType) })
+        .withOptionalArguments(IntegerArgument("minRolls", 1), IntegerArgument("maxRolls", 1))
+        .executes(CommandExecutor { sender, args ->
+            val key = args.getByClass("key", String::class.java)!!
+            assertLootPoolNotExists(key, sender, lootPoolProvider.getMapOf(lootPoolType))
+            val pool = args.getByClass("pool", String::class.java)!!
+            assertLootPoolExists(pool, sender, lootPoolProvider.getMapOf(lootPoolType))
+            val minRolls = args.getByClass("minRolls", Int::class.java) ?: 1
+            val maxRolls = args.getByClass("maxRolls", Int::class.java) ?: minRolls
+            lootPoolProvider.writeLootPool(RollLootPool(key, pool, minRolls, maxRolls.coerceAtLeast(minRolls)))
+            sender.placeholderComponent("success-lootpool-create", "key" replace key).sendMessage(sender)
+        })
+}
+
 class PreviewCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType: Class<T> = LootPool::class.java as Class<T>) : SubCommand("preview") {
     override val command: CommandAPICommand = super.command
         .withShortDescription("Preview a loot pool in a GUI.")
