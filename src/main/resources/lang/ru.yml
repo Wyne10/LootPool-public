@@ -1,9 +1,9 @@
 ### GUI
 gui-loot:
-  - "[gray][ЛКМ [red]-[gray]]/[ПКМ [green]+[gray]] [white]Вес: [gold]<weight>"
-  - "[gray][Shift + ЛКМ [red]-[gray]]/[Shift + ПКМ [green]+[gray]] [white]Мин. количество: [gold]<min-amount>"
-  - "[gray][1 [red]-[gray]]/[2 [green]+[gray]] [white]Макс. количество: [gold]<max-amount>"
-  - '[gray][Q] [red]Удалить'
+  - "[italic:off][gray][ЛКМ [red]-[gray]]/[ПКМ [green]+[gray]] [white]Вес: [gold]<weight>"
+  - "[italic:off][gray][Shift + ЛКМ [red]-[gray]]/[Shift + ПКМ [green]+[gray]] [white]Мин. количество: [gold]<min-amount>"
+  - "[italic:off][gray][1 [red]-[gray]]/[2 [green]+[gray]] [white]Макс. количество: [gold]<max-amount>"
+  - "[italic:off][gray][Q] [red]Удалить"
 gui-nothing-item: "Ничего"
 
 ### Messages
@@ -13,7 +13,7 @@ info-lootpool-already-exists: "[white]Лут пул '<key>' уже сущест�
 info-loot-already-exists: "[white]Лут '<key>' уже существует [[hover:show_text:[green]Нажмите чтобы модифицировать][click:run_command:/lootpool item modify <key>][green][underline:true]Модифицировать[underline][click][hover][white]]"
 info-lootpool-loot: "- <loot-name> [color](<loot-type>) [<min-amount>..<max-amount>] - [gold]<weight> [aqua](<percentage>%)"
 info-lootpool:
-  - "Лут пул '<key>' (<type>):"
+  - "Лут пул '<key>' (<type>)<rolls>:"
   - "<loot-list>"
 info-lootpool-more: "- И x<amount>..."
 

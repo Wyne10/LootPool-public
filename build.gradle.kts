@@ -82,7 +82,7 @@ bukkit {
     softDepend = listOf("PlaceholderAPI", "CommandAPI", "AbstractMenus", "CustomEnchants")
     permissions {
         register("lootpool.*") {
-            children = listOf("lootpool.reload", "lootpool.create", "lootpool.modify", "lootpool.remove", "lootpool.info", "lootpool.clone",
+            children = listOf("lootpool.reload", "lootpool.create", "lootpool.modify", "lootpool.remove", "lootpool.info",
                 "lootpool.give", "lootpool.drop", "lootpool.insert", "lootpool.fill")
             default = BukkitPluginDescription.Permission.Default.OP
         }
@@ -100,9 +100,6 @@ bukkit {
         }
         register("lootpool.info") {
             description = "Allows to check info about existing loot pools"
-        }
-        register("lootpool.clone") {
-            description = "Allows to clone existing loot pools"
         }
 
         register("lootpool.give") {

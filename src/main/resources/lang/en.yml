@@ -1,9 +1,9 @@
 ### GUI
 gui-loot:
-  - "[gray][LMB [red]-[gray]]/[RMB [green]+[gray]] [white]Weight: [gold]<weight>"
-  - "[gray][Shift + LMB [red]-[gray]]/[Shift + RMB [green]+[gray]] [white]Min amount: [gold]<min-amount>"
-  - "[gray][1 [red]-[gray]]/[2 [green]+[gray]] [white]Max amount: [gold]<max-amount>"
-  - '[gray][Q] [red]Remove'
+  - "[italic:off][gray][LMB [red]-[gray]]/[RMB [green]+[gray]] [white]Weight: [gold]<weight>"
+  - "[italic:off][gray][Shift + LMB [red]-[gray]]/[Shift + RMB [green]+[gray]] [white]Min amount: [gold]<min-amount>"
+  - "[italic:off][gray][1 [red]-[gray]]/[2 [green]+[gray]] [white]Max amount: [gold]<max-amount>"
+  - "[italic:off][gray][Q] [red]Remove"
 gui-nothing-item: "Nothing"
 
 ### Messages
@@ -13,7 +13,7 @@ info-lootpool-already-exists: "[white]Loot pool '<key>' already exists [[hover:s
 info-loot-already-exists: "[white]Loot '<key>' already exists [[hover:show_text:[green]Click to modify][click:run_command:/lootpool item modify <key>][green][underline:true]Modify[underline][click][hover][white]]"
 info-lootpool-loot: "- <loot-name> [color](<loot-type>) [<min-amount>..<max-amount>] - [gold]<weight> [aqua](<percentage>%)"
 info-lootpool:
-  - "Loot pool '<key>' (<type>):"
+  - "Loot pool '<key>' (<type>)<rolls>:"
   - "<loot-list>"
 info-lootpool-more: "- And x<amount>..."
 

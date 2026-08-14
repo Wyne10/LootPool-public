@@ -12,6 +12,7 @@ import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
 import org.bigcraft.lootpool.LootPool
 import org.bigcraft.lootpool.api.BasicLootPool
+import org.bigcraft.lootpool.api.EditableLootPool
 import org.bigcraft.lootpool.api.Loot
 import org.bigcraft.lootpool.command.nameComponent
 import org.bigcraft.lootpool.core.LootPoolManager
@@ -49,7 +50,10 @@ class LootPoolGui(private val key: String, private val player: Player) : Registe
 
     private var currentPage = 0
 
-    constructor(key: String, player: Player, lootPool: org.bigcraft.lootpool.api.LootPool) : this(key, player) {
+    private var source: EditableLootPool? = null
+
+    constructor(key: String, player: Player, lootPool: EditableLootPool) : this(key, player) {
+        source = lootPool
         lootPool.lootList
             .filter { it.item.isNotNullOrAir() }
             .forEach { this.lootPool.add(it.asMutable()) }
@@ -175,11 +179,9 @@ class LootPoolGui(private val key: String, private val player: Player) : Registe
             lootPool[0] = MutableLoot(ItemStack(Material.AIR), nothingItem.weight, nothingItem.minAmount, nothingItem.maxAmount)
         else
             lootPool.removeAt(0)
+        val lootList = LinkedList(lootPool.map { it.asImmutable() })
         LootPoolManager.instance.writeLootPool(
-            BasicLootPool(
-                key,
-                LinkedList(lootPool.map { it.asImmutable() })
-            )
+            source?.withLoot(key, lootList) ?: BasicLootPool(key, lootList)
         )
         player.placeholderComponent("success-lootpool-create", "key" replace key).sendMessage(player)
     }

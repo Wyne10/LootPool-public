@@ -5,13 +5,16 @@ import me.wyne.wutils.i18n.kotlin.reduce
 import me.wyne.wutils.i18n.kotlin.replace
 import me.wyne.wutils.i18n.kotlin.replaceComponent
 import net.kyori.adventure.text.Component
-import org.bigcraft.lootpool.api.CompositeLootPool
 import org.bigcraft.lootpool.api.LootPool
+import org.bigcraft.lootpool.api.MultiLootPool
 import org.bukkit.command.CommandSender
 
-fun displayCompositeInfo(sender: CommandSender, lootPool: CompositeLootPool) {
-    val weightSorted = lootPool.lootPools.toSortedMap(compareByDescending<LootPool> { lootPool.lootPools[it] }.thenBy { it.key.key })
-    val totalWeight = weightSorted.values.sumOf { it.toDouble() }
+fun displayMultiInfo(sender: CommandSender, lootPool: MultiLootPool) {
+    val weights = lootPool.lootPools.associateWith { pool -> pool.lootList.sumOf { it.weight } }
+    val totalWeight = weights.values.sumOf { it.toDouble() }
+    val weightSorted = weights.entries.sortedWith(
+        compareByDescending<Map.Entry<LootPool, Int>> { it.value }.thenBy { it.key.key.key }
+    )
     val lootList = weightSorted
         .map { entry ->
             val percentage = if (totalWeight == 0.0) 0.0 else (entry.value / totalWeight) * 100

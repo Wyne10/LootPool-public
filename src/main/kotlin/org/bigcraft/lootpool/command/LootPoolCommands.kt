@@ -23,6 +23,7 @@ import org.bigcraft.lootpool.api.Loot
 import org.bigcraft.lootpool.api.LootPool
 import org.bigcraft.lootpool.api.LootPoolProvider
 import org.bigcraft.lootpool.api.MultiLootPool
+import org.bigcraft.lootpool.api.RollLootPool
 import org.bukkit.Bukkit
 import org.bukkit.command.CommandSender
 
@@ -49,6 +50,8 @@ class InfoCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType
             val lootPool = lootPoolProvider.getLootPool(key)!!
             if (lootPool is CompositeLootPool)
                 return@CommandExecutor displayCompositeInfo(sender, lootPool)
+            if (lootPool is MultiLootPool)
+                return@CommandExecutor displayMultiInfo(sender, lootPool)
             val amount = args.getByClassOrDefault("amount", Int::class.java, 15)
             val sort = LootSort.fromArgument(args.getByClass("sort", String::class.java))
             val totalWeight = lootPool.lootList.sumOf { it.weight.toDouble() }
@@ -69,8 +72,13 @@ class InfoCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType
             if (remaining > 0)
                 lootComponents.add(sender.placeholderComponent("info-lootpool-more", "amount" replace remaining))
             val lootList = lootComponents.reduce() ?: Component.empty()
-            sender.placeholderComponent("info-lootpool", "key" replace key, "type" replace lootPool.javaClass.simpleName)
-                .replace("loot-list" replaceComponent lootList)
+            val rolls = (lootPool as? RollLootPool)?.let { " [${it.minRolls}..${it.maxRolls}]" } ?: ""
+            sender.placeholderComponent(
+                "info-lootpool",
+                "key" replace key,
+                "type" replace lootPool.javaClass.simpleName,
+                "rolls" replace rolls
+            ).replace("loot-list" replaceComponent lootList)
                 .sendMessage(sender)
         })
 }

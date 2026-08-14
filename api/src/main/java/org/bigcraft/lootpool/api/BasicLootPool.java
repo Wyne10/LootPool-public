@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-public record BasicLootPool(@NotNull String key, @NotNull List<@NotNull Loot> lootPool) implements ConfigurationSerializable, LootPool {
+public record BasicLootPool(@NotNull String key, @NotNull List<@NotNull Loot> lootPool) implements ConfigurationSerializable, EditableLootPool {
 
     public static final BasicLootPool EMPTY = new BasicLootPool("empty", List.of());
 
@@ -45,6 +45,11 @@ public record BasicLootPool(@NotNull String key, @NotNull List<@NotNull Loot> lo
     @Override
     public @NotNull List<@NotNull Loot> getLootList() {
         return List.copyOf(lootPool);
+    }
+
+    @Override
+    public @NotNull EditableLootPool withLoot(@NotNull String key, @NotNull List<@NotNull Loot> lootList) {
+        return new BasicLootPool(key, lootList);
     }
 
     @NotNull

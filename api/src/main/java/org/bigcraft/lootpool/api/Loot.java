@@ -13,7 +13,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public record Loot(@NotNull ItemStack item, int weight, int minAmount, int maxAmount) implements ConfigurationSerializable {
 
-    public static final Loot EMPTY = new Loot(new ItemStack(Material.AIR), 0, 1, 1);
+    public static final Loot EMPTY = new Loot(new ItemStack(Material.AIR), 1, 1, 1);
 
     public Loot(@NotNull Loot loot) {
         this(loot.item(), loot.weight(), loot.minAmount(), loot.maxAmount());
@@ -39,17 +39,23 @@ public record Loot(@NotNull ItemStack item, int weight, int minAmount, int maxAm
         return new Loot((ItemStack) args.get("item"), NumberConversions.toInt(args.get("weight")), NumberConversions.toInt(args.get("minAmount")), NumberConversions.toInt(args.get("maxAmount")));
     }
 
+    public int rollAmount() {
+        int min = Math.max(0, Math.min(minAmount, maxAmount));
+        int max = Math.max(0, Math.max(minAmount, maxAmount));
+        return min == max ? min : ThreadLocalRandom.current().nextInt(min, max + 1);
+    }
+
     @NotNull
     public ItemStack create() {
         var item = this.item.clone();
-        item.setAmount(ThreadLocalRandom.current().nextInt(minAmount, maxAmount + 1));
+        item.setAmount(rollAmount());
         return item;
     }
 
     @NotNull
     public ItemStack create(@Nullable Amount amount) {
         var item = this.item.clone();
-        var finalAmount = ThreadLocalRandom.current().nextInt(minAmount, maxAmount + 1);
+        var finalAmount = rollAmount();
         if (amount != null) {
             switch (amount) {
                 case MIN -> finalAmount = minAmount;
