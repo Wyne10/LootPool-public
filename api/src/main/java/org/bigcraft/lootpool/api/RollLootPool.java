@@ -90,6 +90,11 @@ public record RollLootPool(@NotNull String key, @NotNull List<@NotNull Loot> loo
     }
 
     @Override
+    public @NotNull List<@NotNull ItemStack> populate() {
+        return populate(rollSlots());
+    }
+
+    @Override
     public @NotNull List<@NotNull ItemStack> populate(@NotNull Inventory inventory) {
         return populate(inventory, rollSlots());
     }

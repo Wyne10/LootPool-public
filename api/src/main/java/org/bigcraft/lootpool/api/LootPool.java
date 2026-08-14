@@ -21,6 +21,11 @@ public interface LootPool extends LootTable {
     List<@NotNull ItemStack> populate(int slots);
 
     @NotNull
+    default List<@NotNull ItemStack> populate() {
+        return populate(0);
+    }
+
+    @NotNull
     List<@NotNull ItemStack> populate(@NotNull Inventory inventory, int slots);
 
     @NotNull

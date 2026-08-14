@@ -154,9 +154,12 @@ class LootPoolGui(private val key: String, private val player: Player) : Registe
     private fun onQ(event: InventoryClickEvent) {
         if (!validateClick(event)) return
         if (!validateModificationClick(event)) return
-        if (event.slot == 0 && currentPage == 0) return
         if (event.action != InventoryAction.DROP_ONE_SLOT &&
             event.action != InventoryAction.DROP_ALL_SLOT) return
+        if (event.slot == 0 && currentPage == 0) {
+            nothingItem.weight = 0
+            return
+        }
         lootPool.removeAt(event.index)
         inventory.clear()
         run { render() }
