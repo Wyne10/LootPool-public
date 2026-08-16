@@ -83,7 +83,7 @@ bukkit {
     permissions {
         register("lootpool.*") {
             children = listOf("lootpool.reload", "lootpool.create", "lootpool.modify", "lootpool.remove", "lootpool.info",
-                "lootpool.give", "lootpool.drop", "lootpool.insert", "lootpool.fill")
+                "lootpool.give", "lootpool.drop", "lootpool.insert", "lootpool.populate", "lootpool.spawn", "lootpool.fill")
             default = BukkitPluginDescription.Permission.Default.OP
         }
         register("lootpool.reload") {
@@ -111,11 +111,14 @@ bukkit {
         register("lootpool.insert") {
             description = "Allows to insert loot pools in container"
         }
-        register("lootpool.fill") {
-            description = "Allows to fill containers with loot pools"
-        }
         register("lootpool.populate") {
             description = "Allows to populate player inventories with loot pools"
+        }
+        register("lootpool.spawn") {
+            description = "Allows to spawn loot pools on ground"
+        }
+        register("lootpool.fill") {
+            description = "Allows to fill containers with loot pools"
         }
         register("lootpool.project") {
             description = "Allows to project loot pools to players"

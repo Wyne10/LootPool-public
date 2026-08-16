@@ -21,6 +21,7 @@ import org.bigcraft.lootpool.api.Loot
 import org.bigcraft.lootpool.api.BasicLootPool
 import org.bigcraft.lootpool.api.LootPool
 import org.bigcraft.lootpool.api.LootPoolProvider
+import org.bigcraft.lootpool.api.RollLootPool
 import org.bukkit.Location
 import org.bukkit.block.Container
 import org.bukkit.entity.Player
@@ -155,6 +156,72 @@ class InsertCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolTy
         })
 }
 
+class PopulateCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType: Class<T> = LootPool::class.java as Class<T>) : SubCommand("populate") {
+    override val command: CommandAPICommand = super.command
+        .withShortDescription("Populate a player's inventory using a loot pool.")
+        .withFullDescription(
+            """
+                Populate a target player's inventory using the loot pool's own logic.
+                Any items that do not fit are added where possible or dropped at the player's feet.
+                "slots" is how many slots to populate (defaults to loot pool logic).
+            """.trimIndent()
+        )
+        .withPermission("lootpool.populate")
+        .withArguments(lootPoolKey("key") { lootPoolProvider.getMapOf(lootPoolType) })
+        .withArguments(EntitySelectorArgument.OnePlayer("target"))
+        .withOptionalArguments(IntegerArgument("slots", 0))
+        .executes(CommandExecutor { sender, args ->
+            val key = args.getByClass("key", String::class.java)!!
+            assertLootPoolExists(key, sender, lootPoolProvider.getMapOf(lootPoolType))
+            val target = args.getByClass("target", Player::class.java)!!
+            val lootPool = lootPoolProvider.getLootPool(key)!!
+            val slots = args.getByClass("slots", Int::class.java)
+            val exceed =
+                if (slots == null) lootPool.populate(target.inventory)
+                else lootPool.populate(target.inventory, slots)
+            target.addOrDrop(*exceed.toTypedArray())
+            sender.placeholderComponent("success-loot-drop", "key" replace key, "amount" replace (slots ?: "some")).sendMessagePlayer(sender)
+        })
+}
+
+class SpawnCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType: Class<T> = LootPool::class.java as Class<T>) : SubCommand("spawn") {
+    override val command: CommandAPICommand = super.command
+        .withShortDescription("Spawn dropped loot using a loot pool.")
+        .withFullDescription(
+            """
+                Spawn loot from a loot pool as dropped items at the given world location,
+                using the loot pool's own logic.
+                "slots" is how many slots to roll; a roll loot pool defaults to its own random
+                roll count, while other pools need a slot count or nothing is dropped.
+            """.trimIndent()
+        )
+        .withPermission("lootpool.spawn")
+        .withArguments(lootPoolKey("key") { lootPoolProvider.getMapOf(lootPoolType) })
+        .withArguments(LocationArgument("location", LocationType.PRECISE_POSITION))
+        .withOptionalArguments(IntegerArgument("slots", 0))
+        .executes(CommandExecutor { sender, args ->
+            val key = args.getByClass("key", String::class.java)!!
+            assertLootPoolExists(key, sender, lootPoolProvider.getMapOf(lootPoolType))
+            val location = args.getByClass("location", Location::class.java)!!
+            val slots = args.getByClass("slots", Int::class.java)
+            val lootPool = lootPoolProvider.getLootPool(key)!!
+            val drops =
+                if (lootPool is RollLootPool) {
+                    if (slots == null) lootPool.populate(lootPool.rollSlots())
+                    else lootPool.populate(slots)
+                } else {
+                    if (slots == null) emptyList()
+                    else lootPool.populate(slots)
+                }
+            drops
+                .filter { it.isNotNullOrAir() }
+                .forEach {
+                    location.world.dropItem(location, it)
+                }
+            sender.placeholderComponent("success-loot-drop", "key" replace key, "amount" replace (slots ?: "some")).sendMessagePlayer(sender)
+        })
+}
+
 class FillCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType: Class<T> = LootPool::class.java as Class<T>) : SubCommand("fill") {
     override val command: CommandAPICommand = super.command
         .withShortDescription("Fill a container using a loot pool.")
@@ -164,11 +231,13 @@ class FillCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType
                 The targeted block must be a container (chest, barrel, etc.).
                 Unlike "insert", this fills the whole container inventory as defined by the pool
                 rather than rolling a fixed number of slots.
+                "random" scatters the loot across random slots instead of filling them in order.
             """.trimIndent()
         )
         .withPermission("lootpool.fill")
         .withArguments(lootPoolKey("key") { lootPoolProvider.getMapOf(lootPoolType) })
         .withArguments(LocationArgument("location", LocationType.BLOCK_POSITION))
+        .withOptionalArguments(BooleanArgument("random"))
         .executes(CommandExecutor { sender, args ->
             val key = args.getByClass("key", String::class.java)!!
             assertLootPoolExists(key, sender, lootPoolProvider.getMapOf(lootPoolType))
@@ -181,35 +250,13 @@ class FillCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType
                         "y" replace location.blockY,
                         "z" replace location.blockZ).get()
                 )
+            val random = args.getByClass("random", Boolean::class.java) ?: false
             val lootPool = lootPoolProvider.getLootPool(key)!!
-            lootPool.populate(container.inventory)
+            if (random)
+                lootPool.populateRandomly(container.inventory)
+            else
+                lootPool.populate(container.inventory)
             sender.placeholderComponent("success-loot-drop", "key" replace key, "amount" replace container.inventory.size).sendMessagePlayer(sender)
-        })
-}
-
-class PopulateCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType: Class<T> = LootPool::class.java as Class<T>) : SubCommand("populate") {
-    override val command: CommandAPICommand = super.command
-        .withShortDescription("Populate a player's inventory using a loot pool.")
-        .withFullDescription(
-            """
-                Populate a target player's inventory using the loot pool's own logic.
-                Any items that do not fit are added where possible or dropped at the player's feet.
-                "slots" is how many slots to populate (defaults to the number of entries in the pool).
-            """.trimIndent()
-        )
-        .withPermission("lootpool.populate")
-        .withArguments(lootPoolKey("key") { lootPoolProvider.getMapOf(lootPoolType) })
-        .withArguments(EntitySelectorArgument.OnePlayer("target"))
-        .withOptionalArguments(IntegerArgument("slots", 0))
-        .executes(CommandExecutor { sender, args ->
-            val key = args.getByClass("key", String::class.java)!!
-            assertLootPoolExists(key, sender, lootPoolProvider.getMapOf(lootPoolType))
-            val target = args.getByClass("target", Player::class.java)!!
-            val lootPool = lootPoolProvider.getLootPool(key)!!
-            val slots = args.getByClass("slots", Int::class.java) ?: lootPool.lootList.size
-            val exceed = lootPool.populate(target.inventory, slots)
-            target.addOrDrop(*exceed.toTypedArray())
-            sender.placeholderComponent("success-loot-drop", "key" replace key, "amount" replace slots).sendMessagePlayer(sender)
         })
 }
 

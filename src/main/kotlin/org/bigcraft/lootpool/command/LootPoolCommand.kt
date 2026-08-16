@@ -50,6 +50,7 @@ class LootPoolCommand @Inject constructor(
             InfoCommand<LootPool>(lootPoolManager)(),
             GiveCommand<LootPool>(lootPoolManager)(),
             DropCommand<LootPool>(lootPoolManager)(),
+            SpawnCommand<LootPool>(lootPoolManager)(),
             InsertCommand<LootPool>(lootPoolManager)(),
             FillCommand<LootPool>(lootPoolManager)(),
             PopulateCommand<LootPool>(lootPoolManager)(),
