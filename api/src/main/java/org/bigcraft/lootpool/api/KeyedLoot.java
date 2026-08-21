@@ -10,12 +10,23 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * A {@link LootPool} wrapping exactly one {@link Loot} entry. {@link #getRandom()} always returns
+ * that entry (its weight is irrelevant since there is nothing to compete against), making this
+ * the simplest way to expose a single fixed drop as a {@code LootPool}.
+ *
+ * @param key  this pool's identifier in the plugin's registry
+ * @param loot the single loot entry this pool always produces
+ */
 public record KeyedLoot(@NotNull String key, @NotNull Loot loot) implements ConfigurationSerializable, LootPool {
 
     public KeyedLoot(@NotNull KeyedLoot keyedLoot) {
         this(keyedLoot.key(), keyedLoot.loot());
     }
 
+    /**
+     * Reconstructs a {@code KeyedLoot} from a {@link #serialize()}-style map.
+     */
     public KeyedLoot(@NotNull Map<String, Object> args) {
         this(deserialize(args));
     }
@@ -59,6 +70,9 @@ public record KeyedLoot(@NotNull String key, @NotNull Loot loot) implements Conf
         return LootPool.populateRandomly(getLootList(), inventory, slots);
     }
 
+    /**
+     * Returns this pool's synthetic {@code "lootpool:" + key} registry key.
+     */
     @SuppressWarnings("DataFlowIssue")
     @Override
     public @NotNull NamespacedKey getKey() {

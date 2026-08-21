@@ -9,6 +9,23 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * A {@link LootPool} that merges the entries of several other registered pools, referenced by
+ * their registry keys, into one flat weighted pool. Every roll draws from the union of all
+ * referenced pools' entries, so referenced pools with more/heavier entries proportionally
+ * dominate the outcome. Contrast with {@link CompositeLootPool}, which picks one whole sub-pool
+ * per roll instead of merging their contents; pick {@code MultiLootPool} when you want a single
+ * combined drop table, and {@code CompositeLootPool} when you want to weight entire pools against
+ * each other.
+ * <p>
+ * Referenced pools are resolved lazily via {@link LootPoolApi#getProvider()} on every call, so
+ * changes to the registry (or to a referenced pool's own contents) are reflected immediately.
+ * Keys in {@link #lootPools()} that don't currently resolve to a registered pool are silently
+ * skipped rather than causing an error.
+ *
+ * @param key       this pool's identifier in the plugin's registry
+ * @param lootPools the registry keys of the pools to merge
+ */
 public record MultiLootPool(@NotNull String key, @NotNull Set<@NotNull String> lootPools) implements ConfigurationSerializable, LootPool {
 
     @Override
@@ -20,11 +37,20 @@ public record MultiLootPool(@NotNull String key, @NotNull Set<@NotNull String> l
         return data;
     }
 
+    /**
+     * Reconstructs a {@code MultiLootPool} from a {@link #serialize()}-style map.
+     */
     @NotNull
     public static MultiLootPool deserialize(@NotNull Map<String, Object> args) {
         return new MultiLootPool((String) args.get("key"), new LinkedHashSet<>((List<String>) args.get("pools")));
     }
 
+    /**
+     * Resolves {@link #lootPools()} to the currently registered {@link LootPool} instances,
+     * silently dropping any key that no longer resolves.
+     *
+     * @return the resolved pools, in unspecified order
+     */
     @SuppressWarnings("DataFlowIssue")
     @NotNull
     public Set<@NotNull LootPool> getLootPools() {
@@ -35,6 +61,9 @@ public record MultiLootPool(@NotNull String key, @NotNull Set<@NotNull String> l
                 .collect(Collectors.toUnmodifiableSet());
     }
 
+    /**
+     * Returns the flattened union of every resolved sub-pool's {@link LootPool#getLootList()}.
+     */
     @Override
     public @NotNull List<@NotNull Loot> getLootList() {
         return getLootPools()
@@ -63,6 +92,9 @@ public record MultiLootPool(@NotNull String key, @NotNull Set<@NotNull String> l
         return LootPool.populateRandomly(getLootList(), inventory, slots);
     }
 
+    /**
+     * Returns this pool's synthetic {@code "lootpool:" + key} registry key.
+     */
     @SuppressWarnings("DataFlowIssue")
     @Override
     public @NotNull NamespacedKey getKey() {

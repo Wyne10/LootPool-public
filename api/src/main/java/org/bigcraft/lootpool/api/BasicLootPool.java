@@ -8,14 +8,32 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
+/**
+ * The canonical {@link LootPool} implementation: a plain weighted list of {@link Loot} entries,
+ * with no delegation, resolution, or re-rolling involved. Use this for a straightforward,
+ * self-contained drop table, or to "snapshot" any other {@code LootPool} into a fixed, static one
+ * via {@link #BasicLootPool(LootPool)}.
+ *
+ * @param key      this pool's identifier in the plugin's registry
+ * @param lootPool the pool's loot entries
+ */
 public record BasicLootPool(@NotNull String key, @NotNull List<@NotNull Loot> lootPool) implements ConfigurationSerializable, EditableLootPool {
 
+    /** An empty pool, used as a fallback where a valid but harmless {@link LootPool} is required. */
     public static final BasicLootPool EMPTY = new BasicLootPool("empty", List.of());
 
+    /**
+     * Captures a static copy of {@code lootPool}'s current key and {@link LootPool#getLootList()}.
+     * For pools whose entries are computed dynamically (e.g. {@link VanillaLootPool}, {@link MultiLootPool}),
+     * this fixes them at their value at the time of this call rather than tracking future changes.
+     */
     public BasicLootPool(@NotNull LootPool lootPool) {
         this(lootPool.getKey().getKey(), lootPool.getLootList());
     }
 
+    /**
+     * Reconstructs a {@code BasicLootPool} from a {@link #serialize()}-style map.
+     */
     public BasicLootPool(@NotNull Map<String, Object> args) {
         this(BasicLootPool.deserialize(args));
     }
@@ -31,6 +49,11 @@ public record BasicLootPool(@NotNull String key, @NotNull List<@NotNull Loot> lo
         return data;
     }
 
+    /**
+     * Reconstructs a {@code BasicLootPool} from a {@link #serialize()}-style map: {@code "key"}
+     * plus one {@link Loot} entry per sequential integer index, starting at {@code "0"}.
+     * Non-{@link Loot} values at those indices are silently skipped.
+     */
     @NotNull
     public static BasicLootPool deserialize(@NotNull Map<String, Object> args) {
         List<Loot> lootPool = new LinkedList<>();
@@ -52,6 +75,9 @@ public record BasicLootPool(@NotNull String key, @NotNull List<@NotNull Loot> lo
         return new BasicLootPool(key, lootList);
     }
 
+    /**
+     * @return a new pool with the same key and entries sorted ascending by {@link Loot#weight()}
+     */
     @NotNull
     public BasicLootPool sortByWeight() {
         return new BasicLootPool(key, lootPool.stream().sorted(Comparator.comparingInt(Loot::weight)).toList());
@@ -77,6 +103,9 @@ public record BasicLootPool(@NotNull String key, @NotNull List<@NotNull Loot> lo
         return LootPool.populateRandomly(lootPool, inventory, slots);
     }
 
+    /**
+     * Returns this pool's synthetic {@code "lootpool:" + key} registry key.
+     */
     @SuppressWarnings("DataFlowIssue")
     @Override
     public @NotNull NamespacedKey getKey() {
