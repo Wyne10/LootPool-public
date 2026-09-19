@@ -20,6 +20,8 @@ info-lootpool-more: "- And x<amount>..."
 ## Error
 error-lootpool-not-found: "[red]Loot pool '<key>' doesn't exist!"
 error-lootpool-already-exists: "[red]Loot pool '<key>' already exists!"
+error-invalid-key: "[red]Invalid key '<key>'! Use only lowercase letters, digits, '_', '-' and '.'"
+error-invalid-pool-entry: "[red]Invalid entry '<entry>', expected pool:value"
 
 error-empty-loot: "[red]Loot can't be empty!"
 

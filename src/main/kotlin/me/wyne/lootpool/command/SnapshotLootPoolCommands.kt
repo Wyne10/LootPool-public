@@ -1,0 +1,58 @@
+package me.wyne.lootpool.command
+
+import dev.jorel.commandapi.CommandAPIBukkit
+import dev.jorel.commandapi.CommandAPICommand
+import dev.jorel.commandapi.arguments.LocationArgument
+import dev.jorel.commandapi.arguments.LocationType
+import dev.jorel.commandapi.arguments.StringArgument
+import dev.jorel.commandapi.executors.PlayerCommandExecutor
+import me.wyne.wutils.common.kotlin.item.isNullOrAir
+import me.wyne.wutils.i18n.kotlin.placeholderComponent
+import me.wyne.wutils.i18n.kotlin.replace
+import me.wyne.lootpool.api.Loot
+import me.wyne.lootpool.api.LootPoolProvider
+import me.wyne.lootpool.api.SnapshotLootPool
+import org.bukkit.Location
+import org.bukkit.block.Container
+import java.util.TreeMap
+
+class SnapshotCommand(lootPoolProvider: LootPoolProvider) : SubCommand("snapshot") {
+    override val command: CommandAPICommand = super.command
+        .withShortDescription("Snapshot an inventory into a loot pool.")
+        .withFullDescription(
+            """
+                Create a new snapshot loot pool by capturing the contents of an inventory.
+                A snapshot loot pool preserves each item in its original slot and amount.
+                Provide a new unique key, optionally followed by the block location of a container
+                (chest, barrel, etc.) to capture. If no location is given, your own inventory is captured.
+            """.trimIndent()
+        )
+        .withPermission("lootpool.create")
+        .withArguments(StringArgument("key"))
+        .withOptionalArguments(LocationArgument("location", LocationType.BLOCK_POSITION))
+        .executesPlayer(PlayerCommandExecutor { sender, args ->
+            val key = args.getByClass("key", String::class.java)!!
+            assertLootPoolNotExists(key, sender, lootPoolProvider.lootPoolMap)
+            val location = args.getByClass("location", Location::class.java)
+            var container: Container? = null
+            if (location != null) {
+                container = location.block.state as? Container
+                    ?: throw CommandAPIBukkit.failWithAdventureComponent(
+                        sender.placeholderComponent(
+                            "error-not-a-container",
+                            "x" replace location.blockX,
+                            "y" replace location.blockY,
+                            "z" replace location.blockZ).get()
+                    )
+            }
+            val inventoryHolder = container ?: sender
+            val lootPool = TreeMap<Int, Loot>()
+            inventoryHolder.inventory
+                .forEachIndexed { slot, item ->
+                    if (item.isNullOrAir()) return@forEachIndexed
+                    lootPool[slot] = Loot(item.clone(), 1, item.amount, item.amount)
+                }
+            lootPoolProvider.writeLootPool(SnapshotLootPool(key, lootPool))
+            sender.placeholderComponent("success-lootpool-create", "key" replace key).sendMessage(sender)
+        })
+}

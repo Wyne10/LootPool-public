@@ -37,10 +37,10 @@ tasks {
         archiveClassifier.set("")
         minimize()
         if (!isDebug) {
-            relocate("com.google.inject", "org.bigcraft.lootpool.shadow.google.guice")
-            relocate("com.google.common", "org.bigcraft.lootpool.shadow.google.common")
-            relocate("me.wyne.wutils", "org.bigcraft.lootpool.shadow.wutils")
-            relocate("dev.vankka", "org.bigcraft.lootpool.shadow.dev.vankka")
+            relocate("com.google.inject", "me.wyne.lootpool.shadow.google.guice")
+            relocate("com.google.common", "me.wyne.lootpool.shadow.google.common")
+            relocate("me.wyne.wutils", "me.wyne.lootpool.shadow.wutils")
+            relocate("dev.vankka", "me.wyne.lootpool.shadow.dev.vankka")
         }
     }
 
@@ -77,13 +77,13 @@ bukkit {
     version = getVersion().toString()
     website = findProperty("website").toString()
     author = findProperty("author").toString()
-    main = "org.bigcraft.lootpool.LootPool"
+    main = "me.wyne.lootpool.LootPool"
     apiVersion = "1.16"
-    softDepend = listOf("PlaceholderAPI", "CommandAPI", "AbstractMenus", "CustomEnchants")
+    softDepend = listOf("PlaceholderAPI", "CommandAPI", "AbstractMenus")
     permissions {
         register("lootpool.*") {
             children = listOf("lootpool.reload", "lootpool.create", "lootpool.modify", "lootpool.remove", "lootpool.info",
-                "lootpool.give", "lootpool.drop", "lootpool.insert", "lootpool.populate", "lootpool.spawn", "lootpool.fill")
+                "lootpool.give", "lootpool.drop", "lootpool.insert", "lootpool.populate", "lootpool.spawn", "lootpool.fill", "lootpool.project")
             default = BukkitPluginDescription.Permission.Default.OP
         }
         register("lootpool.reload") {

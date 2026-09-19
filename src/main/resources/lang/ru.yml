@@ -20,6 +20,8 @@ info-lootpool-more: "- И x<amount>..."
 ## Error
 error-lootpool-not-found: "[red]Лут пул '<key>' не существует!"
 error-lootpool-already-exists: "[red]Лут пул '<key>' уже существует!"
+error-invalid-key: "[red]Неверный ключ '<key>'! Используйте только строчные латинские буквы, цифры, '_', '-' и '.'"
+error-invalid-pool-entry: "[red]Неверная запись '<entry>', ожидается pool:value"
 
 error-empty-loot: "[red]Лут не может быть пустым!"
 
