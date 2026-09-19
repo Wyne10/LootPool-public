@@ -3,7 +3,7 @@ package me.wyne.lootpool.command
 import dev.jorel.commandapi.CommandAPICommand
 import dev.jorel.commandapi.arguments.LootTableArgument
 import dev.jorel.commandapi.arguments.StringArgument
-import dev.jorel.commandapi.executors.PlayerCommandExecutor
+import dev.jorel.commandapi.executors.CommandExecutor
 import me.wyne.wutils.i18n.kotlin.placeholderComponent
 import me.wyne.wutils.i18n.kotlin.replace
 import me.wyne.lootpool.api.LootPoolProvider
@@ -24,7 +24,7 @@ class RegisterCommand(lootPoolProvider: LootPoolProvider) : SubCommand("register
         .withPermission("lootpool.create")
         .withArguments(StringArgument("key"))
         .withArguments(LootTableArgument("path"))
-        .executesPlayer(PlayerCommandExecutor { sender, args ->
+        .executes(CommandExecutor { sender, args ->
             val key = args.getByClass("key", String::class.java)!!
             assertLootPoolNotExists(key, sender, lootPoolProvider.lootPoolMap)
             val lootTable = args.getByClass("path", LootTable::class.java)!!
