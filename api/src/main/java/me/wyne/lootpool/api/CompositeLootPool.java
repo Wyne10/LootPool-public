@@ -2,6 +2,7 @@ package me.wyne.lootpool.api;
 
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -30,7 +31,8 @@ import java.util.stream.Collectors;
  * @param key       this pool's identifier in the plugin's registry
  * @param lootPools the registry keys of the candidate sub-pools, mapped to their selection weight
  */
-public record CompositeLootPool(@NotNull String key, @NotNull Map<@NotNull String, @NotNull Integer> lootPools) implements ConfigurationSerializable, LootPool {
+@SerializableAs("CompositeLootPool")
+public record CompositeLootPool(@NotNull String key, @NotNull Map<@NotNull String, @NotNull Integer> lootPools) implements ConfigurationSerializable, LootPool, CloneableLootPool {
 
     @Override
     @NotNull
@@ -140,6 +142,15 @@ public record CompositeLootPool(@NotNull String key, @NotNull Map<@NotNull Strin
     @Override
     public @NotNull List<@NotNull ItemStack> populateRandomly(@NotNull Inventory inventory, int slots) {
         return getRandomLootPool().populateRandomly(inventory, slots);
+    }
+
+    /**
+     * Returns a copy of this pool registered under {@code key}, with the same sub-pool references and their weights.
+     */
+    @Override
+    @NotNull
+    public CompositeLootPool withKey(@NotNull String key) {
+        return new CompositeLootPool(key, Map.copyOf(lootPools));
     }
 
     /**

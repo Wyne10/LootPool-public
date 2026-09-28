@@ -2,6 +2,7 @@ package me.wyne.lootpool.api;
 
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -18,7 +19,8 @@ import java.util.Map;
  * @param key  this pool's identifier in the plugin's registry
  * @param loot the single loot entry this pool always produces
  */
-public record KeyedLoot(@NotNull String key, @NotNull Loot loot) implements ConfigurationSerializable, LootPool {
+@SerializableAs("KeyedLoot")
+public record KeyedLoot(@NotNull String key, @NotNull Loot loot) implements ConfigurationSerializable, LootPool, CloneableLootPool {
 
     public KeyedLoot(@NotNull KeyedLoot keyedLoot) {
         this(keyedLoot.key(), keyedLoot.loot());
@@ -68,6 +70,15 @@ public record KeyedLoot(@NotNull String key, @NotNull Loot loot) implements Conf
     @Override
     public @NotNull List<@NotNull ItemStack> populateRandomly(@NotNull Inventory inventory, int slots) {
         return LootPool.populateRandomly(getLootList(), inventory, slots);
+    }
+
+    /**
+     * Returns a copy of this pool registered under {@code key}, with the same loot entry.
+     */
+    @Override
+    @NotNull
+    public KeyedLoot withKey(@NotNull String key) {
+        return new KeyedLoot(key, loot);
     }
 
     /**

@@ -5,6 +5,7 @@ import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.loot.LootContext;
@@ -35,7 +36,8 @@ import java.util.concurrent.ThreadLocalRandom;
  * @param key  this pool's identifier in the plugin's registry (distinct from {@code path})
  * @param path the {@link NamespacedKey} of the vanilla loot table to delegate to
  */
-public record VanillaLootPool(@NotNull String key, @NotNull NamespacedKey path) implements ConfigurationSerializable, LootPool {
+@SerializableAs("VanillaLootPool")
+public record VanillaLootPool(@NotNull String key, @NotNull NamespacedKey path) implements ConfigurationSerializable, LootPool, CloneableLootPool {
 
     @Override
     @NotNull
@@ -146,6 +148,15 @@ public record VanillaLootPool(@NotNull String key, @NotNull NamespacedKey path) 
         var lootTable = getLootTable();
         if (lootTable != null)
             lootTable.fillInventory(inventory, random, context);
+    }
+
+    /**
+     * Returns a copy of this pool registered under {@code key}, with the same referenced vanilla loot table.
+     */
+    @Override
+    @NotNull
+    public VanillaLootPool withKey(@NotNull String key) {
+        return new VanillaLootPool(key, path);
     }
 
     /**

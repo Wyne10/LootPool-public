@@ -18,12 +18,14 @@ import me.wyne.wutils.i18n.kotlin.reduce
 import me.wyne.wutils.i18n.kotlin.replace
 import me.wyne.wutils.i18n.kotlin.replaceComponent
 import net.kyori.adventure.text.Component
+import me.wyne.lootpool.api.CloneableLootPool
 import me.wyne.lootpool.api.CompositeLootPool
 import me.wyne.lootpool.api.Loot
 import me.wyne.lootpool.api.LootPool
 import me.wyne.lootpool.api.LootPoolProvider
 import me.wyne.lootpool.api.MultiLootPool
 import me.wyne.lootpool.api.RollLootPool
+import me.wyne.lootpool.api.complex.ComplexLootPool
 import org.bukkit.Bukkit
 import org.bukkit.NamespacedKey
 import org.bukkit.command.CommandSender
@@ -39,21 +41,28 @@ class InfoCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType
                 any remaining entries are collapsed into a single summary line.
                 "sort" orders the entries: "default", "name", "weight",
                 "min-amount", "max-amount".
+                For complex loot pools, "depth" limits how far into the tree the listing goes:
+                1 shows rolls, 2 adds their entries, 3 adds modifiers and conditions.
             """.trimIndent()
         )
         .withPermission("lootpool.info")
         .withArguments(lootPoolKey("key") { lootPoolProvider.getMapOf(lootPoolType) })
         .withOptionalArguments(IntegerArgument("amount", 1))
         .withOptionalArguments(sortArgument("sort"))
+        .withOptionalArguments(IntegerArgument("depth", 1, 3))
         .executes(CommandExecutor { sender, args ->
             val key = args.getByClass("key", String::class.java)!!
             assertLootPoolExists(key, sender, lootPoolProvider.getMapOf(lootPoolType))
             val lootPool = lootPoolProvider.getLootPool(key)!!
+            val amount = args.getByClassOrDefault("amount", Int::class.java, 15)
             if (lootPool is CompositeLootPool)
                 return@CommandExecutor displayCompositeInfo(sender, lootPool)
             if (lootPool is MultiLootPool)
                 return@CommandExecutor displayMultiInfo(sender, lootPool)
-            val amount = args.getByClassOrDefault("amount", Int::class.java, 15)
+            if (lootPool is ComplexLootPool)
+                return@CommandExecutor displayComplexInfo(
+                    sender, lootPool, amount, args.getByClassOrDefault("depth", Int::class.java, 3)
+                )
             val sort = LootSort.fromArgument(args.getByClass("sort", String::class.java))
             val totalWeight = lootPool.lootList.sumOf { it.weight.toDouble() }
             val sorted = sort.sort(lootPool.lootList)
@@ -81,6 +90,33 @@ class InfoCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType
                 "rolls" replace rolls
             ).replace("loot-list" replaceComponent lootList)
                 .sendMessage(sender)
+        })
+}
+
+class CloneCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType: Class<T> = CloneableLootPool::class.java as Class<T>) : SubCommand("clone") {
+    override val command: CommandAPICommand = super.command
+        .withShortDescription("Copy a loot pool under a new key.")
+        .withFullDescription(
+            """
+                Copy an existing loot pool of any type into a new pool under a new unique key.
+                The copy keeps whatever the original holds - a composite pool's sub-pool weights,
+                a roll pool's roll range, a complex pool's rolls, modifiers and conditions - so it
+                behaves identically to the original.
+                The original is left untouched, and pools referenced by the original are shared
+                rather than copied.
+            """.trimIndent()
+        )
+        .withPermission("lootpool.create")
+        .withArguments(lootPoolKey("key") { lootPoolProvider.getMapOf(lootPoolType) })
+        .withArguments(StringArgument("newKey"))
+        .executes(CommandExecutor { sender, args ->
+            val key = args.getByClass("key", String::class.java)!!
+            assertLootPoolExists(key, sender, lootPoolProvider.getMapOf(lootPoolType))
+            val newKey = args.getByClass("newKey", String::class.java)!!
+            assertLootPoolNotExists(newKey, sender, lootPoolProvider.getMapOf(LootPool::class.java))
+            val lootPool = lootPoolProvider.getLootPool(key) as CloneableLootPool
+            lootPoolProvider.writeLootPool(lootPool.withKey(newKey))
+            sender.placeholderComponent("success-lootpool-create", "key" replace newKey).sendMessage(sender)
         })
 }
 

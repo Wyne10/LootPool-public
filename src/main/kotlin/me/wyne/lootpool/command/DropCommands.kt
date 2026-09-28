@@ -22,9 +22,12 @@ import me.wyne.lootpool.api.BasicLootPool
 import me.wyne.lootpool.api.LootPool
 import me.wyne.lootpool.api.LootPoolProvider
 import me.wyne.lootpool.api.RollLootPool
+import me.wyne.lootpool.api.complex.ContextualLootPool
+import me.wyne.lootpool.api.complex.LootRollContext
 import org.bukkit.Location
 import org.bukkit.block.Container
 import org.bukkit.entity.Player
+import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
 import kotlin.random.Random
 
@@ -49,16 +52,12 @@ class GiveCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType
             assertLootPoolExists(key, sender, lootPoolProvider.getMapOf(lootPoolType))
             val target = args.getByClass("target", Player::class.java)!!
             val amount = args.getByClass("amount", String::class.java)
-            val lootList = lootPoolProvider.getLootPool(key)!!.lootList
             val unique = args.getByClass("unique", Boolean::class.java) ?: false
-            val slots = args.getByClass("slots", Int::class.java) ?: lootList.size
-            val lootPool = BasicLootPool("dummy", lootList.toMutableList())
-            val populated = List(slots) {
-                lootPool.random.let {
-                    if (unique) lootPool.lootPool.remove(it)
-                    it.item.clone().apply { this.amount = getAmount(amount, it) }
-                }
-            }
+            val requestedSlots = args.getByClass("slots", Int::class.java)
+            val populated = rollDrops(
+                lootPoolProvider.getLootPool(key)!!, requestedSlots, unique, amount, LootRollContext.of(target)
+            )
+            val slots = populated.size
             target.addOrDrop(true, *populated.toTypedArray())
             sender.placeholderComponent("success-loot-drop", "key" replace key, "amount" replace slots).sendMessagePlayer(sender)
         })
@@ -85,16 +84,12 @@ class DropCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType
             assertLootPoolExists(key, sender, lootPoolProvider.getMapOf(lootPoolType))
             val location = args.getByClass("location", Location::class.java)!!
             val amount = args.getByClass("amount", String::class.java)
-            val lootList = lootPoolProvider.getLootPool(key)!!.lootList
             val unique = args.getByClass("unique", Boolean::class.java) ?: false
-            val slots = args.getByClass("slots", Int::class.java) ?: lootList.size
-            val lootPool = BasicLootPool("dummy", lootList.toMutableList())
-            val populated = List(slots) {
-                lootPool.random.let {
-                    if (unique) lootPool.lootPool.remove(it)
-                    it.item.clone().apply { this.amount = getAmount(amount, it) }
-                }
-            }
+            val requestedSlots = args.getByClass("slots", Int::class.java)
+            val populated = rollDrops(
+                lootPoolProvider.getLootPool(key)!!, requestedSlots, unique, amount, LootRollContext.of(location)
+            )
+            val slots = populated.size
             populated
                 .filter { it.isNotNullOrAir() }
                 .forEach {
@@ -137,17 +132,13 @@ class InsertCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolTy
                         "y" replace location.blockY,
                         "z" replace location.blockZ).get()
                 )
-            val lootList = lootPoolProvider.getLootPool(key)!!.lootList
             val unique = args.getByClass("unique", Boolean::class.java) ?: false
-            val slots = args.getByClass("slots", Int::class.java) ?: lootList.size
+            val requestedSlots = args.getByClass("slots", Int::class.java)
             val random = args.getByClass("random", Boolean::class.java) ?: false
-            val lootPool = BasicLootPool("dummy", lootList.toMutableList())
-            val populated = List(slots) {
-                lootPool.random.let {
-                    if (unique) lootPool.lootPool.remove(it)
-                    it.item.clone().apply { this.amount = getAmount(amount, it) }
-                }
-            }
+            val populated = rollDrops(
+                lootPoolProvider.getLootPool(key)!!, requestedSlots, unique, amount, LootRollContext.of(location)
+            )
+            val slots = populated.size
             if (random)
                 LootPool.populateRandomly(populated, container.inventory)
             else
@@ -176,9 +167,7 @@ class PopulateCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPool
             val target = args.getByClass("target", Player::class.java)!!
             val lootPool = lootPoolProvider.getLootPool(key)!!
             val slots = args.getByClass("slots", Int::class.java)
-            val exceed =
-                if (slots == null) lootPool.populate(target.inventory)
-                else lootPool.populate(target.inventory, slots)
+            val exceed = lootPool.populateInto(target.inventory, slots, LootRollContext.of(target))
             target.addOrDrop(*exceed.toTypedArray())
             sender.placeholderComponent("success-loot-drop", "key" replace key, "amount" replace (slots ?: "some")).sendMessagePlayer(sender)
         })
@@ -205,14 +194,7 @@ class SpawnCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolTyp
             val location = args.getByClass("location", Location::class.java)!!
             val slots = args.getByClass("slots", Int::class.java)
             val lootPool = lootPoolProvider.getLootPool(key)!!
-            val drops =
-                if (lootPool is RollLootPool) {
-                    if (slots == null) lootPool.populate(lootPool.rollSlots())
-                    else lootPool.populate(slots)
-                } else {
-                    if (slots == null) emptyList()
-                    else lootPool.populate(slots)
-                }
+            val drops = lootPool.populateDefault(slots, LootRollContext.of(location))
             drops
                 .filter { it.isNotNullOrAir() }
                 .forEach {
@@ -252,10 +234,7 @@ class FillCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType
                 )
             val random = args.getByClass("random", Boolean::class.java) ?: false
             val lootPool = lootPoolProvider.getLootPool(key)!!
-            if (random)
-                lootPool.populateRandomly(container.inventory)
-            else
-                lootPool.populate(container.inventory)
+            lootPool.fillInto(container.inventory, random, LootRollContext.of(location))
             sender.placeholderComponent("success-loot-drop", "key" replace key, "amount" replace container.inventory.size).sendMessagePlayer(sender)
         })
 }
@@ -304,4 +283,60 @@ fun getAmount(amountArgument: String?, loot: Loot): Int =
         "random-amount" -> Random.nextInt(loot.minAmount, loot.maxAmount + 1)
         null -> Random.nextInt(loot.minAmount, loot.maxAmount + 1)
         else -> amountArgument.toIntOrNull() ?: 1
+    }
+
+/**
+ * Rolls a pool the way it wants to be rolled, for the commands that otherwise flatten it.
+ *
+ * Give, drop and insert roll manually off [LootPool.getLootList] so they can honour "unique" and
+ * an "amount" override. That flattening would throw away a complex pool's roll counts, conditions
+ * and item modifiers, so those pools take their own pipeline instead; "unique" and "amount" do not
+ * apply to them, since amounts and repetition are already the pool's own business.
+ */
+private fun rollDrops(
+    lootPool: LootPool,
+    slots: Int?,
+    unique: Boolean,
+    amount: String?,
+    context: LootRollContext
+): List<ItemStack> {
+    if (lootPool is ContextualLootPool)
+        return if (slots == null) lootPool.populate(context) else lootPool.populate(slots, context)
+
+    val lootList = lootPool.lootList
+    val dummy = BasicLootPool("dummy", lootList.toMutableList())
+    return List(slots ?: lootList.size) {
+        dummy.random.let {
+            if (unique) dummy.lootPool.remove(it)
+            it.item.clone().apply { this.amount = getAmount(amount, it) }
+        }
+    }
+}
+
+/**
+ * Rolls a pool that decides its own item count, for commands given no explicit slot count.
+ *
+ * Complex and roll pools both carry their own roll counts; every other type has nothing to go on
+ * without a count, which is the pre-existing behaviour.
+ */
+fun LootPool.populateDefault(slots: Int?, context: LootRollContext): List<ItemStack> = when (this) {
+    is ContextualLootPool -> if (slots == null) populate(context) else populate(slots, context)
+    is RollLootPool -> populate(slots ?: rollSlots())
+    else -> if (slots == null) emptyList() else populate(slots)
+}
+
+/** Fills [inventory] in slot order, letting a complex pool roll against [context]. */
+private fun LootPool.populateInto(inventory: Inventory, slots: Int?, context: LootRollContext): List<ItemStack> =
+    if (this is ContextualLootPool)
+        if (slots == null) LootPool.populate(populate(context), inventory) else populate(inventory, slots, context)
+    else
+        if (slots == null) populate(inventory) else populate(inventory, slots)
+
+/** Fills [inventory] in slot or random order, letting a complex pool roll against [context]. */
+private fun LootPool.fillInto(inventory: Inventory, random: Boolean, context: LootRollContext): List<ItemStack> =
+    if (this is ContextualLootPool) {
+        val items = populate(context)
+        if (random) LootPool.populateRandomly(items, inventory) else LootPool.populate(items, inventory)
+    } else {
+        if (random) populateRandomly(inventory) else populate(inventory)
     }

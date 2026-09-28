@@ -2,6 +2,7 @@ package me.wyne.lootpool.api;
 
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -26,7 +27,8 @@ import java.util.stream.Collectors;
  * @param key       this pool's identifier in the plugin's registry
  * @param lootPools the registry keys of the pools to merge
  */
-public record MultiLootPool(@NotNull String key, @NotNull Set<@NotNull String> lootPools) implements ConfigurationSerializable, LootPool {
+@SerializableAs("MultiLootPool")
+public record MultiLootPool(@NotNull String key, @NotNull Set<@NotNull String> lootPools) implements ConfigurationSerializable, LootPool, CloneableLootPool {
 
     @Override
     @NotNull
@@ -90,6 +92,15 @@ public record MultiLootPool(@NotNull String key, @NotNull Set<@NotNull String> l
     @Override
     public @NotNull List<@NotNull ItemStack> populateRandomly(@NotNull Inventory inventory, int slots) {
         return LootPool.populateRandomly(getLootList(), inventory, slots);
+    }
+
+    /**
+     * Returns a copy of this pool registered under {@code key}, with the same sub-pool references.
+     */
+    @Override
+    @NotNull
+    public MultiLootPool withKey(@NotNull String key) {
+        return new MultiLootPool(key, new LinkedHashSet<>(lootPools));
     }
 
     /**

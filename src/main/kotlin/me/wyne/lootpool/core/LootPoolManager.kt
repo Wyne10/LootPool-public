@@ -14,6 +14,29 @@ import me.wyne.lootpool.api.MultiLootPool
 import me.wyne.lootpool.api.RollLootPool
 import me.wyne.lootpool.api.SnapshotLootPool
 import me.wyne.lootpool.api.VanillaLootPool
+import me.wyne.lootpool.api.complex.condition.AllOfCondition
+import me.wyne.lootpool.api.complex.condition.AnyOfCondition
+import me.wyne.lootpool.api.complex.modifier.AttributeEntry
+import me.wyne.lootpool.api.complex.ComplexLootPool
+import me.wyne.lootpool.api.complex.modifier.ConditionalModifier
+import me.wyne.lootpool.api.complex.modifier.DamageModifier
+import me.wyne.lootpool.api.complex.EmptyEntry
+import me.wyne.lootpool.api.complex.modifier.EnchantModifier
+import me.wyne.lootpool.api.complex.EnchantmentEntry
+import me.wyne.lootpool.api.complex.EnchantmentPool
+import me.wyne.lootpool.api.complex.condition.InvertedCondition
+import me.wyne.lootpool.api.complex.ItemEntry
+import me.wyne.lootpool.api.complex.LootRoll
+import me.wyne.lootpool.api.complex.modifier.LoreModifier
+import me.wyne.lootpool.api.complex.modifier.NameModifier
+import me.wyne.lootpool.api.complex.condition.PermissionCondition
+import me.wyne.lootpool.api.complex.PoolEntry
+import me.wyne.lootpool.api.complex.condition.RandomChanceCondition
+import me.wyne.lootpool.api.complex.modifier.SetAttributesModifier
+import me.wyne.lootpool.api.complex.condition.TimeCondition
+import me.wyne.lootpool.api.complex.condition.WeatherCondition
+import me.wyne.lootpool.api.complex.condition.WorldCondition
+import me.wyne.lootpool.condition.PlaceholderCondition
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.configuration.serialization.ConfigurationSerialization
@@ -21,8 +44,8 @@ import java.io.File
 
 @Singleton
 class LootPoolManager @Inject constructor(private val plugin: me.wyne.lootpool.LootPool) : LoadableProvider<LootPool>(
-        "lootpool", LootPoolFactory
-    ), LootPoolProvider {
+    "lootpool", LootPoolFactory
+), LootPoolProvider {
 
     init {
         instance = this
@@ -34,6 +57,34 @@ class LootPoolManager @Inject constructor(private val plugin: me.wyne.lootpool.L
         ConfigurationSerialization.registerClass(SnapshotLootPool::class.java)
         ConfigurationSerialization.registerClass(MultiLootPool::class.java)
         ConfigurationSerialization.registerClass(VanillaLootPool::class.java)
+
+        ConfigurationSerialization.registerClass(ComplexLootPool::class.java)
+        ConfigurationSerialization.registerClass(LootRoll::class.java)
+
+        ConfigurationSerialization.registerClass(ItemEntry::class.java)
+        ConfigurationSerialization.registerClass(PoolEntry::class.java)
+        ConfigurationSerialization.registerClass(EmptyEntry::class.java)
+
+        ConfigurationSerialization.registerClass(ConditionalModifier::class.java)
+        ConfigurationSerialization.registerClass(EnchantModifier::class.java)
+        ConfigurationSerialization.registerClass(DamageModifier::class.java)
+        ConfigurationSerialization.registerClass(SetAttributesModifier::class.java)
+        ConfigurationSerialization.registerClass(AttributeEntry::class.java)
+        ConfigurationSerialization.registerClass(NameModifier::class.java)
+        ConfigurationSerialization.registerClass(LoreModifier::class.java)
+
+        ConfigurationSerialization.registerClass(RandomChanceCondition::class.java)
+        ConfigurationSerialization.registerClass(AllOfCondition::class.java)
+        ConfigurationSerialization.registerClass(AnyOfCondition::class.java)
+        ConfigurationSerialization.registerClass(InvertedCondition::class.java)
+        ConfigurationSerialization.registerClass(PermissionCondition::class.java)
+        ConfigurationSerialization.registerClass(WorldCondition::class.java)
+        ConfigurationSerialization.registerClass(TimeCondition::class.java)
+        ConfigurationSerialization.registerClass(WeatherCondition::class.java)
+        ConfigurationSerialization.registerClass(PlaceholderCondition::class.java)
+
+        ConfigurationSerialization.registerClass(EnchantmentPool::class.java)
+        ConfigurationSerialization.registerClass(EnchantmentEntry::class.java)
     }
 
     override fun getLootPoolMap(): Map<String, LootPool> =

@@ -2,6 +2,7 @@ package me.wyne.lootpool.api;
 
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.NumberConversions;
 import org.jetbrains.annotations.NotNull;
@@ -20,6 +21,7 @@ import java.util.concurrent.ThreadLocalRandom;
  * @param minAmount the inclusive lower bound of the rolled stack size
  * @param maxAmount the inclusive upper bound of the rolled stack size
  */
+@SerializableAs("Loot")
 public record Loot(@NotNull ItemStack item, int weight, int minAmount, int maxAmount) implements ConfigurationSerializable {
 
     /** A sentinel entry of one air block, used as a fallback where no real loot is available. */

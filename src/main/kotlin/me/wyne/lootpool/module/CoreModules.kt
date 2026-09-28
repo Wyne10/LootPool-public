@@ -2,6 +2,7 @@ package me.wyne.lootpool.module
 
 import com.google.inject.AbstractModule
 import me.wyne.lootpool.LootPoolApi
+import me.wyne.lootpool.core.EnchantmentPoolManager
 import me.wyne.lootpool.core.LootPoolManager
 
 private class CoreModule(private vararg val modules: Class<out Any>) : AbstractModule() {
@@ -10,7 +11,6 @@ private class CoreModule(private vararg val modules: Class<out Any>) : AbstractM
     }
 }
 
-val LootPoolModule: AbstractModule = CoreModule(LootPoolManager::class.java)
+val LootPoolModule: AbstractModule = CoreModule(LootPoolManager::class.java, EnchantmentPoolManager::class.java)
 
 val ApiModule: AbstractModule = CoreModule(LootPoolApi::class.java)
-

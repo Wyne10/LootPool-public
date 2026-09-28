@@ -47,14 +47,14 @@ tasks {
     runServer {
         val minecraftVersion: String = if (Os.isFamily(Os.FAMILY_WINDOWS) || isDebug) "1.19.4" else "1.16.5"
         val viaVersion = "5.12.0"
-        val commandApiVersion = "9.4.3"
+        val commandApiVersion = "9.4.2"
         downloadPlugins {
             url("https://download.luckperms.net/1672/bukkit/loader/LuckPerms-Bukkit-5.5.85.jar")
             github("PlaceholderAPI", "PlaceholderAPI", "2.12.3", "PlaceholderAPI-2.12.3.jar")
             github("dmulloy2", "ProtocolLib", "5.4.0", "ProtocolLib.jar")
             github("ViaVersion", "ViaVersion", viaVersion, "ViaVersion-$viaVersion.jar")
             github("ViaVersion", "ViaBackwards", viaVersion, "ViaBackwards-$viaVersion.jar")
-            github("NeverMined-Entertainment", "CommandAPI", commandApiVersion, "CommandAPI-$commandApiVersion.jar")
+            github("CommandAPI", "CommandAPI", commandApiVersion, "CommandAPI-$commandApiVersion.jar")
         }
         minecraftVersion(minecraftVersion)
     }

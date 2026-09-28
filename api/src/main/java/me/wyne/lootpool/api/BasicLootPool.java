@@ -2,6 +2,7 @@ package me.wyne.lootpool.api;
 
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -17,7 +18,8 @@ import java.util.*;
  * @param key      this pool's identifier in the plugin's registry
  * @param lootPool the pool's loot entries
  */
-public record BasicLootPool(@NotNull String key, @NotNull List<@NotNull Loot> lootPool) implements ConfigurationSerializable, EditableLootPool {
+@SerializableAs("BasicLootPool")
+public record BasicLootPool(@NotNull String key, @NotNull List<@NotNull Loot> lootPool) implements ConfigurationSerializable, EditableLootPool, CloneableLootPool {
 
     /** An empty pool, used as a fallback where a valid but harmless {@link LootPool} is required. */
     public static final BasicLootPool EMPTY = new BasicLootPool("empty", List.of());
@@ -101,6 +103,15 @@ public record BasicLootPool(@NotNull String key, @NotNull List<@NotNull Loot> lo
     @Override
     public @NotNull List<@NotNull ItemStack> populateRandomly(@NotNull Inventory inventory, int slots) {
         return LootPool.populateRandomly(lootPool, inventory, slots);
+    }
+
+    /**
+     * Returns a copy of this pool registered under {@code key}, with the same loot entries.
+     */
+    @Override
+    @NotNull
+    public BasicLootPool withKey(@NotNull String key) {
+        return new BasicLootPool(key, List.copyOf(lootPool));
     }
 
     /**

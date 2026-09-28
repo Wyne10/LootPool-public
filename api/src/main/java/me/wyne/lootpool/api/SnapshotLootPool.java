@@ -3,6 +3,7 @@ package me.wyne.lootpool.api;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -22,7 +23,8 @@ import java.util.*;
  * @param key      this pool's identifier in the plugin's registry
  * @param lootPool the loot entries keyed by their target inventory slot index, ascending
  */
-public record SnapshotLootPool(@NotNull String key, @NotNull SortedMap<@NotNull Integer, @NotNull Loot> lootPool) implements ConfigurationSerializable, LootPool {
+@SerializableAs("SnapshotLootPool")
+public record SnapshotLootPool(@NotNull String key, @NotNull SortedMap<@NotNull Integer, @NotNull Loot> lootPool) implements ConfigurationSerializable, LootPool, CloneableLootPool {
 
     @Override
     @NotNull
@@ -106,6 +108,15 @@ public record SnapshotLootPool(@NotNull String key, @NotNull SortedMap<@NotNull 
     @Override
     public @NotNull List<@NotNull ItemStack> populateRandomly(@NotNull Inventory inventory, int slots) {
         return LootPool.populateRandomly(getLootList(), inventory, slots);
+    }
+
+    /**
+     * Returns a copy of this pool registered under {@code key}, with the same slot-pinned loot entries.
+     */
+    @Override
+    @NotNull
+    public SnapshotLootPool withKey(@NotNull String key) {
+        return new SnapshotLootPool(key, Collections.unmodifiableSortedMap(new TreeMap<>(lootPool)));
     }
 
     /**

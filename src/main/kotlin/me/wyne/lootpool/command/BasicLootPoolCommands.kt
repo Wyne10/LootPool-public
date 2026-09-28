@@ -55,28 +55,6 @@ class ModifyBasicCommand(lootPoolProvider: LootPoolProvider) : SubCommand("modif
         })
 }
 
-class CloneBasicCommand(lootPoolProvider: LootPoolProvider) : SubCommand("clone") {
-    override val command: CommandAPICommand = super.command
-        .withShortDescription("Clone a basic loot pool.")
-        .withFullDescription(
-            """
-                Clone an existing basic loot pool
-                to an identical loot pool with a new key.
-            """.trimIndent()
-        )
-        .withPermission("lootpool.create")
-        .withArguments(lootPoolKey("key") { lootPoolProvider.getMapOf(EditableLootPool::class.java) })
-        .withArguments(StringArgument("newKey"))
-        .executesPlayer(PlayerCommandExecutor { sender, args ->
-            val key = args.getByClass("key", String::class.java)!!
-            assertLootPoolExists(key, sender, lootPoolProvider.getMapOf(EditableLootPool::class.java))
-            val lootPool = lootPoolProvider.getLootPool(key)!! as EditableLootPool
-            val newKey = args.getByClass("newKey", String::class.java)!!
-            assertBasicLootPoolNotExists(newKey, sender, lootPoolProvider.lootPoolMap)
-            LootPoolGui(newKey, sender, lootPool)
-        })
-}
-
 class MergeBasicCommand(lootPoolProvider: LootPoolProvider) : SubCommand("merge") {
     override val command: CommandAPICommand = super.command
         .withShortDescription("Merge two loot pools.")

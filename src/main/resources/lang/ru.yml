@@ -16,12 +16,35 @@ info-lootpool:
   - "Лут пул '<key>' (<type>)<rolls>:"
   - "<loot-list>"
 info-lootpool-more: "- И x<amount>..."
+info-complex-node: "<indent>[[hover:show_text:[green]Нажмите чтобы подставить команду для этого узла][click:suggest_command:<command>][gold]<path>[click][hover]][dark_gray] - [gray]<description>"
+info-complex-more: "<indent>[dark_gray]- И x<amount>..."
+info-complex:
+  - "Комплексный лут пул '<key>' (<rolls> ролл(ов)):"
+  - "<node-list>"
+info-enchantment-pool-entry: "- [white]<enchantment> [gray][<min-level>..<max-level>] - [gold]<weight> [aqua](<percentage>%)"
+info-enchantment-pool:
+  - "Пул зачарований '<key>':"
+  - "<entry-list>"
+info-enchantment-pool-already-exists: "[white]Пул зачарований '<key>' уже существует [[hover:show_text:[green]Нажмите чтобы посмотреть][click:run_command:/lootpool enchant info <key>][green][underline:true]Информация[underline][click][hover][white]]"
 
 ## Error
 error-lootpool-not-found: "[red]Лут пул '<key>' не существует!"
 error-lootpool-already-exists: "[red]Лут пул '<key>' уже существует!"
 error-invalid-key: "[red]Неверный ключ '<key>'! Используйте только строчные латинские буквы, цифры, '_', '-' и '.'"
 error-invalid-pool-entry: "[red]Неверная запись '<entry>', ожидается pool:value"
+error-not-a-complex-lootpool: "[red]Лут пул '<key>' не является комплексным!"
+error-invalid-path: "[red]Неверный путь '<path>'! Используйте 'pool', индекс ролла '0', запись '0.2' или вложенный список '0.2.m0'"
+error-path-has-no-modifiers: "[red]'<path>' не может содержать модификаторы!"
+error-invalid-index: "[red]В '<path>' нет элемента с индексом <index>!"
+error-invalid-roll: "[red]В лут пуле '<key>' нет ролла <roll>!"
+error-invalid-entry: "[red]В ролле <roll> нет записи <entry>!"
+error-not-a-conditional-modifier: "[red]Модификатор <index> не является условным!"
+error-wrong-entry-type: "[red]Запись <entry> ролла <roll> не того типа!"
+error-wrong-modifier-type: "[red]Модификатор <modifier> в '<path>' не того типа!"
+error-wrong-condition-type: "[red]Условие <condition> в '<path>' не того типа!"
+error-enchantment-pool-not-found: "[red]Пул зачарований '<key>' не существует!"
+error-enchantment-pool-already-exists: "[red]Пул зачарований '<key>' уже существует!"
+error-enchantment-not-found: "[red]В пуле зачарований '<key>' нет записи <entry>!"
 
 error-empty-loot: "[red]Лут не может быть пустым!"
 
@@ -31,5 +54,9 @@ error-not-a-container: "[red]Целевая позиция <x>, <y>, <z> не я
 success-plugin-reload: "[green]Плагин перезагружен!"
 success-lootpool-create: "[green]Лут пул '<key>' создан"
 success-lootpool-remove: "[green]Лут пул '<key>' [red]удален"
+success-lootpool-modify: "[green]Лут пул '<key>' обновлен"
+success-enchantment-pool-create: "[green]Пул зачарований '<key>' создан"
+success-enchantment-pool-modify: "[green]Пул зачарований '<key>' обновлен"
+success-enchantment-pool-remove: "[green]Пул зачарований '<key>' [red]удален"
 
 success-loot-drop: "Выброшено <amount> предметов"

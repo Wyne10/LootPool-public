@@ -2,6 +2,7 @@ package me.wyne.lootpool.api;
 
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.loot.LootContext;
@@ -32,7 +33,8 @@ import java.util.concurrent.ThreadLocalRandom;
  * @param minRolls the inclusive lower bound of the roll count
  * @param maxRolls the inclusive upper bound of the roll count
  */
-public record RollLootPool(@NotNull String key, @NotNull String pool, int minRolls, int maxRolls) implements ConfigurationSerializable, LootPool {
+@SerializableAs("RollLootPool")
+public record RollLootPool(@NotNull String key, @NotNull String pool, int minRolls, int maxRolls) implements ConfigurationSerializable, LootPool, CloneableLootPool {
 
     /**
      * Reconstructs a {@code RollLootPool} from a {@link #serialize()}-style map.
@@ -179,6 +181,15 @@ public record RollLootPool(@NotNull String key, @NotNull String pool, int minRol
     @Override
     public void fillInventory(@NotNull Inventory inventory, @NotNull Random random, @NotNull LootContext context) {
         populate(inventory, rollSlots());
+    }
+
+    /**
+     * Returns a copy of this pool registered under {@code key}, with the same wrapped pool and roll range.
+     */
+    @Override
+    @NotNull
+    public RollLootPool withKey(@NotNull String key) {
+        return new RollLootPool(key, pool, minRolls, maxRolls);
     }
 
     /**
