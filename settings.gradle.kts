@@ -6,7 +6,6 @@ rootProject.name = "LootPool"
 
 dependencyResolutionManagement {
     repositories {
-        mavenLocal()
         mavenCentral()
         maven {
             url = uri("https://jitpack.io/")
@@ -19,4 +18,5 @@ dependencyResolutionManagement {
         }
     }
 }
+
 include("api")
