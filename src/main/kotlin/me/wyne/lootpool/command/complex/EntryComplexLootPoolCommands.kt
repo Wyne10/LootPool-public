@@ -1,7 +1,10 @@
 package me.wyne.lootpool.command.complex
 
 import dev.jorel.commandapi.CommandAPICommand
+import dev.jorel.commandapi.arguments.Argument
 import dev.jorel.commandapi.arguments.IntegerArgument
+import dev.jorel.commandapi.arguments.SafeSuggestions
+import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException
 import dev.jorel.commandapi.executors.CommandExecutor
 import dev.jorel.commandapi.executors.PlayerCommandExecutor
 import me.wyne.lootpool.api.Loot
@@ -9,6 +12,7 @@ import me.wyne.lootpool.api.LootPool
 import me.wyne.lootpool.api.LootPoolProvider
 import me.wyne.lootpool.api.complex.EmptyEntry
 import me.wyne.lootpool.api.complex.ItemEntry
+import me.wyne.lootpool.api.complex.LootEntry
 import me.wyne.lootpool.api.complex.PoolEntry
 import me.wyne.lootpool.command.assertLootNotEmpty
 import me.wyne.lootpool.command.assertLootPoolExists
@@ -27,10 +31,7 @@ fun entryComplexCommand(provider: LootPoolProvider): CommandAPICommand {
         addEntryCommand(provider),
         removeEntryCommand(provider),
         moveEntryCommand(provider),
-        entryItemCommand(provider),
-        entryPoolCommand(provider),
-        entryWeightCommand(provider),
-        entryAmountCommand(provider)
+        setEntryCommand(provider)
     )
     return CommandAPICommand("entry")
         .withShortDescription("Manage a roll's entries.")
@@ -50,7 +51,7 @@ private fun addEntryCommand(provider: LootPoolProvider): CommandAPICommand {
         )
         .withPermission("lootpool.modify")
         .withArguments(complexPoolKey("key", provider))
-        .withArguments(IntegerArgument("roll", 0))
+        .withArguments(rollIndexArgument("roll", provider))
         .withOptionalArguments(IntegerArgument("weight", 0), IntegerArgument("minAmount", 1, 64), IntegerArgument("maxAmount", 1, 64))
         .executesPlayer(PlayerCommandExecutor { sender, args ->
             val editor = editorFor(args, sender, provider)
@@ -79,7 +80,7 @@ private fun addEntryCommand(provider: LootPoolProvider): CommandAPICommand {
         )
         .withPermission("lootpool.modify")
         .withArguments(complexPoolKey("key", provider))
-        .withArguments(IntegerArgument("roll", 0))
+        .withArguments(rollIndexArgument("roll", provider))
         .withArguments(lootPoolKey("pool") { provider.getMapOf(LootPool::class.java) })
         .withOptionalArguments(IntegerArgument("weight", 0))
         .executes(CommandExecutor { sender, args ->
@@ -102,7 +103,7 @@ private fun addEntryCommand(provider: LootPoolProvider): CommandAPICommand {
         )
         .withPermission("lootpool.modify")
         .withArguments(complexPoolKey("key", provider))
-        .withArguments(IntegerArgument("roll", 0))
+        .withArguments(rollIndexArgument("roll", provider))
         .withOptionalArguments(IntegerArgument("weight", 0))
         .executes(CommandExecutor { sender, args ->
             val editor = editorFor(args, sender, provider)
@@ -129,8 +130,8 @@ private fun removeEntryCommand(provider: LootPoolProvider) = CommandAPICommand("
     )
     .withPermission("lootpool.modify")
     .withArguments(complexPoolKey("key", provider))
-    .withArguments(IntegerArgument("roll", 0))
-    .withArguments(IntegerArgument("entry", 0))
+    .withArguments(rollIndexArgument("roll", provider))
+    .withArguments(entryIndexArgument<LootEntry>("entry", provider))
     .executes(CommandExecutor { sender, args ->
         val editor = editorFor(args, sender, provider)
         val roll = rollIndex(editor, args, sender)
@@ -149,8 +150,8 @@ private fun moveEntryCommand(provider: LootPoolProvider) = CommandAPICommand("mo
     )
     .withPermission("lootpool.modify")
     .withArguments(complexPoolKey("key", provider))
-    .withArguments(IntegerArgument("roll", 0))
-    .withArguments(IntegerArgument("entry", 0))
+    .withArguments(rollIndexArgument("roll", provider))
+    .withArguments(entryIndexArgument<LootEntry>("entry", provider))
     .withArguments(IntegerArgument("delta"))
     .executes(CommandExecutor { sender, args ->
         val editor = editorFor(args, sender, provider)
@@ -159,106 +160,137 @@ private fun moveEntryCommand(provider: LootPoolProvider) = CommandAPICommand("mo
         modified(sender, args)
     })
 
-private fun entryItemCommand(provider: LootPoolProvider) = CommandAPICommand("item")
-    .withShortDescription("Replace an item entry's item.")
-    .withFullDescription(
-        """
-            Replace an item entry's item with the one in your main hand, keeping its weight and
-            amount range, as well as any modifiers and conditions attached to it.
-        """.trimIndent()
-    )
-    .withPermission("lootpool.modify")
-    .withArguments(complexPoolKey("key", provider))
-    .withArguments(IntegerArgument("roll", 0))
-    .withArguments(IntegerArgument("entry", 0))
-    .executesPlayer(PlayerCommandExecutor { sender, args ->
-        val editor = editorFor(args, sender, provider)
-        val roll = rollIndex(editor, args, sender)
-        val index = entryIndex(editor, roll, args, sender)
-        val entries = editor.entries(roll)
-        val entry = entries[index] as? ItemEntry ?: failInvalidEntryType(sender, args)
-        val held = sender.inventory.itemInMainHand
-        assertLootNotEmpty(held, sender)
-        entries[index] = ItemEntry(
-            Loot(held.clone(), entry.loot().weight(), entry.loot().minAmount(), entry.loot().maxAmount()),
-            entry.conditions(), entry.modifiers()
+private fun setEntryCommand(provider: LootPoolProvider): CommandAPICommand {
+    val item = CommandAPICommand("item")
+        .withShortDescription("Replace an item entry's item.")
+        .withFullDescription(
+            """
+                Replace an item entry's item with the one in your main hand, keeping its weight and
+                amount range, as well as any modifiers and conditions attached to it.
+            """.trimIndent()
         )
-        modified(sender, args)
-    })
+        .withPermission("lootpool.modify")
+        .withArguments(complexPoolKey("key", provider))
+        .withArguments(rollIndexArgument("roll", provider))
+        .withArguments(entryIndexArgument<ItemEntry>("entry", provider))
+        .executesPlayer(PlayerCommandExecutor { sender, args ->
+            val editor = editorFor(args, sender, provider)
+            val roll = rollIndex(editor, args, sender)
+            val index = entryIndex(editor, roll, args, sender)
+            val entries = editor.entries(roll)
+            val entry = entries[index] as? ItemEntry ?: failInvalidEntryType(sender, args)
+            val held = sender.inventory.itemInMainHand
+            assertLootNotEmpty(held, sender)
+            entries[index] = ItemEntry(
+                Loot(held.clone(), entry.loot().weight(), entry.loot().minAmount(), entry.loot().maxAmount()),
+                entry.conditions(), entry.modifiers()
+            )
+            modified(sender, args)
+        })
 
-private fun entryPoolCommand(provider: LootPoolProvider) = CommandAPICommand("pool")
-    .withShortDescription("Repoint a pool entry.")
-    .withFullDescription(
-        """
-            Change which loot pool a pool entry delegates to, keeping its weight, modifiers and
-            conditions.
-        """.trimIndent()
-    )
-    .withPermission("lootpool.modify")
-    .withArguments(complexPoolKey("key", provider))
-    .withArguments(IntegerArgument("roll", 0))
-    .withArguments(IntegerArgument("entry", 0))
-    .withArguments(lootPoolKey("pool") { provider.getMapOf(LootPool::class.java) })
-    .executes(CommandExecutor { sender, args ->
-        val editor = editorFor(args, sender, provider)
-        val roll = rollIndex(editor, args, sender)
-        val index = entryIndex(editor, roll, args, sender)
-        val entries = editor.entries(roll)
-        val entry = entries[index] as? PoolEntry ?: failInvalidEntryType(sender, args)
-        val poolKey = args.getByClass("pool", String::class.java)!!
-        assertLootPoolExists(poolKey, sender, provider.getMapOf(LootPool::class.java))
-        entries[index] = PoolEntry(poolKey, entry.weight(), entry.conditions(), entry.modifiers())
-        modified(sender, args)
-    })
-
-private fun entryWeightCommand(provider: LootPoolProvider) = CommandAPICommand("weight")
-    .withShortDescription("Change an entry's weight.")
-    .withFullDescription(
-        """
-            Set an entry's selection weight within its roll.
-            An entry's chance of being drawn is its weight divided by the total weight of every
-            eligible entry in the same roll; a weight of 0 is never drawn.
-        """.trimIndent()
-    )
-    .withPermission("lootpool.modify")
-    .withArguments(complexPoolKey("key", provider))
-    .withArguments(IntegerArgument("roll", 0))
-    .withArguments(IntegerArgument("entry", 0))
-    .withArguments(IntegerArgument("weight", 0))
-    .executes(CommandExecutor { sender, args ->
-        val editor = editorFor(args, sender, provider)
-        val roll = rollIndex(editor, args, sender)
-        val index = entryIndex(editor, roll, args, sender)
-        val entries = editor.entries(roll)
-        entries[index] = withWeight(entries[index], args.getByClass("weight", Int::class.java)!!)
-        modified(sender, args)
-    })
-
-private fun entryAmountCommand(provider: LootPoolProvider) = CommandAPICommand("amount")
-    .withShortDescription("Change an item entry's amount range.")
-    .withFullDescription(
-        """
-            Set the inclusive stack-size range an item entry rolls its amount from.
-            Omit the maximum to use a fixed amount.
-        """.trimIndent()
-    )
-    .withPermission("lootpool.modify")
-    .withArguments(complexPoolKey("key", provider))
-    .withArguments(IntegerArgument("roll", 0))
-    .withArguments(IntegerArgument("entry", 0))
-    .withArguments(IntegerArgument("minAmount", 1, 64))
-    .withOptionalArguments(IntegerArgument("maxAmount", 1, 64))
-    .executes(CommandExecutor { sender, args ->
-        val editor = editorFor(args, sender, provider)
-        val roll = rollIndex(editor, args, sender)
-        val index = entryIndex(editor, roll, args, sender)
-        val entries = editor.entries(roll)
-        val entry = entries[index] as? ItemEntry ?: failInvalidEntryType(sender, args)
-        val minAmount = args.getByClass("minAmount", Int::class.java)!!
-        val maxAmount = args.getByClassOrDefault("maxAmount", Int::class.java, minAmount)
-        entries[index] = ItemEntry(
-            Loot(entry.loot().item(), entry.loot().weight(), minAmount.coerceAtMost(maxAmount), maxAmount.coerceAtLeast(minAmount)),
-            entry.conditions(), entry.modifiers()
+    val pool = CommandAPICommand("pool")
+        .withShortDescription("Repoint a pool entry.")
+        .withFullDescription(
+            """
+                Change which loot pool a pool entry delegates to, keeping its weight, modifiers and
+                conditions.
+            """.trimIndent()
         )
-        modified(sender, args)
-    })
+        .withPermission("lootpool.modify")
+        .withArguments(complexPoolKey("key", provider))
+        .withArguments(rollIndexArgument("roll", provider))
+        .withArguments(entryIndexArgument<PoolEntry>("entry", provider))
+        .withArguments(lootPoolKey("pool") { provider.getMapOf(LootPool::class.java) })
+        .executes(CommandExecutor { sender, args ->
+            val editor = editorFor(args, sender, provider)
+            val roll = rollIndex(editor, args, sender)
+            val index = entryIndex(editor, roll, args, sender)
+            val entries = editor.entries(roll)
+            val entry = entries[index] as? PoolEntry ?: failInvalidEntryType(sender, args)
+            val poolKey = args.getByClass("pool", String::class.java)!!
+            assertLootPoolExists(poolKey, sender, provider.getMapOf(LootPool::class.java))
+            entries[index] = PoolEntry(poolKey, entry.weight(), entry.conditions(), entry.modifiers())
+            modified(sender, args)
+        })
+
+    val weight = CommandAPICommand("weight")
+        .withShortDescription("Change an entry's weight.")
+        .withFullDescription(
+            """
+                Set an entry's selection weight within its roll.
+                An entry's chance of being drawn is its weight divided by the total weight of every
+                eligible entry in the same roll; a weight of 0 is never drawn.
+            """.trimIndent()
+        )
+        .withPermission("lootpool.modify")
+        .withArguments(complexPoolKey("key", provider))
+        .withArguments(rollIndexArgument("roll", provider))
+        .withArguments(entryIndexArgument<LootEntry>("entry", provider))
+        .withArguments(IntegerArgument("weight", 0))
+        .executes(CommandExecutor { sender, args ->
+            val editor = editorFor(args, sender, provider)
+            val roll = rollIndex(editor, args, sender)
+            val index = entryIndex(editor, roll, args, sender)
+            val entries = editor.entries(roll)
+            entries[index] = withWeight(entries[index], args.getByClass("weight", Int::class.java)!!)
+            modified(sender, args)
+        })
+
+    val amount = CommandAPICommand("amount")
+        .withShortDescription("Change an item entry's amount range.")
+        .withFullDescription(
+            """
+                Set the inclusive stack-size range an item entry rolls its amount from.
+                Omit the maximum to use a fixed amount.
+            """.trimIndent()
+        )
+        .withPermission("lootpool.modify")
+        .withArguments(complexPoolKey("key", provider))
+        .withArguments(rollIndexArgument("roll", provider))
+        .withArguments(entryIndexArgument<ItemEntry>("entry", provider))
+        .withArguments(IntegerArgument("minAmount", 1, 64))
+        .withOptionalArguments(IntegerArgument("maxAmount", 1, 64))
+        .executes(CommandExecutor { sender, args ->
+            val editor = editorFor(args, sender, provider)
+            val roll = rollIndex(editor, args, sender)
+            val index = entryIndex(editor, roll, args, sender)
+            val entries = editor.entries(roll)
+            val entry = entries[index] as? ItemEntry ?: failInvalidEntryType(sender, args)
+            val minAmount = args.getByClass("minAmount", Int::class.java)!!
+            val maxAmount = args.getByClassOrDefault("maxAmount", Int::class.java, minAmount)
+            entries[index] = ItemEntry(
+                Loot(entry.loot().item(), entry.loot().weight(), minAmount.coerceAtMost(maxAmount), maxAmount.coerceAtLeast(minAmount)),
+                entry.conditions(), entry.modifiers()
+            )
+            modified(sender, args)
+        })
+
+    return CommandAPICommand("set")
+        .withShortDescription("Change an entry in a roll.")
+        .withFullDescription(
+            """
+                Change one property of an entry already in a roll, leaving everything else about it
+                alone - an entry keeps its place in the roll, and its modifiers and conditions.
+                "weight" applies to any entry; "item" and "amount" need an item entry, and "pool"
+                needs a pool entry.
+            """.trimIndent()
+        )
+        .withSubcommand(item)
+        .withSubcommand(pool)
+        .withSubcommand(weight)
+        .withSubcommand(amount)
+}
+
+private inline fun <reified T : LootEntry> entryIndexArgument(nodeName: String, provider: LootPoolProvider): Argument<Int> =
+    IntegerArgument(nodeName, 0)
+        .replaceSafeSuggestions(SafeSuggestions.suggestCollection { info ->
+            try {
+                val editor = editorFor(info.previousArgs, info.sender, provider)
+                val roll = rollIndex(editor, info.previousArgs, info.sender)
+                val entries = editor.entries(roll)
+                entries.items
+                    .mapIndexedNotNull { index, entry -> if (entry is T) index else null }
+            } catch (_: WrapperCommandSyntaxException) {
+                emptyList()
+            }
+        })

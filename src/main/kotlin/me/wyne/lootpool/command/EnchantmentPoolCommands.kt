@@ -3,22 +3,27 @@ package me.wyne.lootpool.command
 import dev.jorel.commandapi.CommandAPIBukkit
 import dev.jorel.commandapi.CommandAPICommand
 import dev.jorel.commandapi.StringTooltip
+import dev.jorel.commandapi.Tooltip
 import dev.jorel.commandapi.arguments.Argument
 import dev.jorel.commandapi.arguments.ArgumentSuggestions
 import dev.jorel.commandapi.arguments.EnchantmentArgument
 import dev.jorel.commandapi.arguments.GreedyStringArgument
 import dev.jorel.commandapi.arguments.IntegerArgument
 import dev.jorel.commandapi.arguments.MultiLiteralArgument
+import dev.jorel.commandapi.arguments.SafeSuggestions
 import dev.jorel.commandapi.arguments.StringArgument
 import dev.jorel.commandapi.executors.CommandExecutor
+import dev.jorel.commandapi.executors.PlayerCommandExecutor
 import me.wyne.lootpool.api.complex.EnchantmentEntry
 import me.wyne.lootpool.api.complex.EnchantmentPool
 import me.wyne.lootpool.api.complex.EnchantmentPoolProvider
+import me.wyne.lootpool.gui.openEnchantmentPoolGui
 import me.wyne.wutils.common.operation.Operations
 import me.wyne.wutils.i18n.kotlin.placeholderComponent
 import me.wyne.wutils.i18n.kotlin.reduce
 import me.wyne.wutils.i18n.kotlin.replace
 import me.wyne.wutils.i18n.kotlin.replaceComponent
+import me.wyne.wutils.i18n.language.component.PlaceholderLocalizedComponent
 import net.kyori.adventure.text.Component
 import org.bukkit.command.CommandSender
 import org.bukkit.enchantments.Enchantment
@@ -153,7 +158,7 @@ class RemoveEnchantmentEntryCommand(provider: EnchantmentPoolProvider) : SubComm
         )
         .withPermission("lootpool.modify")
         .withArguments(enchantmentPoolKey("key") { provider.enchantmentPoolMap })
-        .withArguments(IntegerArgument("entry", 0))
+        .withArguments(enchantmentEntryIndexArgument("entry", provider))
         .executes(CommandExecutor { sender, args ->
             val key = args.getByClass("key", String::class.java)!!
             assertEnchantmentPoolExists(key, sender, provider.enchantmentPoolMap)
@@ -180,7 +185,7 @@ class SetEnchantmentEntryCommand(provider: EnchantmentPoolProvider) : SubCommand
         )
         .withPermission("lootpool.modify")
         .withArguments(enchantmentPoolKey("key") { provider.enchantmentPoolMap })
-        .withArguments(IntegerArgument("entry", 0))
+        .withArguments(enchantmentEntryIndexArgument("entry", provider))
         .withArguments(MultiLiteralArgument("target", "weight", "min-level", "max-level"))
         .withArguments(GreedyStringArgument("operation"))
         .executes(CommandExecutor { sender, args ->
@@ -210,6 +215,40 @@ class SetEnchantmentEntryCommand(provider: EnchantmentPoolProvider) : SubCommand
             )
             sender.placeholderComponent("success-enchantment-pool-modify", "key" replace key).sendMessage(sender)
         })
+}
+
+class EditEnchantmentPoolCommand(provider: EnchantmentPoolProvider) : SubCommand("edit") {
+    override val command: CommandAPICommand = super.command
+        .withShortDescription("Edit an enchantment pool in a GUI.")
+        .withFullDescription(
+            """
+                Open an enchantment pool in an editor.
+                Every enchantment registered on this server gets a slot, shown as a plain book
+                while it is not in the pool. Giving one a weight turns it into an enchanted book
+                holding that enchantment, so the pool reads at a glance.
+                The controls match the loot pool editor: click to change weight, shift-click for
+                the minimum level and the number keys for the maximum.
+            """.trimIndent()
+        )
+        .withPermission("lootpool.modify")
+        .withArguments(enchantmentPoolKey("key") { provider.enchantmentPoolMap })
+        .executesPlayer(PlayerCommandExecutor { sender, args ->
+            val key = args.getByClass("key", String::class.java)!!
+            assertEnchantmentPoolExists(key, sender, provider.enchantmentPoolMap)
+            openEnchantmentPoolGui(sender, key, provider)
+        })
+}
+
+fun entryEnchantmentCommand(provider: EnchantmentPoolProvider): CommandAPICommand {
+    val subcommands = listOf(
+        AddEnchantmentEntryCommand(provider)(),
+        RemoveEnchantmentEntryCommand(provider)(),
+        SetEnchantmentEntryCommand(provider)()
+    )
+    return CommandAPICommand("entry")
+        .withShortDescription("Manage an enchantment pool's entries.")
+        .apply { subcommands.forEach { withSubcommand(it) } }
+        .withSubcommand(helpCommand("lootpool enchant entry", subcommands))
 }
 
 /**
@@ -242,24 +281,39 @@ fun displayEnchantmentPoolInfo(sender: CommandSender, pool: EnchantmentPool) {
     val totalWeight = pool.entries().sumOf { it.weight().toDouble() }
     val entryList = pool.entries()
         .mapIndexed { index, entry ->
-            val percentage = if (totalWeight == 0.0) 0.0 else (entry.weight() / totalWeight) * 100
-            sender.placeholderComponent(
-                "info-enchantment-pool-entry",
-                "enchantment" replace "$index. ${entry.enchantment().key.key}",
-                "weight" replace entry.weight(),
-                "min-level" replace entry.minLevel(),
-                "max-level" replace entry.maxLevel(),
-                "percentage" replace String.format("%.2f", percentage)
-            )
+            renderEnchantmentEntry(sender, totalWeight, index, entry)
         }.reduce() ?: Component.empty()
     sender.placeholderComponent("info-enchantment-pool", "key" replace pool.key())
         .replace("entry-list" replaceComponent entryList)
         .sendMessage(sender)
 }
 
+fun renderEnchantmentEntry(sender: CommandSender, totalWeight: Double, index: Int, entry: EnchantmentEntry): PlaceholderLocalizedComponent {
+    val percentage = if (totalWeight == 0.0) 0.0 else (entry.weight() / totalWeight) * 100
+    return sender.placeholderComponent(
+        "info-enchantment-pool-entry",
+        "enchantment" replace "$index. ${entry.enchantment().key.key}",
+        "weight" replace entry.weight(),
+        "min-level" replace entry.minLevel(),
+        "max-level" replace entry.maxLevel(),
+        "percentage" replace String.format("%.2f", percentage)
+    )
+}
+
 fun enchantmentPoolKey(nodeName: String, enchantmentPoolMap: () -> Map<String, EnchantmentPool>): Argument<String> =
     StringArgument(nodeName)
         .replaceSuggestions(ArgumentSuggestions.stringCollection { _ -> enchantmentPoolMap().keys })
+
+private fun enchantmentEntryIndexArgument(nodeName: String, provider: EnchantmentPoolProvider): Argument<Int> =
+    IntegerArgument(nodeName, 0)
+        .replaceSafeSuggestions(SafeSuggestions.tooltipCollection { info ->
+            val key = info.previousArgs.getByClass("key", String::class.java) ?: return@tooltipCollection emptyList()
+            val pool = provider.getEnchantmentPool(key) ?: return@tooltipCollection emptyList()
+            val totalWeight = pool.entries().sumOf { it.weight().toDouble() }
+            pool.entries.mapIndexedNotNull { index, entry ->
+                Tooltip.ofString(index, renderEnchantmentEntry(info.sender, totalWeight, index, entry).plain())
+            }
+        })
 
 fun assertEnchantmentPoolExists(key: String, sender: CommandSender, enchantmentPoolMap: Map<String, EnchantmentPool>) {
     if (enchantmentPoolMap.containsKey(key)) return
@@ -281,16 +335,4 @@ private fun assertEnchantmentEntryExists(key: String, index: Int, sender: Comman
     throw CommandAPIBukkit.failWithAdventureComponent(
         sender.placeholderComponent("error-enchantment-not-found", "key" replace key, "entry" replace index).get()
     )
-}
-
-fun entryEnchantmentCommand(provider: EnchantmentPoolProvider): CommandAPICommand {
-    val subcommands = listOf(
-        AddEnchantmentEntryCommand(provider)(),
-        RemoveEnchantmentEntryCommand(provider)(),
-        SetEnchantmentEntryCommand(provider)()
-    )
-    return CommandAPICommand("entry")
-        .withShortDescription("Manage an enchantment pool's entries.")
-        .apply { subcommands.forEach { withSubcommand(it) } }
-        .withSubcommand(helpCommand("lootpool enchant entry", subcommands))
 }

@@ -7,6 +7,7 @@ import me.wyne.lootpool.api.LootPool
 import me.wyne.lootpool.api.CloneableLootPool
 import me.wyne.lootpool.command.complex.ConvertComplexCommand
 import me.wyne.lootpool.command.complex.CreateComplexCommand
+import me.wyne.lootpool.command.complex.EditComplexCommand
 import me.wyne.lootpool.command.complex.conditionComplexCommand
 import me.wyne.lootpool.command.complex.entryComplexCommand
 import me.wyne.lootpool.command.complex.modifierComplexCommand
@@ -51,6 +52,7 @@ class LootPoolCommand @Inject constructor(
         val complexSubcommands = listOf(
             CreateComplexCommand(lootPoolManager)(),
             ConvertComplexCommand(lootPoolManager)(),
+            EditComplexCommand(lootPoolManager, enchantmentPoolManager)(),
             rollComplexCommand(lootPoolManager),
             entryComplexCommand(lootPoolManager),
             modifierComplexCommand(lootPoolManager, enchantmentPoolManager),
@@ -66,6 +68,7 @@ class LootPoolCommand @Inject constructor(
             RemoveEnchantmentPoolCommand(enchantmentPoolManager)(),
             CloneEnchantmentPoolCommand(enchantmentPoolManager)(),
             InfoEnchantmentPoolCommand(enchantmentPoolManager)(),
+            EditEnchantmentPoolCommand(enchantmentPoolManager)(),
             entryEnchantmentCommand(enchantmentPoolManager),
         )
         val enchantCommand = CommandAPICommand("enchant")

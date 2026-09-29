@@ -6,6 +6,190 @@ gui-loot:
   - "[italic:off][gray][Q] [red]Remove"
 gui-nothing-item: "Nothing"
 
+## GUI (complex + enchantment editors)
+gui-page-previous: "[white]Previous page"
+gui-page-next: "[white]Next page"
+gui-page: "[white]Page [gold]<page> [white]of [gold]<pages>"
+gui-page-lore:
+  - "[white]Page [gold]<page> [white]of [gold]<pages>"
+gui-close: "[red]Close"
+gui-close-lore:
+  - "[gray][LMB] [white]Close and save"
+  - "[gray][RMB] [red]Close without saving"
+gui-discarded: "[yellow]Changes discarded"
+gui-back: "[yellow]Back"
+gui-back-lore:
+  - "[gray][LMB] [white]Go back"
+gui-step: "[white]Step: [gold]<step>"
+gui-step-lore:
+  - "[gray][LMB] [white]Cycle [gold]1 [white]/ [gold]10 [white]/ [gold]100"
+gui-field-number-lore:
+  - "[gray][LMB [red]-[gray]]/[RMB [green]+[gray]] [white]Change"
+gui-field-toggle-lore:
+  - "[gray][LMB] [white]Toggle"
+gui-field-cycle-lore:
+  - "[gray][LMB] [white]Next value"
+gui-field-text-lore:
+  - "[gray][LMB] [white]Get the command to change this"
+gui-open-lore:
+  - "[gray][LMB] [white]Open"
+gui-select-lore:
+  - "[gray][LMB] [white]Select"
+gui-hint-command: "[white]Run [[hover:show_text:[green]Click to fill the command][click:suggest_command:<command>][green][underline:true]<command>[underline][click][hover][white]] to change it"
+gui-enchantment-key: "[dark_gray]<enchantment>"
+gui-enchantment-vanilla-max: "[white]Vanilla max: [gold]<max>"
+gui-enchantment-entry:
+  - "[gray][LMB [red]-[gray]]/[RMB [green]+[gray]] [white]Weight: [gold]<weight>"
+  - "[gray][Shift + LMB [red]-[gray]]/[Shift + RMB [green]+[gray]] [white]Min level: [gold]<min-level>"
+  - "[gray][1 [red]-[gray]]/[2 [green]+[gray]] [white]Max level: [gold]<max-level>"
+  - "[gray][Q] [red]Reset"
+gui-roll: "[white]Roll [gold]<index> [gray][<min-rolls>..<max-rolls>]"
+gui-roll-lore:
+  - "[white]Entries: [gold]<entries>"
+  - "[white]Modifiers: [gold]<modifiers>"
+  - "[white]Conditions: [gold]<conditions>"
+  - "[gray][LMB [red]-[gray]]/[RMB [green]+[gray]] [white]Min rolls: [gold]<min-rolls>"
+  - "[gray][1 [red]-[gray]]/[2 [green]+[gray]] [white]Max rolls: [gold]<max-rolls>"
+  - "[gray][Shift + LMB]/[Shift + RMB] [white]Reorder"
+  - "[gray][F] [white]Open"
+  - "[gray][Q] [red]Remove"
+gui-pool-conditions: "[white]Pool conditions: [gold]<count>"
+gui-pool-modifiers: "[white]Pool modifiers: [gold]<count>"
+gui-add-roll: "[green]Add a roll"
+gui-add-roll-lore:
+  - "[gray][LMB] [white]Add an empty roll"
+gui-entry-pool: "[white]Pool [gold]<pool>"
+gui-entry-lore:
+  - "[gray][LMB [red]-[gray]]/[RMB [green]+[gray]] [white]Weight: [gold]<weight>"
+  - "[gray][F] [white]Open"
+  - "[gray][Q] [red]Remove"
+gui-entry-unknown: "[red]Unknown entry"
+gui-roll-conditions: "[white]Roll conditions: [gold]<count>"
+gui-roll-modifiers: "[white]Roll modifiers: [gold]<count>"
+gui-add-entry: "[green]Add an entry"
+gui-add-entry-lore:
+  - "[gray][LMB] [white]Add an empty entry"
+  - "[gray][RMB] [white]Add a pool entry"
+gui-entry-modifiers: "[white]Entry modifiers: [gold]<count>"
+gui-entry-conditions: "[white]Entry conditions: [gold]<count>"
+gui-entry-no-modifiers: "[red]Empty entries can not hold modifiers"
+gui-entry-repoint: "[white]Referenced pool: [gold]<pool>"
+gui-pool-option: "[white]<pool> [dark_gray](<type>)"
+gui-modifier: "[white]<description>"
+gui-modifier-lore:
+  - "[gray][LMB] [white]Edit"
+  - "[gray][F] [white]Make conditional"
+  - "[gray][Shift + LMB]/[Shift + RMB] [white]Reorder"
+  - "[gray][Q] [red]Remove"
+gui-modifier-conditional-lore:
+  - "[yellow]Conditional"
+  - "[gray][LMB] [white]Edit"
+  - "[gray][RMB] [white]Conditions"
+  - "[gray][F] [white]Drop the condition wrapper"
+  - "[gray][Shift + LMB]/[Shift + RMB] [white]Reorder"
+  - "[gray][Q] [red]Remove"
+gui-add-modifier: "[green]Add a modifier"
+gui-add-modifier-lore:
+  - "[gray][LMB] [white]Choose a type"
+gui-modifier-type-enchant: "[white]Random enchantments"
+gui-modifier-type-enchant-lore:
+  - "[white]Draw enchantments from a pool"
+gui-modifier-type-damage: "[white]Durability damage"
+gui-modifier-type-damage-lore:
+  - "[white]Wear the item down"
+gui-modifier-type-attributes: "[white]Attributes"
+gui-modifier-type-attributes-lore:
+  - "[white]Add attribute modifiers"
+gui-modifier-type-name: "[white]Display name"
+gui-modifier-type-name-lore:
+  - "[white]Rename the produced item"
+gui-modifier-type-lore: "[white]Lore"
+gui-modifier-type-lore-lore:
+  - "[white]Add or replace item lore"
+gui-enchantment-pool-option: "[white]<pool>"
+gui-enchantment-pool-option-lore:
+  - "[white]Enchantments: [gold]<entries>"
+  - "[gray][LMB] [white]Select"
+gui-field-enchant-pool: "[white]Enchantment pool: [gold]<value>"
+gui-field-min-enchants: "[white]Min enchantments: [gold]<value>"
+gui-field-max-enchants: "[white]Max enchantments: [gold]<value>"
+gui-field-only-compatible: "[white]Only compatible: [gold]<value>"
+gui-field-min-fraction: "[white]Min damage: [gold]<value>"
+gui-field-max-fraction: "[white]Max damage: [gold]<value>"
+gui-field-name-text: "[white]Text: [gold]<value>"
+gui-field-lore-mode: "[white]Mode: [gold]<value>"
+gui-field-lore-lines: "[white]Lines: [gold]<value>"
+gui-field-attributes-replace: "[white]Replace existing: [gold]<value>"
+gui-field-attributes-entries: "[white]Attributes: [gold]<value>"
+gui-attribute-entry: "[white]<attribute>"
+gui-attribute-entry-lore:
+  - "[white]Operation: [gold]<operation>"
+  - "[white]Amount: [gold]<min>[white]..[gold]<max>"
+  - "[white]Slot: [gold]<slot>"
+  - "[gray][LMB] [white]Edit"
+  - "[gray][Q] [red]Remove"
+gui-add-attribute: "[green]Add an attribute"
+gui-add-attribute-lore:
+  - "[gray][LMB] [white]Add an attribute"
+gui-field-attribute: "[white]Attribute: [gold]<value>"
+gui-field-attribute-operation: "[white]Operation: [gold]<value>"
+gui-field-min-amount: "[white]Min amount: [gold]<value>"
+gui-field-max-amount: "[white]Max amount: [gold]<value>"
+gui-field-attribute-slot: "[white]Slot: [gold]<value>"
+gui-condition: "[white]<description>"
+gui-condition-lore:
+  - "[gray][LMB] [white]Edit"
+  - "[gray][F] [white]Invert"
+  - "[gray][Shift + LMB]/[Shift + RMB] [white]Reorder"
+  - "[gray][Q] [red]Remove"
+gui-condition-inverted-lore:
+  - "[yellow]Inverted"
+  - "[gray][LMB] [white]Edit"
+  - "[gray][F] [white]Drop the inversion"
+  - "[gray][Shift + LMB]/[Shift + RMB] [white]Reorder"
+  - "[gray][Q] [red]Remove"
+gui-add-condition: "[green]Add a condition"
+gui-add-condition-lore:
+  - "[gray][LMB] [white]Choose a type"
+gui-condition-type-chance: "[white]Random chance"
+gui-condition-type-chance-lore:
+  - "[white]Pass with a fixed probability"
+gui-condition-type-permission: "[white]Permission"
+gui-condition-type-permission-lore:
+  - "[white]Needs the player the loot is for"
+gui-condition-type-world: "[white]World"
+gui-condition-type-world-lore:
+  - "[white]Restrict to chosen worlds"
+gui-condition-type-time: "[white]Time of day"
+gui-condition-type-time-lore:
+  - "[white]Restrict to a tick range"
+gui-condition-type-weather: "[white]Weather"
+gui-condition-type-weather-lore:
+  - "[white]Restrict to rain or thunder"
+gui-condition-type-allof: "[white]All of"
+gui-condition-type-allof-lore:
+  - "[white]Every condition inside must pass"
+gui-condition-type-anyof: "[white]Any of"
+gui-condition-type-anyof-lore:
+  - "[white]One condition inside is enough"
+gui-world-option: "[white]<world>"
+gui-world-selected-lore:
+  - "[green]Selected"
+  - "[gray][LMB] [white]Remove"
+gui-world-unselected-lore:
+  - "[gray]Not selected"
+  - "[gray][LMB] [white]Add"
+gui-field-chance: "[white]Chance: [gold]<value>"
+gui-field-permission: "[white]Node: [gold]<value>"
+gui-field-worlds: "[white]Worlds: [gold]<value>"
+gui-field-min-time: "[white]From: [gold]<value>"
+gui-field-max-time: "[white]To: [gold]<value>"
+gui-field-raining: "[white]Raining: [gold]<value>"
+gui-field-thundering: "[white]Thundering: [gold]<value>"
+gui-field-placeholder: "[white]Placeholder: [gold]<value>"
+gui-field-placeholder-operator: "[white]Operator: [gold]<value>"
+gui-field-placeholder-value: "[white]Value: [gold]<value>"
+
 ### Messages
 
 ## Info

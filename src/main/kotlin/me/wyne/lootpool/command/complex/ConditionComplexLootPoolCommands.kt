@@ -2,6 +2,7 @@ package me.wyne.lootpool.command.complex
 
 import dev.jorel.commandapi.CommandAPIBukkit
 import dev.jorel.commandapi.CommandAPICommand
+import dev.jorel.commandapi.arguments.Argument
 import dev.jorel.commandapi.arguments.BooleanArgument
 import dev.jorel.commandapi.arguments.DoubleArgument
 import dev.jorel.commandapi.arguments.GreedyStringArgument
@@ -9,13 +10,16 @@ import dev.jorel.commandapi.arguments.IntegerArgument
 import dev.jorel.commandapi.arguments.ListArgumentBuilder
 import dev.jorel.commandapi.arguments.LongArgument
 import dev.jorel.commandapi.arguments.MultiLiteralArgument
+import dev.jorel.commandapi.arguments.SafeSuggestions
 import dev.jorel.commandapi.arguments.StringArgument
+import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException
 import dev.jorel.commandapi.executors.CommandArguments
 import dev.jorel.commandapi.executors.CommandExecutor
 import me.wyne.lootpool.api.LootPoolProvider
 import me.wyne.lootpool.api.complex.condition.AllOfCondition
 import me.wyne.lootpool.api.complex.condition.AnyOfCondition
 import me.wyne.lootpool.api.complex.condition.InvertedCondition
+import me.wyne.lootpool.api.complex.condition.LootCondition
 import me.wyne.lootpool.api.complex.condition.PermissionCondition
 import me.wyne.lootpool.api.complex.condition.RandomChanceCondition
 import me.wyne.lootpool.api.complex.condition.TimeCondition
@@ -40,7 +44,7 @@ fun conditionComplexCommand(provider: LootPoolProvider): CommandAPICommand {
         removeConditionCommand(provider),
         moveConditionCommand(provider),
         invertConditionCommand(provider),
-        setChanceConditionCommand(provider)
+        setConditionCommand(provider)
     )
     return CommandAPICommand("condition")
         .withShortDescription("Manage conditions.")
@@ -79,12 +83,13 @@ private fun addConditionCommand(provider: LootPoolProvider): CommandAPICommand {
         .withPermission("lootpool.modify")
         .withArguments(complexPoolKey("key", provider))
         .withArguments(elementPath("path", provider))
-        .withArguments(GreedyStringArgument("node"))
+        .withArguments(GreedyStringArgument("permission"))
         .executes(CommandExecutor { sender, args ->
-            ownerFor(args, sender, provider).conditions.add(PermissionCondition(args.getByClass("node", String::class.java)!!))
+            ownerFor(args, sender, provider).conditions.add(PermissionCondition(args.getByClass("permission", String::class.java)!!))
             modified(sender, args)
         })
 
+    @Suppress("UNCHECKED_CAST")
     val world = CommandAPICommand("world")
         .withShortDescription("Add a world condition.")
         .withFullDescription(
@@ -242,7 +247,7 @@ private fun removeConditionCommand(provider: LootPoolProvider) = CommandAPIComma
     .withPermission("lootpool.modify")
     .withArguments(complexPoolKey("key", provider))
     .withArguments(elementPath("path", provider))
-    .withArguments(IntegerArgument("condition", 0))
+    .withArguments(conditionIndexArgument<LootCondition>("condition", provider))
     .executes(CommandExecutor { sender, args ->
         val owner = ownerFor(args, sender, provider)
         owner.conditions.removeAt(conditionIndex(owner, args, sender))
@@ -261,7 +266,7 @@ private fun moveConditionCommand(provider: LootPoolProvider) = CommandAPICommand
     .withPermission("lootpool.modify")
     .withArguments(complexPoolKey("key", provider))
     .withArguments(elementPath("path", provider))
-    .withArguments(IntegerArgument("condition", 0))
+    .withArguments(conditionIndexArgument<LootCondition>("condition", provider))
     .withArguments(IntegerArgument("delta"))
     .executes(CommandExecutor { sender, args ->
         val owner = ownerFor(args, sender, provider)
@@ -280,7 +285,7 @@ private fun invertConditionCommand(provider: LootPoolProvider) = CommandAPIComma
     .withPermission("lootpool.modify")
     .withArguments(complexPoolKey("key", provider))
     .withArguments(elementPath("path", provider))
-    .withArguments(IntegerArgument("condition", 0))
+    .withArguments(conditionIndexArgument<LootCondition>("condition", provider))
     .withArguments(BooleanArgument("inverted"))
     .executes(CommandExecutor { sender, args ->
         val owner = ownerFor(args, sender, provider)
@@ -294,27 +299,186 @@ private fun invertConditionCommand(provider: LootPoolProvider) = CommandAPIComma
         modified(sender, args)
     })
 
-private fun setChanceConditionCommand(provider: LootPoolProvider) = CommandAPICommand("chance")
-    .withShortDescription("Change a random-chance condition.")
-    .withFullDescription("Replace an existing random-chance condition's probability.")
-    .withPermission("lootpool.modify")
-    .withArguments(complexPoolKey("key", provider))
-    .withArguments(elementPath("path", provider))
-    .withArguments(IntegerArgument("condition", 0))
-    .withArguments(DoubleArgument("chance", 0.0, 1.0))
-    .executes(CommandExecutor { sender, args ->
-        val owner = ownerFor(args, sender, provider)
-        val index = conditionIndex(owner, args, sender)
-        val chance = RandomChanceCondition(args.getByClass("chance", Double::class.java)!!)
-        val condition = owner.conditions[index]
-        if (condition is InvertedCondition && condition.condition() is RandomChanceCondition) {
-            owner.conditions[index] = InvertedCondition(chance)
-        } else {
-            if (condition !is RandomChanceCondition) failWrongConditionType(sender, args)
-            owner.conditions[index] = chance
-        }
-        modified(sender, args)
-    })
+private fun setConditionCommand(provider: LootPoolProvider): CommandAPICommand {
+    val chance = CommandAPICommand("chance")
+        .withShortDescription("Change a random-chance condition.")
+        .withFullDescription("Replace an existing random-chance condition's probability.")
+        .withPermission("lootpool.modify")
+        .withArguments(complexPoolKey("key", provider))
+        .withArguments(elementPath("path", provider))
+        .withArguments(conditionIndexArgument<RandomChanceCondition>("condition", provider))
+        .withArguments(DoubleArgument("chance", 0.0, 1.0))
+        .executes(CommandExecutor { sender, args ->
+            setCondition<RandomChanceCondition>(args, sender, provider) {
+                RandomChanceCondition(args.getByClass("chance", Double::class.java)!!)
+            }
+            modified(sender, args)
+        })
+
+    val permission = CommandAPICommand("permission")
+        .withShortDescription("Change a permission condition.")
+        .withFullDescription("Replace the permission node an existing permission condition checks for.")
+        .withPermission("lootpool.modify")
+        .withArguments(complexPoolKey("key", provider))
+        .withArguments(elementPath("path", provider))
+        .withArguments(conditionIndexArgument<PermissionCondition>("condition", provider))
+        .withArguments(GreedyStringArgument("permission"))
+        .executes(CommandExecutor { sender, args ->
+            setCondition<PermissionCondition>(args, sender, provider) {
+                PermissionCondition(args.getByClass("permission", String::class.java)!!)
+            }
+            modified(sender, args)
+        })
+
+    @Suppress("UNCHECKED_CAST")
+    val world = CommandAPICommand("world")
+        .withShortDescription("Change a world condition.")
+        .withFullDescription(
+            """
+                Replace the worlds an existing world condition accepts.
+                The list given here replaces the old one outright rather than adding to it.
+            """.trimIndent()
+        )
+        .withPermission("lootpool.modify")
+        .withArguments(complexPoolKey("key", provider))
+        .withArguments(elementPath("path", provider))
+        .withArguments(conditionIndexArgument<WorldCondition>("condition", provider))
+        .withArguments(
+            ListArgumentBuilder<String>("worlds")
+                .withList { _ -> Bukkit.getWorlds().map { it.name } }
+                .withStringMapper()
+                .buildGreedy()
+        )
+        .executes(CommandExecutor { sender, args ->
+            setCondition<WorldCondition>(args, sender, provider) {
+                WorldCondition((args.getByClass("worlds", List::class.java) as List<String>).toSet())
+            }
+            modified(sender, args)
+        })
+
+    val time = CommandAPICommand("time")
+        .withShortDescription("Change a time-of-day condition.")
+        .withFullDescription(
+            """
+                Replace the tick range an existing time condition accepts.
+                A day is 24000 ticks: 0 is sunrise, 6000 noon, 13000 nightfall.
+                Ranges wrap, so 22000 to 2000 matches the hours around midnight.
+            """.trimIndent()
+        )
+        .withPermission("lootpool.modify")
+        .withArguments(complexPoolKey("key", provider))
+        .withArguments(elementPath("path", provider))
+        .withArguments(conditionIndexArgument<TimeCondition>("condition", provider))
+        .withArguments(LongArgument("minTime", 0, 24000))
+        .withArguments(LongArgument("maxTime", 0, 24000))
+        .executes(CommandExecutor { sender, args ->
+            setCondition<TimeCondition>(args, sender, provider) {
+                TimeCondition(
+                    args.getByClass("minTime", Long::class.java)!!,
+                    args.getByClass("maxTime", Long::class.java)!!
+                )
+            }
+            modified(sender, args)
+        })
+
+    val weather = CommandAPICommand("weather")
+        .withShortDescription("Change a weather condition.")
+        .withFullDescription(
+            """
+                Replace the checks an existing weather condition makes.
+                Either check can be left out, meaning "don't care"; leaving both out passes for any
+                weather, so omitting one clears it rather than keeping its old value.
+            """.trimIndent()
+        )
+        .withPermission("lootpool.modify")
+        .withArguments(complexPoolKey("key", provider))
+        .withArguments(elementPath("path", provider))
+        .withArguments(conditionIndexArgument<WeatherCondition>("condition", provider))
+        .withOptionalArguments(BooleanArgument("raining"), BooleanArgument("thundering"))
+        .executes(CommandExecutor { sender, args ->
+            setCondition<WeatherCondition>(args, sender, provider) {
+                WeatherCondition(
+                    args.getByClass("raining", Boolean::class.java),
+                    args.getByClass("thundering", Boolean::class.java)
+                )
+            }
+            modified(sender, args)
+        })
+
+    val placeholder = CommandAPICommand("placeholder")
+        .withShortDescription("Change a PlaceholderAPI condition.")
+        .withFullDescription(
+            """
+                Replace the expression, operator and value an existing placeholder condition
+                compares.
+                The comparison operators "==", "!=" and "contains" work on text; ">", ">=", "<"
+                and "<=" require both sides to resolve to numbers.
+            """.trimIndent()
+        )
+        .withPermission("lootpool.modify")
+        .withArguments(complexPoolKey("key", provider))
+        .withArguments(elementPath("path", provider))
+        .withArguments(conditionIndexArgument<PlaceholderCondition>("condition", provider))
+        .withArguments(StringArgument("placeholder"))
+        .withArguments(MultiLiteralArgument("operator", *PlaceholderCondition.Operator.entries.map { it.argument }.toTypedArray()))
+        .withArguments(GreedyStringArgument("value"))
+        .executes(CommandExecutor { sender, args ->
+            setCondition<PlaceholderCondition>(args, sender, provider) {
+                PlaceholderCondition(
+                    args.getByClass("placeholder", String::class.java)!!,
+                    PlaceholderCondition.Operator.of(args.getByClass("operator", String::class.java)!!)
+                        ?: PlaceholderCondition.Operator.EQUALS,
+                    args.getByClass("value", String::class.java)!!
+                )
+            }
+            modified(sender, args)
+        })
+
+    return CommandAPICommand("set")
+        .withShortDescription("Change an existing condition.")
+        .withFullDescription(
+            """
+                Replace the settings of a condition already attached to a pool, a roll, an entry, a
+                modifier or a condition group.
+                The condition keeps its place in the list, and an inverted condition stays inverted.
+                Group conditions have nothing to set - add to them by their own path instead, and
+                use "/lootpool complex condition invert" to negate one.
+            """.trimIndent()
+        )
+        .withSubcommand(chance)
+        .withSubcommand(permission)
+        .withSubcommand(world)
+        .withSubcommand(time)
+        .withSubcommand(weather)
+        .withSubcommand(placeholder)
+}
+
+private inline fun <reified T : LootCondition> setCondition(
+    args: CommandArguments,
+    sender: CommandSender,
+    provider: LootPoolProvider,
+    replacement: () -> LootCondition
+) {
+    val owner = ownerFor(args, sender, provider)
+    val index = conditionIndex(owner, args, sender)
+    val existing = owner.conditions[index]
+    val inverted = existing is InvertedCondition
+    if ((if (existing is InvertedCondition) existing.condition() else existing) !is T)
+        failWrongConditionType(sender, args)
+    owner.conditions[index] = replacement().let { if (inverted) InvertedCondition(it) else it }
+}
+
+private inline fun <reified T : LootCondition> conditionIndexArgument(nodeName: String, provider: LootPoolProvider): Argument<Int> =
+    IntegerArgument(nodeName, 0)
+        .replaceSafeSuggestions(SafeSuggestions.suggestCollection { info ->
+            try {
+                val owner = ownerFor(info.previousArgs, info.sender, provider)
+                owner.conditions.items
+                    .mapIndexedNotNull { index, condition -> if (condition is T) index else null }
+            } catch (_: WrapperCommandSyntaxException) {
+                emptyList()
+            }
+        })
 
 private fun failWrongConditionType(sender: CommandSender, args: CommandArguments): Nothing =
     throw CommandAPIBukkit.failWithAdventureComponent(

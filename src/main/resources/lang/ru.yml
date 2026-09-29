@@ -6,6 +6,190 @@ gui-loot:
   - "[italic:off][gray][Q] [red]Удалить"
 gui-nothing-item: "Ничего"
 
+## GUI (комплексные пулы и пулы зачарований)
+gui-page-previous: "[white]Предыдущая страница"
+gui-page-next: "[white]Следующая страница"
+gui-page: "[white]Страница [gold]<page> [white]из [gold]<pages>"
+gui-page-lore:
+  - "[white]Страница [gold]<page> [white]из [gold]<pages>"
+gui-close: "[red]Закрыть"
+gui-close-lore:
+  - "[gray][ЛКМ] [white]Закрыть и сохранить"
+  - "[gray][ПКМ] [red]Закрыть без сохранения"
+gui-discarded: "[yellow]Изменения отменены"
+gui-back: "[yellow]Назад"
+gui-back-lore:
+  - "[gray][ЛКМ] [white]Вернуться"
+gui-step: "[white]Шаг: [gold]<step>"
+gui-step-lore:
+  - "[gray][ЛКМ] [white]Переключить [gold]1 [white]/ [gold]10 [white]/ [gold]100"
+gui-field-number-lore:
+  - "[gray][ЛКМ [red]-[gray]]/[ПКМ [green]+[gray]] [white]Изменить"
+gui-field-toggle-lore:
+  - "[gray][ЛКМ] [white]Переключить"
+gui-field-cycle-lore:
+  - "[gray][ЛКМ] [white]Следующее значение"
+gui-field-text-lore:
+  - "[gray][ЛКМ] [white]Получить команду для изменения"
+gui-open-lore:
+  - "[gray][ЛКМ] [white]Открыть"
+gui-select-lore:
+  - "[gray][ЛКМ] [white]Выбрать"
+gui-hint-command: "[white]Выполните [[hover:show_text:[green]Нажмите чтобы подставить команду][click:suggest_command:<command>][green][underline:true]<command>[underline][click][hover][white]] чтобы изменить"
+gui-enchantment-key: "[dark_gray]<enchantment>"
+gui-enchantment-vanilla-max: "[white]Ванильный максимум: [gold]<max>"
+gui-enchantment-entry:
+  - "[gray][ЛКМ [red]-[gray]]/[ПКМ [green]+[gray]] [white]Вес: [gold]<weight>"
+  - "[gray][Shift + ЛКМ [red]-[gray]]/[Shift + ПКМ [green]+[gray]] [white]Мин. уровень: [gold]<min-level>"
+  - "[gray][1 [red]-[gray]]/[2 [green]+[gray]] [white]Макс. уровень: [gold]<max-level>"
+  - "[gray][Q] [red]Сбросить"
+gui-roll: "[white]Ролл [gold]<index> [gray][<min-rolls>..<max-rolls>]"
+gui-roll-lore:
+  - "[white]Записей: [gold]<entries>"
+  - "[white]Модификаторов: [gold]<modifiers>"
+  - "[white]Условий: [gold]<conditions>"
+  - "[gray][ЛКМ [red]-[gray]]/[ПКМ [green]+[gray]] [white]Мин. роллов: [gold]<min-rolls>"
+  - "[gray][1 [red]-[gray]]/[2 [green]+[gray]] [white]Макс. роллов: [gold]<max-rolls>"
+  - "[gray][Shift + ЛКМ]/[Shift + ПКМ] [white]Переставить"
+  - "[gray][F] [white]Открыть"
+  - "[gray][Q] [red]Удалить"
+gui-pool-conditions: "[white]Условия пула: [gold]<count>"
+gui-pool-modifiers: "[white]Модификаторы пула: [gold]<count>"
+gui-add-roll: "[green]Добавить ролл"
+gui-add-roll-lore:
+  - "[gray][ЛКМ] [white]Добавить пустой ролл"
+gui-entry-pool: "[white]Пул [gold]<pool>"
+gui-entry-lore:
+  - "[gray][ЛКМ [red]-[gray]]/[ПКМ [green]+[gray]] [white]Вес: [gold]<weight>"
+  - "[gray][F] [white]Открыть"
+  - "[gray][Q] [red]Удалить"
+gui-entry-unknown: "[red]Неизвестная запись"
+gui-roll-conditions: "[white]Условия ролла: [gold]<count>"
+gui-roll-modifiers: "[white]Модификаторы ролла: [gold]<count>"
+gui-add-entry: "[green]Добавить запись"
+gui-add-entry-lore:
+  - "[gray][ЛКМ] [white]Добавить пустой предмет"
+  - "[gray][ПКМ] [white]Добавить пул"
+gui-entry-modifiers: "[white]Модификаторы записи: [gold]<count>"
+gui-entry-conditions: "[white]Условия записи: [gold]<count>"
+gui-entry-no-modifiers: "[red]Пустые предметы не могут содержать модификаторы"
+gui-entry-repoint: "[white]Целевой пул: [gold]<pool>"
+gui-pool-option: "[white]<pool> [dark_gray](<type>)"
+gui-modifier: "[white]<description>"
+gui-modifier-lore:
+  - "[gray][ЛКМ] [white]Изменить"
+  - "[gray][F] [white]Сделать условным"
+  - "[gray][Shift + ЛКМ]/[Shift + ПКМ] [white]Переставить"
+  - "[gray][Q] [red]Удалить"
+gui-modifier-conditional-lore:
+  - "[yellow]Условный"
+  - "[gray][ЛКМ] [white]Изменить"
+  - "[gray][ПКМ] [white]Условия"
+  - "[gray][F] [white]Убрать условную обёртку"
+  - "[gray][Shift + ЛКМ]/[Shift + ПКМ] [white]Переставить"
+  - "[gray][Q] [red]Удалить"
+gui-add-modifier: "[green]Добавить модификатор"
+gui-add-modifier-lore:
+  - "[gray][ЛКМ] [white]Выбрать тип"
+gui-modifier-type-enchant: "[white]Случайные зачарования"
+gui-modifier-type-enchant-lore:
+  - "[white]Выбирать зачарования из пула"
+gui-modifier-type-damage: "[white]Урон прочности"
+gui-modifier-type-damage-lore:
+  - "[white]Изнашивать предмет"
+gui-modifier-type-attributes: "[white]Атрибуты"
+gui-modifier-type-attributes-lore:
+  - "[white]Добавить модификаторы атрибутов"
+gui-modifier-type-name: "[white]Отображаемое имя"
+gui-modifier-type-name-lore:
+  - "[white]Переименовать полученный предмет"
+gui-modifier-type-lore: "[white]Описание"
+gui-modifier-type-lore-lore:
+  - "[white]Добавить или заменить описание"
+gui-enchantment-pool-option: "[white]<pool>"
+gui-enchantment-pool-option-lore:
+  - "[white]Зачарований: [gold]<entries>"
+  - "[gray][ЛКМ] [white]Выбрать"
+gui-field-enchant-pool: "[white]Пул зачарований: [gold]<value>"
+gui-field-min-enchants: "[white]Мин. зачарований: [gold]<value>"
+gui-field-max-enchants: "[white]Макс. зачарований: [gold]<value>"
+gui-field-only-compatible: "[white]Только совместимые: [gold]<value>"
+gui-field-min-fraction: "[white]Мин. урон: [gold]<value>"
+gui-field-max-fraction: "[white]Макс. урон: [gold]<value>"
+gui-field-name-text: "[white]Текст: [gold]<value>"
+gui-field-lore-mode: "[white]Режим: [gold]<value>"
+gui-field-lore-lines: "[white]Строк: [gold]<value>"
+gui-field-attributes-replace: "[white]Заменять существующие: [gold]<value>"
+gui-field-attributes-entries: "[white]Атрибуты: [gold]<value>"
+gui-attribute-entry: "[white]<attribute>"
+gui-attribute-entry-lore:
+  - "[white]Операция: [gold]<operation>"
+  - "[white]Значение: [gold]<min>[white]..[gold]<max>"
+  - "[white]Слот: [gold]<slot>"
+  - "[gray][ЛКМ] [white]Изменить"
+  - "[gray][Q] [red]Удалить"
+gui-add-attribute: "[green]Добавить атрибут"
+gui-add-attribute-lore:
+  - "[gray][ЛКМ] [white]Добавить атрибут"
+gui-field-attribute: "[white]Атрибут: [gold]<value>"
+gui-field-attribute-operation: "[white]Операция: [gold]<value>"
+gui-field-min-amount: "[white]Мин. значение: [gold]<value>"
+gui-field-max-amount: "[white]Макс. значение: [gold]<value>"
+gui-field-attribute-slot: "[white]Слот: [gold]<value>"
+gui-condition: "[white]<description>"
+gui-condition-lore:
+  - "[gray][ЛКМ] [white]Изменить"
+  - "[gray][F] [white]Инвертировать"
+  - "[gray][Shift + ЛКМ]/[Shift + ПКМ] [white]Переставить"
+  - "[gray][Q] [red]Удалить"
+gui-condition-inverted-lore:
+  - "[yellow]Инвертировано"
+  - "[gray][ЛКМ] [white]Изменить"
+  - "[gray][F] [white]Убрать инверсию"
+  - "[gray][Shift + ЛКМ]/[Shift + ПКМ] [white]Переставить"
+  - "[gray][Q] [red]Удалить"
+gui-add-condition: "[green]Добавить условие"
+gui-add-condition-lore:
+  - "[gray][ЛКМ] [white]Выбрать тип"
+gui-condition-type-chance: "[white]Случайный шанс"
+gui-condition-type-chance-lore:
+  - "[white]Срабатывает с заданной вероятностью"
+gui-condition-type-permission: "[white]Право"
+gui-condition-type-permission-lore:
+  - "[white]Требует игрока, для которого выпадает лут"
+gui-condition-type-world: "[white]Мир"
+gui-condition-type-world-lore:
+  - "[white]Ограничить выбранными мирами"
+gui-condition-type-time: "[white]Время суток"
+gui-condition-type-time-lore:
+  - "[white]Ограничить диапазоном тиков"
+gui-condition-type-weather: "[white]Погода"
+gui-condition-type-weather-lore:
+  - "[white]Ограничить дождём или грозой"
+gui-condition-type-allof: "[white]Все из"
+gui-condition-type-allof-lore:
+  - "[white]Все вложенные условия должны пройти"
+gui-condition-type-anyof: "[white]Любое из"
+gui-condition-type-anyof-lore:
+  - "[white]Достаточно одного вложенного условия"
+gui-world-option: "[white]<world>"
+gui-world-selected-lore:
+  - "[green]Выбрано"
+  - "[gray][ЛКМ] [white]Убрать"
+gui-world-unselected-lore:
+  - "[gray]Не выбрано"
+  - "[gray][ЛКМ] [white]Добавить"
+gui-field-chance: "[white]Шанс: [gold]<value>"
+gui-field-permission: "[white]Право: [gold]<value>"
+gui-field-worlds: "[white]Миры: [gold]<value>"
+gui-field-min-time: "[white]С: [gold]<value>"
+gui-field-max-time: "[white]По: [gold]<value>"
+gui-field-raining: "[white]Дождь: [gold]<value>"
+gui-field-thundering: "[white]Гроза: [gold]<value>"
+gui-field-placeholder: "[white]Плейсхолдер: [gold]<value>"
+gui-field-placeholder-operator: "[white]Оператор: [gold]<value>"
+gui-field-placeholder-value: "[white]Значение: [gold]<value>"
+
 ### Messages
 
 ## Info

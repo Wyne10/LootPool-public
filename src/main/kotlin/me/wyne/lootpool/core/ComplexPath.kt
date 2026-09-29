@@ -23,6 +23,7 @@ import me.wyne.lootpool.api.complex.condition.TimeCondition
 import me.wyne.lootpool.api.complex.condition.WeatherCondition
 import me.wyne.lootpool.api.complex.condition.WorldCondition
 import me.wyne.lootpool.condition.PlaceholderCondition
+import kotlin.math.roundToInt
 
 const val POOL_PATH = "pool"
 
@@ -124,9 +125,9 @@ class ComplexPoolEditor(initial: ComplexLootPool, private val onWrite: (ComplexL
             when (part.firstOrNull()) {
                 'c' -> {
                     val owner = conditions
-                    when (owner.getOrNull(index)) {
-                        is AllOfCondition -> conditions = owner.nested(index, { (it as AllOfCondition).conditions() }) { _, list -> AllOfCondition(list) }
-                        is AnyOfCondition -> conditions = owner.nested(index, { (it as AnyOfCondition).conditions() }) { _, list -> AnyOfCondition(list) }
+                    conditions = when (owner.getOrNull(index)) {
+                        is AllOfCondition -> owner.nested(index, { (it as AllOfCondition).conditions() }) { _, list -> AllOfCondition(list) }
+                        is AnyOfCondition -> owner.nested(index, { (it as AnyOfCondition).conditions() }) { _, list -> AnyOfCondition(list) }
                         else -> throw ComplexPathException(path)
                     }
                     modifiers = null
@@ -255,4 +256,12 @@ fun describe(condition: LootCondition): String = when (condition) {
     else -> condition.javaClass.simpleName
 }
 
-private fun percent(fraction: Double): String = "${Math.round(fraction * 100)}%"
+private fun percent(fraction: Double): String = "${(fraction * 100).roundToInt()}%"
+
+/** Unwraps a [ConditionalModifier] so the wrapped modifier's own type can be inspected. */
+fun unwrap(modifier: LootModifier): LootModifier =
+    if (modifier is ConditionalModifier) modifier.modifier() else modifier
+
+/** Puts [replacement] back behind [original]'s conditions, if it had any. */
+fun rewrap(original: LootModifier, replacement: LootModifier): LootModifier =
+    if (original is ConditionalModifier) ConditionalModifier(replacement, original.conditions()) else replacement

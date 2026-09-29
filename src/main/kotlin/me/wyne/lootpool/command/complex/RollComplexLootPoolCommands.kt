@@ -1,7 +1,10 @@
 package me.wyne.lootpool.command.complex
 
 import dev.jorel.commandapi.CommandAPICommand
+import dev.jorel.commandapi.arguments.Argument
 import dev.jorel.commandapi.arguments.IntegerArgument
+import dev.jorel.commandapi.arguments.SafeSuggestions
+import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException
 import dev.jorel.commandapi.executors.CommandExecutor
 import me.wyne.lootpool.api.LootPoolProvider
 import me.wyne.lootpool.api.complex.LootRoll
@@ -58,7 +61,7 @@ private fun setRollCommand(provider: LootPoolProvider) = CommandAPICommand("set"
     )
     .withPermission("lootpool.modify")
     .withArguments(complexPoolKey("key", provider))
-    .withArguments(IntegerArgument("roll", 0))
+    .withArguments(rollIndexArgument("roll", provider))
     .withArguments(IntegerArgument("minRolls", 0))
     .withOptionalArguments(IntegerArgument("maxRolls", 0))
     .executes(CommandExecutor { sender, args ->
@@ -83,7 +86,7 @@ private fun removeRollCommand(provider: LootPoolProvider) = CommandAPICommand("r
     )
     .withPermission("lootpool.modify")
     .withArguments(complexPoolKey("key", provider))
-    .withArguments(IntegerArgument("roll", 0))
+    .withArguments(rollIndexArgument("roll", provider))
     .executes(CommandExecutor { sender, args ->
         val editor = editorFor(args, sender, provider)
         editor.rolls.removeAt(rollIndex(editor, args, sender))
@@ -101,10 +104,21 @@ private fun moveRollCommand(provider: LootPoolProvider) = CommandAPICommand("mov
     )
     .withPermission("lootpool.modify")
     .withArguments(complexPoolKey("key", provider))
-    .withArguments(IntegerArgument("roll", 0))
+    .withArguments(rollIndexArgument("roll", provider))
     .withArguments(IntegerArgument("delta"))
     .executes(CommandExecutor { sender, args ->
         val editor = editorFor(args, sender, provider)
         editor.rolls.move(rollIndex(editor, args, sender), args.getByClass("delta", Int::class.java)!!)
         modified(sender, args)
     })
+
+fun rollIndexArgument(nodeName: String, provider: LootPoolProvider): Argument<Int> =
+    IntegerArgument(nodeName, 0)
+        .replaceSafeSuggestions(SafeSuggestions.suggestCollection { info ->
+            try {
+                val editor = editorFor(info.previousArgs, info.sender, provider)
+                List(editor.rolls.size) { index -> index }
+            } catch (_: WrapperCommandSyntaxException) {
+                emptyList()
+            }
+        })

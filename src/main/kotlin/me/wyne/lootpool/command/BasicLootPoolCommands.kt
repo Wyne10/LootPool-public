@@ -80,7 +80,7 @@ class MergeBasicCommand(lootPoolProvider: LootPoolProvider) : SubCommand("merge"
             val source = lootPoolProvider.getLootPool(sourceKey)!!
             val mergedLootList = destination.lootList + source.lootList
             val newLootPool = destination.withLoot(destinationKey, mergedLootList)
-            LootPoolGui(destinationKey, sender, newLootPool)
+            LootPoolGui(destinationKey, sender, newLootPool, pending = true)
         })
 }
 
@@ -106,7 +106,7 @@ class WeightBasicCommand(lootPoolProvider: LootPoolProvider) : SubCommand("weigh
             val modifiedLootList = lootPool.getLootList()
                 .map { Loot(it.item, operation.evaluate(it.weight), it.minAmount, it.maxAmount) }
             val newLootPool = lootPool.withLoot(key, modifiedLootList)
-            LootPoolGui(key, sender, newLootPool)
+            LootPoolGui(key, sender, newLootPool, pending = true)
         })
 }
 
@@ -146,7 +146,7 @@ class AmountBasicCommand(lootPoolProvider: LootPoolProvider) : SubCommand("amoun
                     }
                 }
             val newLootPool = lootPool.withLoot(key, modifiedLootList)
-            LootPoolGui(key, sender, newLootPool)
+            LootPoolGui(key, sender, newLootPool, pending = true)
         })
 }
 
@@ -175,7 +175,7 @@ class FlattenBasicCommand(lootPoolProvider: LootPoolProvider) : SubCommand("flat
                 .mapKeys { lootPoolProvider.getLootPool(it.key)!! }
                 .flatMap { entry -> entry.key.lootList.map { Loot(it.item, entry.value.evaluate(it.weight), it.minAmount, it.maxAmount) } }
             val newLootPool = BasicLootPool(key, flattenedLootList)
-            LootPoolGui(key, sender, newLootPool)
+            LootPoolGui(key, sender, newLootPool, pending = true)
             sender.placeholderComponent("success-lootpool-create", "key" replace key).sendMessage(sender)
         })
 }
