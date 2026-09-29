@@ -188,6 +188,17 @@ gui-condition-type-time-lore:
 gui-condition-type-weather: "[white]Weather"
 gui-condition-type-weather-lore:
   - "[white]Restrict to rain or thunder"
+gui-condition-type-biome: "[white]Biome"
+gui-condition-type-biome-lore:
+  - "[white]Restrict to chosen biomes"
+gui-condition-type-hasloot: "[white]Carried loot"
+gui-condition-type-hasloot-lore:
+  - "[white]Test what the player already carries"
+gui-biome-option: "[white]<biome>"
+gui-field-biomes: "[white]Biomes: [gold]<value>"
+gui-field-hasloot-pool: "[white]Loot pool: [gold]<value>"
+gui-field-hasloot-mode: "[white]Needs: [gold]<value>"
+gui-field-hasloot-match-meta: "[white]Exact match: [gold]<value>"
 gui-condition-type-allof: "[white]All of"
 gui-condition-type-allof-lore:
   - "[white]Every condition inside must pass"

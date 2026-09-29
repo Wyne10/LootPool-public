@@ -16,6 +16,8 @@ import me.wyne.lootpool.api.SnapshotLootPool
 import me.wyne.lootpool.api.VanillaLootPool
 import me.wyne.lootpool.api.complex.condition.AllOfCondition
 import me.wyne.lootpool.api.complex.condition.AnyOfCondition
+import me.wyne.lootpool.api.complex.condition.BiomeCondition
+import me.wyne.lootpool.api.complex.condition.HasLootCondition
 import me.wyne.lootpool.api.complex.modifier.AttributeEntry
 import me.wyne.lootpool.api.complex.ComplexLootPool
 import me.wyne.lootpool.api.complex.modifier.ConditionalModifier
@@ -91,6 +93,8 @@ class LootPoolManager @Inject constructor(private val plugin: me.wyne.lootpool.L
         ConfigurationSerialization.registerClass(WorldCondition::class.java)
         ConfigurationSerialization.registerClass(TimeCondition::class.java)
         ConfigurationSerialization.registerClass(WeatherCondition::class.java)
+        ConfigurationSerialization.registerClass(BiomeCondition::class.java)
+        ConfigurationSerialization.registerClass(HasLootCondition::class.java)
         ConfigurationSerialization.registerClass(PlaceholderCondition::class.java)
 
         ConfigurationSerialization.registerClass(EnchantmentPool::class.java)

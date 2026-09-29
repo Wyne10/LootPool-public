@@ -16,9 +16,12 @@ import dev.jorel.commandapi.arguments.StringArgument
 import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException
 import dev.jorel.commandapi.executors.CommandArguments
 import dev.jorel.commandapi.executors.CommandExecutor
+import me.wyne.lootpool.api.LootPool
 import me.wyne.lootpool.api.LootPoolProvider
 import me.wyne.lootpool.api.complex.condition.AllOfCondition
 import me.wyne.lootpool.api.complex.condition.AnyOfCondition
+import me.wyne.lootpool.api.complex.condition.BiomeCondition
+import me.wyne.lootpool.api.complex.condition.HasLootCondition
 import me.wyne.lootpool.api.complex.condition.InvertedCondition
 import me.wyne.lootpool.api.complex.condition.LootCondition
 import me.wyne.lootpool.api.complex.condition.PermissionCondition
@@ -26,11 +29,13 @@ import me.wyne.lootpool.api.complex.condition.RandomChanceCondition
 import me.wyne.lootpool.api.complex.condition.TimeCondition
 import me.wyne.lootpool.api.complex.condition.WeatherCondition
 import me.wyne.lootpool.api.complex.condition.WorldCondition
+import me.wyne.lootpool.command.assertLootPoolExists
 import me.wyne.lootpool.command.complexPoolKey
 import me.wyne.lootpool.command.editorFor
 import me.wyne.lootpool.command.elementPath
 import me.wyne.lootpool.command.failInvalidIndex
 import me.wyne.lootpool.command.helpCommand
+import me.wyne.lootpool.command.lootPoolKey
 import me.wyne.lootpool.command.modified
 import me.wyne.lootpool.command.ownerFor
 import me.wyne.lootpool.condition.PlaceholderCondition
@@ -39,6 +44,7 @@ import me.wyne.lootpool.core.describe
 import me.wyne.wutils.i18n.kotlin.placeholderComponent
 import me.wyne.wutils.i18n.kotlin.replace
 import org.bukkit.Bukkit
+import org.bukkit.block.Biome
 import org.bukkit.command.CommandSender
 
 fun conditionComplexCommand(provider: LootPoolProvider): CommandAPICommand {
@@ -226,6 +232,51 @@ private fun addConditionCommand(provider: LootPoolProvider): CommandAPICommand {
             modified(sender, args)
         })
 
+    val biome = CommandAPICommand("biome")
+        .withShortDescription("Add a biome condition.")
+        .withFullDescription(
+            """
+                Pass when the loot is being generated in one of the named biomes, so one pool can
+                drop desert loot in a desert and tundra loot in a tundra.
+                Fails when the situation carries no location and no player.
+            """.trimIndent()
+        )
+        .withPermission("lootpool.modify")
+        .withArguments(complexPoolKey("key", provider))
+        .withArguments(elementPath("path", provider))
+        .withArguments(biomesArgument("biomes"))
+        .executes(CommandExecutor { sender, args ->
+            ownerFor(args, sender, provider).conditions.add(BiomeCondition(readBiomes(args)))
+            modified(sender, args)
+        })
+
+    val hasLoot = CommandAPICommand("hasloot")
+        .withShortDescription("Add a carried-loot condition.")
+        .withFullDescription(
+            """
+                Pass on what the player is already carrying from another pool's loot - to stop
+                handing out a drop they already have, or to gate a reward behind collecting a set.
+                "any" passes as soon as they hold one of that pool's items, "all" only once they
+                hold every one of them.
+                Stack sizes are always ignored. By default only the material has to match, since
+                modifiers rewrite an item after it is rolled; turn on "matchMeta" to require the
+                name and enchantments to match the pool's template too.
+                Fails when there is no player the loot is being generated for.
+            """.trimIndent()
+        )
+        .withPermission("lootpool.modify")
+        .withArguments(complexPoolKey("key", provider))
+        .withArguments(elementPath("path", provider))
+        .withArguments(lootPoolKey("pool") { provider.getMapOf(LootPool::class.java) })
+        .withOptionalArguments(
+            MultiLiteralArgument("mode", *HasLootCondition.Mode.entries.map { it.name.lowercase() }.toTypedArray()),
+            BooleanArgument("matchMeta")
+        )
+        .executes(CommandExecutor { sender, args ->
+            ownerFor(args, sender, provider).conditions.add(readHasLoot(args, sender, provider))
+            modified(sender, args)
+        })
+
     return CommandAPICommand("add")
         .withShortDescription("Add a condition.")
         .withFullDescription("Attach a condition to a pool, a roll, an entry, a modifier or a condition group.")
@@ -237,6 +288,8 @@ private fun addConditionCommand(provider: LootPoolProvider): CommandAPICommand {
         .withSubcommand(allOf)
         .withSubcommand(anyOf)
         .withSubcommand(placeholder)
+        .withSubcommand(biome)
+        .withSubcommand(hasLoot)
 }
 
 private fun removeConditionCommand(provider: LootPoolProvider) = CommandAPICommand("remove")
@@ -437,6 +490,46 @@ private fun setConditionCommand(provider: LootPoolProvider): CommandAPICommand {
             modified(sender, args)
         })
 
+    val biome = CommandAPICommand("biome")
+        .withShortDescription("Change a biome condition.")
+        .withFullDescription(
+            """
+                Replace the biomes an existing biome condition accepts.
+                The list given here replaces the old one outright rather than adding to it.
+            """.trimIndent()
+        )
+        .withPermission("lootpool.modify")
+        .withArguments(complexPoolKey("key", provider))
+        .withArguments(elementPath("path", provider))
+        .withArguments(IntegerArgument("condition", 0))
+        .withArguments(biomesArgument("biomes"))
+        .executes(CommandExecutor { sender, args ->
+            setCondition<BiomeCondition>(args, sender, provider) { BiomeCondition(readBiomes(args)) }
+            modified(sender, args)
+        })
+
+    val hasLoot = CommandAPICommand("hasloot")
+        .withShortDescription("Change a carried-loot condition.")
+        .withFullDescription(
+            """
+                Replace the pool an existing carried-loot condition looks for, whether it needs any
+                or all of it, and whether items have to match the template exactly.
+            """.trimIndent()
+        )
+        .withPermission("lootpool.modify")
+        .withArguments(complexPoolKey("key", provider))
+        .withArguments(elementPath("path", provider))
+        .withArguments(IntegerArgument("condition", 0))
+        .withArguments(lootPoolKey("pool") { provider.getMapOf(LootPool::class.java) })
+        .withOptionalArguments(
+            MultiLiteralArgument("mode", *HasLootCondition.Mode.entries.map { it.name.lowercase() }.toTypedArray()),
+            BooleanArgument("matchMeta")
+        )
+        .executes(CommandExecutor { sender, args ->
+            setCondition<HasLootCondition>(args, sender, provider) { readHasLoot(args, sender, provider) }
+            modified(sender, args)
+        })
+
     return CommandAPICommand("set")
         .withShortDescription("Change an existing condition.")
         .withFullDescription(
@@ -454,6 +547,8 @@ private fun setConditionCommand(provider: LootPoolProvider): CommandAPICommand {
         .withSubcommand(time)
         .withSubcommand(weather)
         .withSubcommand(placeholder)
+        .withSubcommand(biome)
+        .withSubcommand(hasLoot)
 }
 
 private inline fun <reified T : LootCondition> setCondition(
@@ -482,6 +577,25 @@ private inline fun <reified T : LootCondition> conditionIndexArgument(nodeName: 
                 emptyList()
             }
         })
+
+private fun biomesArgument(nodeName: String) =
+    ListArgumentBuilder<Biome>(nodeName)
+        .withList(Biome.entries)
+        .withMapper { it.name.lowercase() }
+        .buildGreedy()
+
+@Suppress("UNCHECKED_CAST")
+private fun readBiomes(args: CommandArguments): Set<String> =
+    (args.getByClass("biomes", List::class.java) as List<Biome>).map { it.name }.toSet()
+
+private fun readHasLoot(args: CommandArguments, sender: CommandSender, provider: LootPoolProvider): HasLootCondition {
+    val pool = args.getByClass("pool", String::class.java)!!
+    assertLootPoolExists(pool, sender, provider.getMapOf(LootPool::class.java))
+    val mode = args.getByClass("mode", String::class.java)
+        ?.let { name -> HasLootCondition.Mode.entries.firstOrNull { it.name.equals(name, true) } }
+        ?: HasLootCondition.Mode.ANY
+    return HasLootCondition(pool, mode, args.getByClassOrDefault("matchMeta", Boolean::class.java, false))
+}
 
 private fun failWrongConditionType(sender: CommandSender, args: CommandArguments): Nothing =
     throw CommandAPIBukkit.failWithAdventureComponent(

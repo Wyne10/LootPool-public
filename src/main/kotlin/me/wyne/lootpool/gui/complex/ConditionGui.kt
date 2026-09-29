@@ -2,6 +2,8 @@ package me.wyne.lootpool.gui.complex
 
 import me.wyne.lootpool.api.complex.condition.AllOfCondition
 import me.wyne.lootpool.api.complex.condition.AnyOfCondition
+import me.wyne.lootpool.api.complex.condition.BiomeCondition
+import me.wyne.lootpool.api.complex.condition.HasLootCondition
 import me.wyne.lootpool.api.complex.condition.InvertedCondition
 import me.wyne.lootpool.api.complex.condition.LootCondition
 import me.wyne.lootpool.api.complex.condition.PermissionCondition
@@ -16,6 +18,7 @@ import me.wyne.lootpool.gui.ButtonScreen
 import me.wyne.lootpool.gui.EditSession
 import me.wyne.lootpool.gui.FieldScreen
 import me.wyne.lootpool.gui.actionField
+import me.wyne.lootpool.gui.boolField
 import me.wyne.lootpool.gui.cycleField
 import me.wyne.lootpool.gui.fractionField
 import me.wyne.lootpool.gui.intField
@@ -24,6 +27,7 @@ import me.wyne.lootpool.gui.tristateField
 import me.wyne.wutils.i18n.kotlin.replace
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
+import org.bukkit.block.Biome
 import org.bukkit.Material
 import org.bukkit.event.inventory.ClickType
 import org.bukkit.event.inventory.InventoryAction
@@ -63,13 +67,15 @@ class ConditionListScreen(
         is WeatherCondition -> Material.WATER_BUCKET
         is AllOfCondition, is AnyOfCondition -> Material.CHEST
         is PlaceholderCondition -> Material.PAPER
+        is BiomeCondition -> Material.OAK_SAPLING
+        is HasLootCondition -> Material.CHEST_MINECART
         else -> Material.REDSTONE_TORCH
     }
 
     override fun renderControls() {
         super.renderControls()
         button(controlRow + 3, item(Material.LIME_DYE, "gui-add-condition").lore("gui-add-condition-lore")) {
-            session.push(ConditionTypeScreen(session, ownerLabel, conditions))
+            session.push(ConditionTypeScreen(session, ctx, ownerLabel, conditions))
         }
     }
 
@@ -110,7 +116,7 @@ class ConditionListScreen(
                     }
                 )
             )
-            event.isLeftClick -> conditionDetailScreen(session, conditions, index)?.let { session.push(it) }
+            event.isLeftClick -> conditionDetailScreen(session, ctx, conditions, index)?.let { session.push(it) }
         }
     }
 
@@ -122,18 +128,26 @@ class ConditionListScreen(
 /** Picks which kind of condition to add. */
 class ConditionTypeScreen(
     session: EditSession,
+    private val ctx: ComplexGuiContext,
     ownerLabel: String,
     private val conditions: ListHandle<LootCondition>
 ) : FieldScreen(session, ROWS, Component.text("$ownerLabel / add condition"), { emptyList() }) {
 
     override fun renderContent() {
-        button(10, item(Material.SUNFLOWER, "gui-condition-type-chance").lore("gui-condition-type-chance-lore")) { add(RandomChanceCondition(1.0)) }
-        button(11, item(Material.NAME_TAG, "gui-condition-type-permission").lore("gui-condition-type-permission-lore")) { add(PermissionCondition("")) }
-        button(12, item(Material.GRASS_BLOCK, "gui-condition-type-world").lore("gui-condition-type-world-lore")) { add(WorldCondition(emptySet())) }
-        button(13, item(Material.CLOCK, "gui-condition-type-time").lore("gui-condition-type-time-lore")) { add(TimeCondition(0, 24000)) }
-        button(14, item(Material.WATER_BUCKET, "gui-condition-type-weather").lore("gui-condition-type-weather-lore")) { add(WeatherCondition(null, null)) }
-        button(15, item(Material.CHEST, "gui-condition-type-allof").lore("gui-condition-type-allof-lore")) { add(AllOfCondition(emptyList())) }
-        button(16, item(Material.ENDER_CHEST, "gui-condition-type-anyof").lore("gui-condition-type-anyof-lore")) { add(AnyOfCondition(emptyList())) }
+        button(9, item(Material.SUNFLOWER, "gui-condition-type-chance").lore("gui-condition-type-chance-lore")) { add(RandomChanceCondition(1.0)) }
+        button(10, item(Material.NAME_TAG, "gui-condition-type-permission").lore("gui-condition-type-permission-lore")) { add(PermissionCondition("")) }
+        button(11, item(Material.GRASS_BLOCK, "gui-condition-type-world").lore("gui-condition-type-world-lore")) { add(WorldCondition(emptySet())) }
+        button(12, item(Material.CLOCK, "gui-condition-type-time").lore("gui-condition-type-time-lore")) { add(TimeCondition(0, 24000)) }
+        button(13, item(Material.WATER_BUCKET, "gui-condition-type-weather").lore("gui-condition-type-weather-lore")) { add(WeatherCondition(null, null)) }
+        button(14, item(Material.OAK_SAPLING, "gui-condition-type-biome").lore("gui-condition-type-biome-lore")) { add(BiomeCondition(emptySet())) }
+        button(15, item(Material.CHEST_MINECART, "gui-condition-type-hasloot").lore("gui-condition-type-hasloot-lore")) {
+            session.push(PoolPickerScreen(session, ctx) { key ->
+                conditions.add(HasLootCondition(key, HasLootCondition.Mode.ANY, false))
+                session.markDirty()
+            })
+        }
+        button(16, item(Material.CHEST, "gui-condition-type-allof").lore("gui-condition-type-allof-lore")) { add(AllOfCondition(emptyList())) }
+        button(17, item(Material.ENDER_CHEST, "gui-condition-type-anyof").lore("gui-condition-type-anyof-lore")) { add(AnyOfCondition(emptyList())) }
     }
 
     private fun add(condition: LootCondition) {
@@ -191,6 +205,7 @@ class WorldPickerScreen(
 /** Builds the detail screen for the condition at [index], preserving an inverted wrapper. */
 fun conditionDetailScreen(
     session: EditSession,
+    ctx: ComplexGuiContext,
     conditions: ListHandle<LootCondition>,
     index: Int
 ): FieldScreen? {
@@ -245,6 +260,37 @@ fun conditionDetailScreen(
             )
         }
 
+        is BiomeCondition -> FieldScreen(session, 3, title) {
+            val it = current() as BiomeCondition
+            listOf(
+                actionField(13, Material.OAK_SAPLING, "gui-field-biomes",
+                    { it.biomes().joinToString(", ") { biome -> biome.lowercase() }.ifEmpty { "-" } }) { s ->
+                    s.push(BiomePickerScreen(s, conditions, index))
+                }
+            )
+        }
+
+        is HasLootCondition -> FieldScreen(session, 3, title) {
+            val it = current() as HasLootCondition
+            listOf(
+                actionField(11, Material.CHEST_MINECART, "gui-field-hasloot-pool", { it.pool() }) { s ->
+                    s.push(PoolPickerScreen(s, ctx) { key ->
+                        (current() as HasLootCondition).let { now -> replace(HasLootCondition(key, now.mode(), now.matchMeta())) }
+                        s.markDirty()
+                    })
+                },
+                cycleField(
+                    13, Material.COMPARATOR, "gui-field-hasloot-mode",
+                    HasLootCondition.Mode.entries.toList(), { it.mode() },
+                    { v -> replace(HasLootCondition(it.pool(), v, it.matchMeta())) },
+                    { mode -> mode.name.lowercase() }
+                ),
+                boolField(15, "gui-field-hasloot-match-meta", { it.matchMeta() }) { v ->
+                    replace(HasLootCondition(it.pool(), it.mode(), v))
+                }
+            )
+        }
+
         is PlaceholderCondition -> FieldScreen(session, 3, title) {
             val it = current() as PlaceholderCondition
             listOf(
@@ -272,3 +318,47 @@ internal fun unwrapCondition(condition: LootCondition): LootCondition =
 
 internal fun rewrapCondition(original: LootCondition, replacement: LootCondition): LootCondition =
     if (original is InvertedCondition) InvertedCondition(replacement) else replacement
+
+/** Multi-select over the server's biomes, for biome conditions. */
+class BiomePickerScreen(
+    session: EditSession,
+    private val conditions: ListHandle<LootCondition>,
+    private val index: Int
+) : ButtonScreen(session, ROWS, Component.text("biomes")) {
+
+    private val biomes: List<Biome> = Biome.entries.sortedBy { it.name }
+
+    override val contentCount: Int get() = biomes.size
+
+    private fun condition() = unwrapCondition(conditions[index]) as BiomeCondition
+
+    override fun renderContent() {
+        val selected = condition().biomes()
+        biomes.drop(page * contentSize)
+            .take(contentSize)
+            .forEachIndexed { slot, biome ->
+                val chosen = biome.name in selected
+                inventory.setItem(
+                    slot,
+                    item(
+                        if (chosen) Material.OAK_SAPLING else Material.DEAD_BUSH,
+                        "gui-biome-option", "biome" replace biome.name.lowercase()
+                    ).lore(if (chosen) "gui-world-selected-lore" else "gui-world-unselected-lore")
+                )
+            }
+    }
+
+    override fun onContentClick(event: InventoryClickEvent, index: Int) {
+        event.isCancelled = true
+        val biome = biomes.getOrNull(index) ?: return
+        val selected = condition().biomes().toMutableSet()
+        if (!selected.add(biome.name)) selected.remove(biome.name)
+        conditions[this.index] = rewrapCondition(conditions[this.index], BiomeCondition(selected))
+        session.markDirty()
+        session.refresh()
+    }
+
+    companion object {
+        private const val ROWS = 6
+    }
+}

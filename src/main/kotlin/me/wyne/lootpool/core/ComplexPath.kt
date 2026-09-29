@@ -2,6 +2,8 @@ package me.wyne.lootpool.core
 
 import me.wyne.lootpool.api.complex.condition.AllOfCondition
 import me.wyne.lootpool.api.complex.condition.AnyOfCondition
+import me.wyne.lootpool.api.complex.condition.BiomeCondition
+import me.wyne.lootpool.api.complex.condition.HasLootCondition
 import me.wyne.lootpool.api.complex.ComplexLootPool
 import me.wyne.lootpool.api.complex.modifier.ConditionalModifier
 import me.wyne.lootpool.api.complex.modifier.DamageModifier
@@ -262,6 +264,9 @@ fun describe(condition: LootCondition): String = when (condition) {
     is WorldCondition -> "World in ${condition.worlds().joinToString(", ")}"
     is TimeCondition -> "Time ${condition.minTime()}..${condition.maxTime()}"
     is WeatherCondition -> "Weather rain=${condition.raining() ?: "any"} thunder=${condition.thundering() ?: "any"}"
+    is BiomeCondition -> "Biome in ${condition.biomes().joinToString(", ") { it.lowercase() }}"
+    is HasLootCondition -> "Has ${condition.mode().name.lowercase()} loot from '${condition.pool()}'" +
+        if (condition.matchMeta()) " (exact)" else ""
     is PlaceholderCondition -> "Placeholder '${condition.placeholder}' ${condition.operator.argument} '${condition.value}'"
     else -> condition.javaClass.simpleName
 }

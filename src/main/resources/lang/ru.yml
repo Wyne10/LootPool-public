@@ -188,6 +188,17 @@ gui-condition-type-time-lore:
 gui-condition-type-weather: "[white]Погода"
 gui-condition-type-weather-lore:
   - "[white]Ограничить дождём или грозой"
+gui-condition-type-biome: "[white]Биом"
+gui-condition-type-biome-lore:
+  - "[white]Ограничить выбранными биомами"
+gui-condition-type-hasloot: "[white]Лут у игрока"
+gui-condition-type-hasloot-lore:
+  - "[white]Проверить, что игрок уже носит"
+gui-biome-option: "[white]<biome>"
+gui-field-biomes: "[white]Биомы: [gold]<value>"
+gui-field-hasloot-pool: "[white]Лут пул: [gold]<value>"
+gui-field-hasloot-mode: "[white]Требуется: [gold]<value>"
+gui-field-hasloot-match-meta: "[white]Точное совпадение: [gold]<value>"
 gui-condition-type-allof: "[white]Все из"
 gui-condition-type-allof-lore:
   - "[white]Все вложенные условия должны пройти"
