@@ -44,7 +44,16 @@ The project version lives in `gradle.properties` and names both the jar and the 
 
 This downloads Paper 1.16.5 along with CommandAPI, LuckPerms, PlaceholderAPI, ProtocolLib, ViaVersion, and ViaBackwards, then starts a server in `run/` with the freshly built plugin installed. Add `-Pdebug=true` to run on 1.19.4 instead, with relocation off.
 
-The server keeps its pools in `run/plugins/LootPool/lootpool/`. Try `/lootpool pool create test`, then `/lootpool preview test`.
+The server keeps its pools in `run/plugins/LootPool/lootpool/` and its enchantment pools in `run/plugins/LootPool/enchantment/`. Try `/lootpool pool create test`, then `/lootpool preview test`.
+
+## Project layout
+
+| Module | Contents                                                                                                                                                                                    |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `api`  | Pure Java on Java 16, one `compileOnly` dependency on the Paper API. Every pool type, entry, modifier and condition, plus `LootPoolProvider` and `LootPoolApi`. Published to Maven Central. |
+| root   | The plugin: Kotlin, Guice, the commands, the editors and the registries. Not published as a dependency.                                                                                     |
+
+Anything that needs Kotlin, PlaceholderAPI or the plugin's own utilities belongs in the root module, not in `api`. See [Extending LootPool](extending-lootpool.md) for where each kind of addition goes.
 
 ## Publish the API
 

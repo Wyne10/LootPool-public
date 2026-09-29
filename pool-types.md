@@ -1,7 +1,7 @@
 ---
 description: >-
-  Seven kinds of pool, from a plain weighted list to pools of pools and wrapped
-  vanilla tables: how each one rolls, and the command that creates it.
+  Eight kinds of pool, from a plain weighted list to pools of pools, wrapped
+  vanilla tables and full loot-table structure: how each one rolls.
 ---
 
 # Pool types
@@ -16,27 +16,32 @@ A pool can also hold an **empty entry**: an air item with a weight of its own. D
 
 Throughout the plugin, **slots** means _number of draws_. Rolling a pool into 5 slots makes 5 independent draws, so the same entry can come up more than once.
 
+A [complex pool](complex-loot-pools.md) is the one type that doesn't fit that description. It is built out of rolls, item modifiers and conditions instead of a single list, and only flattens to one for previews.
+
 ## Choosing a type
 
-| Type                                   | Holds                                   | Pick it when you want…                                          | Created with            |
-| -------------------------------------- | --------------------------------------- | --------------------------------------------------------------- | ----------------------- |
-| [Basic](pool-types.md#basic)           | A list of entries                       | An ordinary weighted loot table                                 | `/lootpool pool create` |
-| [Keyed loot](pool-types.md#keyed-loot) | One entry                               | A single item you can reuse by name                             | `/lootpool item create` |
-| [Multi](pool-types.md#multi)           | Keys of other pools                     | Several pools merged into one table                             | `/lootpool include`     |
-| [Composite](pool-types.md#composite)   | Keys of other pools, each with a weight | Whole pools competing: "80% the common table, 20% the rare one" | `/lootpool compose`     |
-| [Roll](pool-types.md#roll)             | The key of one pool, plus a roll range  | A random number of items each time                              | `/lootpool roll`        |
-| [Snapshot](pool-types.md#snapshot)     | Entries pinned to slot numbers          | An exact container layout, replayed                             | `/lootpool snapshot`    |
-| [Vanilla](pool-types.md#vanilla)       | A vanilla loot table path               | A Minecraft table such as `chests/simple_dungeon` as a pool     | `/lootpool register`    |
+| Type                                   | Holds                                   | Pick it when you want…                                          | Created with               |
+| -------------------------------------- | --------------------------------------- | --------------------------------------------------------------- | -------------------------- |
+| [Basic](pool-types.md#basic)           | A list of entries                       | An ordinary weighted loot table                                 | `/lootpool pool create`    |
+| [Keyed loot](pool-types.md#keyed-loot) | One entry                               | A single item you can reuse by name                             | `/lootpool item create`    |
+| [Multi](pool-types.md#multi)           | Keys of other pools                     | Several pools merged into one table                             | `/lootpool include`        |
+| [Composite](pool-types.md#composite)   | Keys of other pools, each with a weight | Whole pools competing: "80% the common table, 20% the rare one" | `/lootpool compose`        |
+| [Roll](pool-types.md#roll)             | The key of one pool, plus a roll range  | A random number of items each time                              | `/lootpool roll`           |
+| [Snapshot](pool-types.md#snapshot)     | Entries pinned to slot numbers          | An exact container layout, replayed                             | `/lootpool snapshot`       |
+| [Vanilla](pool-types.md#vanilla)       | A vanilla loot table path               | A Minecraft table such as `chests/simple_dungeon` as a pool     | `/lootpool register`       |
+| [Complex](complex-loot-pools.md)       | Rolls, item modifiers, conditions       | Stated composition, or items that vary after being rolled       | `/lootpool complex create` |
 
-All pools share one registry, so a key is unique across every type: you can't have a basic pool and a keyed loot both called `diamond`.
+All pools share one registry, so a key is unique across every type: you can't have a basic pool and a keyed loot both called `diamond`. [Enchantment pools](enchantment-pools.md) are a separate registry with its own keys.
 
 {% hint style="info" %}
 Keys may contain only lowercase letters, digits, `_`, `-` and `.`, because each one becomes part of a Minecraft `NamespacedKey` (`lootpool:<key>`). A command given any other key, such as `Dungeon`, refuses it before creating anything.
 {% endhint %}
 
+Any pool of any type can be copied under a new key with `/lootpool clone <key> <newKey>`. The copy keeps whatever the original holds — a composite's weights, a roll pool's range, a complex pool's whole tree — and the original is left untouched. Pools that the original _references_ are shared, not copied.
+
 ## Basic
 
-A plain list of entries that you build in [the loot editor](the-loot-editor.md). It's the only type that `/lootpool pool modify`, `clone`, `merge`, `weight` and `amount` work on.
+A plain list of entries that you build in [the loot editor](the-loot-editor.md). It's the only type that `/lootpool pool modify`, `merge`, `weight` and `amount` work on.
 
 ```
 /lootpool pool create common_ores
@@ -117,16 +122,29 @@ Each use runs the vanilla table as if it were generated at the spawn point of th
 
 Because the table re-rolls every time, the pool has no fixed list of entries. `/lootpool info`, the AbstractMenus catalog and every command that reads the entry list see a fresh sample roll instead.
 
+## Complex
+
+The one type that isn't a flat list. A complex pool holds an ordered list of **rolls**, each with its own roll count and its own weighted entries; **item modifiers** that transform what has been rolled; and **conditions** that gate the pool, a roll, an entry or a single modifier.
+
+```
+/lootpool complex create dungeon_chest
+/lootpool complex convert dungeon_loot dungeon_chest 3 5
+```
+
+Use it when composition has to be stated rather than approximated — "3 to 5 commons, 1 tool, 1 guaranteed quest item" is three rolls — or when items should vary after being picked, which is the only way to avoid one entry per enchantment combination.
+
+It has a page of its own: [Complex loot pools](complex-loot-pools.md).
+
 ## Where pools are stored
 
 Each pool lives in `plugins/LootPool/lootpool/<key>.yml`, written the moment it's created or saved, as a Bukkit-serialized object:
 
 ```yaml
 common_ores:
-  ==: me.wyne.lootpool.api.BasicLootPool
+  ==: BasicLootPool
   key: common_ores
   '0':
-    ==: me.wyne.lootpool.api.Loot
+    ==: Loot
     item:
       ==: org.bukkit.inventory.ItemStack
       v: 2586
@@ -135,7 +153,7 @@ common_ores:
     minAmount: 1
     maxAmount: 4
   '1':
-    ==: me.wyne.lootpool.api.Loot
+    ==: Loot
     item:
       ==: org.bukkit.inventory.ItemStack
       v: 2586
@@ -147,4 +165,10 @@ common_ores:
 
 The second entry is an empty entry: air with weight 2.
 
+{% hint style="info" %}
+Files written by older versions name their types in full, as `==: me.wyne.lootpool.api.BasicLootPool`. Both spellings load; new writes use the short one. There is no migration to run — a pool is rewritten in the short form the next time it is saved.
+{% endhint %}
+
 The plugin writes these files, but you can copy them between servers, or edit one and run `/lootpool reload`. If you do, keep the file name, the top-level key and the `key:` field the same. `/lootpool remove <key>` deletes the file along with the pool.
+
+[Enchantment pools](enchantment-pools.md) live beside them in `plugins/LootPool/enchantment/<key>.yml`.
