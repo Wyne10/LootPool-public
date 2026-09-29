@@ -216,6 +216,7 @@ error-lootpool-not-found: "[red]Лут пул '<key>' не существует!
 error-lootpool-already-exists: "[red]Лут пул '<key>' уже существует!"
 error-invalid-key: "[red]Неверный ключ '<key>'! Используйте только строчные латинские буквы, цифры, '_', '-' и '.'"
 error-invalid-pool-entry: "[red]Неверная запись '<entry>', ожидается pool:value"
+error-invalid-operation: "[red]Неверная операция '<operation>'! Ожидается число, опционально с префиксом '+', '-', '*', '/', '**', '%', '<' или '>'"
 error-not-a-complex-lootpool: "[red]Лут пул '<key>' не является комплексным!"
 error-invalid-path: "[red]Неверный путь '<path>'! Используйте 'pool', индекс ролла '0', запись '0.2' или вложенный список '0.2.m0'"
 error-path-has-no-modifiers: "[red]'<path>' не может содержать модификаторы!"

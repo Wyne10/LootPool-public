@@ -18,7 +18,6 @@ import me.wyne.lootpool.api.complex.EnchantmentEntry
 import me.wyne.lootpool.api.complex.EnchantmentPool
 import me.wyne.lootpool.api.complex.EnchantmentPoolProvider
 import me.wyne.lootpool.gui.openEnchantmentPoolGui
-import me.wyne.wutils.common.operation.Operations
 import me.wyne.wutils.i18n.kotlin.placeholderComponent
 import me.wyne.wutils.i18n.kotlin.reduce
 import me.wyne.wutils.i18n.kotlin.replace
@@ -198,7 +197,7 @@ class SetEnchantmentEntryCommand(provider: EnchantmentPoolProvider) : SubCommand
             assertEnchantmentEntryExists(key, index, sender, pool)
 
             val target = args.getByClass("target", String::class.java)!!
-            val operation = Operations.getIntOperation(args.getByClass("operation", String::class.java)!!)
+            val operation = parseIntOperation(args.getByClass("operation", String::class.java)!!, sender)
             val entry = pool.entries()[index]
             val updated = when (target) {
                 "weight" -> EnchantmentEntry(entry.enchantment(), operation.evaluate(entry.weight()).coerceAtLeast(0), entry.minLevel(), entry.maxLevel())

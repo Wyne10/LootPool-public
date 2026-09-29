@@ -12,6 +12,8 @@ import dev.jorel.commandapi.arguments.ListArgumentBuilder
 import dev.jorel.commandapi.arguments.StringArgument
 import dev.jorel.commandapi.executors.CommandExecutor
 import dev.jorel.commandapi.executors.PlayerCommandExecutor
+import me.wyne.wutils.common.operation.IntOperation
+import me.wyne.wutils.common.operation.Operations
 import me.wyne.wutils.i18n.kotlin.placeholderComponent
 import me.wyne.wutils.i18n.kotlin.plain
 import me.wyne.wutils.i18n.kotlin.reduce
@@ -288,6 +290,20 @@ fun poolMapArgument(nodeName: String, lootPoolMap: () -> Map<String, LootPool>):
                 .map { "$prefix$it:" }
                 .toTypedArray()
         })
+
+/**
+ * Parses an operation like "+5", "<10" or a bare "10".
+ *
+ * [Operations.getIntOperation] matches its regex without checking the result and then reads the
+ * groups, so anything it does not recognise comes back out as an [IllegalStateException] rather
+ * than a message the sender can act on.
+ */
+fun parseIntOperation(input: String, sender: CommandSender): IntOperation =
+    runCatching { Operations.getIntOperation(input) }.getOrElse {
+        throw CommandAPIBukkit.failWithAdventureComponent(
+            sender.placeholderComponent("error-invalid-operation", "operation" replace input).get()
+        )
+    }
 
 fun <V> parsePoolMap(input: String, sender: CommandSender, lootPoolMap: Map<String, LootPool>, valueMapper: (String) -> V): Map<String, V> =
     input.trim().split(Regex("\\s+"))

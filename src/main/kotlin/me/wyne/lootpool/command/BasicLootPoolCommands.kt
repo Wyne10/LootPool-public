@@ -104,7 +104,7 @@ class WeightBasicCommand(lootPoolProvider: LootPoolProvider) : SubCommand("weigh
             assertLootPoolExists(key, sender, lootPoolProvider.getMapOf(EditableLootPool::class.java))
             val lootPool = lootPoolProvider.getLootPool(key)!! as EditableLootPool
             val operationString = args.getByClass("operation", String::class.java)!!
-            val operation = Operations.getIntOperation(operationString)
+            val operation = parseIntOperation(operationString, sender)
             val modifiedLootList = lootPool.getLootList()
                 .map { Loot(it.item, operation.evaluate(it.weight), it.minAmount, it.maxAmount) }
             val newLootPool = lootPool.withLoot(key, modifiedLootList)
@@ -137,7 +137,7 @@ class AmountBasicCommand(lootPoolProvider: LootPoolProvider) : SubCommand("amoun
             val lootPool = lootPoolProvider.getLootPool(key)!! as EditableLootPool
             val target = args.getByClass("target", String::class.java)!!
             val operationString = args.getByClass("operation", String::class.java)!!
-            val operation = Operations.getIntOperation(operationString)
+            val operation = parseIntOperation(operationString, sender)
             val modifiedLootList = lootPool.getLootList()
                 .map {
                     val maxStack = it.item.type.maxStackSize.coerceAtLeast(1)
