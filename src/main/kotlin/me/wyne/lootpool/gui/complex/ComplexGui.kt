@@ -266,7 +266,7 @@ class EntryScreen(
     private val ctx: ComplexGuiContext,
     private val rollIndex: Int,
     private val entryIndex: Int
-) : ButtonScreen(session, ROWS, Component.text("entry $rollIndex.$entryIndex")) {
+) : ButtonScreen(session, ROWS, Component.text("${ctx.editor.pool.key()} / roll $rollIndex / entry $entryIndex")) {
 
     private val entries get() = ctx.editor.entries(rollIndex)
 

@@ -199,7 +199,7 @@ fun conditionDetailScreen(
         conditions[index] = rewrapCondition(conditions[index], condition)
     }
 
-    val title = Component.text(describe(conditions[index]))
+    val title = Component.text(conditions[index].javaClass.simpleName)
 
     return when (current()) {
         is RandomChanceCondition -> FieldScreen(session, 3, title) {
