@@ -148,19 +148,19 @@ class ComplexPoolEditor(initial: ComplexLootPool, private val onWrite: (ComplexL
         return ComplexOwner(path, modifiers, conditions)
     }
 
-    fun suggest(): List<Pair<String, String>> {
-        val result = mutableListOf<Pair<String, String>>()
+    fun suggest(): Map<String, String> {
+        val result = mutableMapOf<String, String>()
         result += POOL_PATH to "The pool itself — ${pool.modifiers().size} modifier(s), ${pool.conditions().size} condition(s)"
         collect(POOL_PATH, modifiers, conditions, result, 0)
 
         rolls.items.forEachIndexed { rollIndex, roll ->
             val rollPath = rollIndex.toString()
-            result += rollPath to "Roll $rollIndex [${roll.minRolls()}..${roll.maxRolls()}] — ${roll.entries().size} entry(s)"
+            result += rollPath to "Roll $rollIndex [${roll.minRolls()}..${roll.maxRolls()}] — ${roll.entries().size} entry(s), ${roll.modifiers().size} modifier(s), ${roll.conditions().size} condition(s)"
             collect(rollPath, rollModifiers(rollIndex), rollConditions(rollIndex), result, 0)
 
             roll.entries().forEachIndexed { entryIndex, entry ->
                 val entryPath = "$rollIndex.$entryIndex"
-                result += entryPath to describe(entry)
+                result += entryPath to "${describe(entry)}, ${entry.modifiers().size} modifier(s), ${entry.conditions().size} condition(s)"
                 collect(entryPath, entryModifiers(rollIndex, entryIndex), entryConditions(rollIndex, entryIndex), result, 0)
             }
         }
@@ -171,7 +171,7 @@ class ComplexPoolEditor(initial: ComplexLootPool, private val onWrite: (ComplexL
         prefix: String,
         modifiers: ListHandle<LootModifier>?,
         conditions: ListHandle<LootCondition>,
-        result: MutableList<Pair<String, String>>,
+        result: MutableMap<String, String>,
         depth: Int
     ) {
         if (depth >= MAX_SUGGEST_DEPTH) return

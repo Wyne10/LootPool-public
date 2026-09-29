@@ -2,6 +2,7 @@ package me.wyne.lootpool.command.complex
 
 import dev.jorel.commandapi.CommandAPIBukkit
 import dev.jorel.commandapi.CommandAPICommand
+import dev.jorel.commandapi.Tooltip
 import dev.jorel.commandapi.arguments.Argument
 import dev.jorel.commandapi.arguments.ArgumentSuggestions
 import dev.jorel.commandapi.arguments.BooleanArgument
@@ -26,6 +27,7 @@ import me.wyne.lootpool.api.complex.modifier.NameModifier
 import me.wyne.lootpool.api.complex.modifier.SetAttributesModifier
 import me.wyne.lootpool.command.assertEnchantmentPoolExists
 import me.wyne.lootpool.command.complexPoolKey
+import me.wyne.lootpool.command.editorFor
 import me.wyne.lootpool.command.elementPath
 import me.wyne.lootpool.command.enchantmentPoolKey
 import me.wyne.lootpool.command.failInvalidIndex
@@ -34,6 +36,7 @@ import me.wyne.lootpool.command.modified
 import me.wyne.lootpool.command.ownerFor
 import me.wyne.lootpool.core.ComplexOwner
 import me.wyne.lootpool.core.ListHandle
+import me.wyne.lootpool.core.describe
 import me.wyne.lootpool.core.rewrap
 import me.wyne.lootpool.core.unwrap
 import me.wyne.wutils.i18n.kotlin.placeholderComponent
@@ -529,11 +532,11 @@ private fun readDamageModifier(args: CommandArguments): DamageModifier {
 
 private inline fun <reified T : LootModifier> modifierIndexArgument(nodeName: String, provider: LootPoolProvider): Argument<Int> =
     IntegerArgument(nodeName, 0)
-        .replaceSafeSuggestions(SafeSuggestions.suggestCollection { info ->
+        .replaceSafeSuggestions(SafeSuggestions.tooltipCollection { info ->
             try {
                 val owner = ownerFor(info.previousArgs, info.sender, provider)
                 owner.modifiers?.items
-                    ?.mapIndexedNotNull { index, modifier -> if (modifier is T) index else null }
+                    ?.mapIndexedNotNull { index, modifier -> if (modifier is T) Tooltip.ofString(index, describe(modifier)) else null }
             } catch (_: WrapperCommandSyntaxException) {
                 emptyList()
             }

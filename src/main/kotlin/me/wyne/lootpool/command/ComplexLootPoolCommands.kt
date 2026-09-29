@@ -111,7 +111,7 @@ fun elementPath(nodeName: String, provider: LootPoolProvider): Argument<String> 
             val pool = provider.getLootPool(key) as? ComplexLootPool
                 ?: return@stringsWithTooltips emptyArray()
             ComplexPoolEditor(pool) {}.suggest()
-                .map { StringTooltip.ofString(it.first, it.second) }
+                .map { StringTooltip.ofString(it.key, it.value) }
                 .toTypedArray()
         })
 

@@ -2,6 +2,7 @@ package me.wyne.lootpool.command.complex
 
 import dev.jorel.commandapi.CommandAPIBukkit
 import dev.jorel.commandapi.CommandAPICommand
+import dev.jorel.commandapi.Tooltip
 import dev.jorel.commandapi.arguments.Argument
 import dev.jorel.commandapi.arguments.BooleanArgument
 import dev.jorel.commandapi.arguments.DoubleArgument
@@ -26,6 +27,7 @@ import me.wyne.lootpool.api.complex.condition.TimeCondition
 import me.wyne.lootpool.api.complex.condition.WeatherCondition
 import me.wyne.lootpool.api.complex.condition.WorldCondition
 import me.wyne.lootpool.command.complexPoolKey
+import me.wyne.lootpool.command.editorFor
 import me.wyne.lootpool.command.elementPath
 import me.wyne.lootpool.command.failInvalidIndex
 import me.wyne.lootpool.command.helpCommand
@@ -33,6 +35,7 @@ import me.wyne.lootpool.command.modified
 import me.wyne.lootpool.command.ownerFor
 import me.wyne.lootpool.condition.PlaceholderCondition
 import me.wyne.lootpool.core.ComplexOwner
+import me.wyne.lootpool.core.describe
 import me.wyne.wutils.i18n.kotlin.placeholderComponent
 import me.wyne.wutils.i18n.kotlin.replace
 import org.bukkit.Bukkit
@@ -470,11 +473,11 @@ private inline fun <reified T : LootCondition> setCondition(
 
 private inline fun <reified T : LootCondition> conditionIndexArgument(nodeName: String, provider: LootPoolProvider): Argument<Int> =
     IntegerArgument(nodeName, 0)
-        .replaceSafeSuggestions(SafeSuggestions.suggestCollection { info ->
+        .replaceSafeSuggestions(SafeSuggestions.tooltipCollection { info ->
             try {
                 val owner = ownerFor(info.previousArgs, info.sender, provider)
                 owner.conditions.items
-                    .mapIndexedNotNull { index, condition -> if (condition is T) index else null }
+                    .mapIndexedNotNull { index, condition -> if (condition is T) Tooltip.ofString(index, describe(condition)) else null }
             } catch (_: WrapperCommandSyntaxException) {
                 emptyList()
             }

@@ -1,6 +1,7 @@
 package me.wyne.lootpool.command.complex
 
 import dev.jorel.commandapi.CommandAPICommand
+import dev.jorel.commandapi.Tooltip
 import dev.jorel.commandapi.arguments.Argument
 import dev.jorel.commandapi.arguments.IntegerArgument
 import dev.jorel.commandapi.arguments.SafeSuggestions
@@ -24,6 +25,7 @@ import me.wyne.lootpool.command.helpCommand
 import me.wyne.lootpool.command.lootPoolKey
 import me.wyne.lootpool.command.modified
 import me.wyne.lootpool.command.rollIndex
+import me.wyne.lootpool.core.describe
 import me.wyne.lootpool.core.withWeight
 
 fun entryComplexCommand(provider: LootPoolProvider): CommandAPICommand {
@@ -283,13 +285,13 @@ private fun setEntryCommand(provider: LootPoolProvider): CommandAPICommand {
 
 private inline fun <reified T : LootEntry> entryIndexArgument(nodeName: String, provider: LootPoolProvider): Argument<Int> =
     IntegerArgument(nodeName, 0)
-        .replaceSafeSuggestions(SafeSuggestions.suggestCollection { info ->
+        .replaceSafeSuggestions(SafeSuggestions.tooltipCollection { info ->
             try {
                 val editor = editorFor(info.previousArgs, info.sender, provider)
                 val roll = rollIndex(editor, info.previousArgs, info.sender)
                 val entries = editor.entries(roll)
                 entries.items
-                    .mapIndexedNotNull { index, entry -> if (entry is T) index else null }
+                    .mapIndexedNotNull { index, entry -> if (entry is T) Tooltip.ofString(index, describe(entry)) else null }
             } catch (_: WrapperCommandSyntaxException) {
                 emptyList()
             }

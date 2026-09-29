@@ -1,6 +1,7 @@
 package me.wyne.lootpool.command.complex
 
 import dev.jorel.commandapi.CommandAPICommand
+import dev.jorel.commandapi.Tooltip
 import dev.jorel.commandapi.arguments.Argument
 import dev.jorel.commandapi.arguments.IntegerArgument
 import dev.jorel.commandapi.arguments.SafeSuggestions
@@ -114,10 +115,10 @@ private fun moveRollCommand(provider: LootPoolProvider) = CommandAPICommand("mov
 
 fun rollIndexArgument(nodeName: String, provider: LootPoolProvider): Argument<Int> =
     IntegerArgument(nodeName, 0)
-        .replaceSafeSuggestions(SafeSuggestions.suggestCollection { info ->
+        .replaceSafeSuggestions(SafeSuggestions.tooltipCollection { info ->
             try {
                 val editor = editorFor(info.previousArgs, info.sender, provider)
-                List(editor.rolls.size) { index -> index }
+                List(editor.rolls.size) { index -> Tooltip.ofString(index, editor.suggest()[index.toString()]) }
             } catch (_: WrapperCommandSyntaxException) {
                 emptyList()
             }
