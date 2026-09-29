@@ -178,8 +178,10 @@ class SetEnchantmentEntryCommand(provider: EnchantmentPoolProvider) : SubCommand
         .withFullDescription(
             """
                 Apply an operation to an enchantment entry's weight, minimum level or maximum level.
-                Supported operations are "+5", "-1", "*2", "/3", "**2" and "=10";
-                if no operation symbol is provided, the "set" operation is performed.
+                Supported operations are "+5", "-1", "*2", "/3", "**2" and "%4".
+                "<" and ">" clamp rather than compare: "<5" caps the value at 5, and ">1" raises
+                anything below 1 up to it.
+                A bare number, like "10", sets the value outright.
                 Indices are shown by "/lootpool enchant info".
             """.trimIndent()
         )

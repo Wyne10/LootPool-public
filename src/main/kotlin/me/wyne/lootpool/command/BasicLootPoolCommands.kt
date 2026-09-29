@@ -90,8 +90,10 @@ class WeightBasicCommand(lootPoolProvider: LootPoolProvider) : SubCommand("weigh
         .withFullDescription(
             """
                 Applies provided operation to all item weights in a loot pool.
-                Operation examples: "+5", "-1", "*1000", "=10", "**2", "/3"
-                If no operation symbol is provided, the "set" operation will be performed.
+                Operation examples: "+5", "-1", "*1000", "/3", "**2", "%4"
+                "<" and ">" clamp rather than compare: "<10" caps a weight at 10, and ">1" raises
+                anything below 1 up to it.
+                A bare number, like "10", sets every weight outright.
             """.trimIndent()
         )
         .withPermission("lootpool.modify")
@@ -117,8 +119,10 @@ class AmountBasicCommand(lootPoolProvider: LootPoolProvider) : SubCommand("amoun
             """
                 Applies provided operation to the minimum or maximum amount of all items in a loot pool.
                 Choose whether to modify "min" or "max" amounts.
-                Operation examples: "+5", "-1", "*1000", "=10", "**2", "/3"
-                If no operation symbol is provided, the "set" operation will be performed.
+                Operation examples: "+5", "-1", "*1000", "/3", "**2", "%4"
+                "<" and ">" clamp rather than compare: "<10" caps an amount at 10, and ">1" raises
+                anything below 1 up to it.
+                A bare number, like "10", sets every amount outright.
                 Resulting amounts are clamped between 1 and each item's maximum stack size,
                 keeping the minimum amount from exceeding the maximum amount.
             """.trimIndent()
@@ -159,7 +163,9 @@ class FlattenBasicCommand(lootPoolProvider: LootPoolProvider) : SubCommand("flat
                 Combines the merge and weight commands: for each provided pool
                 an operation is applied to all of its item weights before merging.
                 Provide a new unique key followed by a map of pools and their weight operations,
-                e.g. "pool1:*2 pool2:+5 pool3:=10".
+                e.g. "pool1:*2 pool2:+5 pool3:10".
+                Alongside the arithmetic operations, "%4" takes a remainder, "<10" caps a weight at
+                10 and ">1" raises anything below 1 up to it; a bare number sets the weight outright.
                 Source pools can be of any type but only their loot lists are preserved,
                 losing any special characteristics. Original source pools are not modified.
             """.trimIndent()
