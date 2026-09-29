@@ -24,15 +24,6 @@ import java.util.List;
 public interface ContextualLootPool extends LootPool {
 
     /**
-     * Rolls {@code slots} items, evaluating conditions and modifiers against {@code context}.
-     *
-     * @param slots the maximum number of items to produce
-     * @return the rolled items, in roll order
-     */
-    @NotNull
-    List<@NotNull ItemStack> populate(int slots, @NotNull LootRollContext context);
-
-    /**
      * Rolls this pool's natural number of items — whatever its own roll counts produce — rather than
      * a caller-supplied count.
      *
@@ -42,6 +33,15 @@ public interface ContextualLootPool extends LootPool {
     List<@NotNull ItemStack> populate(@NotNull LootRollContext context);
 
     /**
+     * Rolls {@code slots} items, evaluating conditions and modifiers against {@code context}.
+     *
+     * @param slots the maximum number of items to produce
+     * @return the rolled items, in roll order
+     */
+    @NotNull
+    List<@NotNull ItemStack> populate(int slots, @NotNull LootRollContext context);
+
+    /**
      * Rolls {@code slots} items against {@code context} and places them into {@code inventory}'s
      * empty slots in slot order.
      *
@@ -49,5 +49,41 @@ public interface ContextualLootPool extends LootPool {
      */
     @NotNull
     List<@NotNull ItemStack> populate(@NotNull Inventory inventory, int slots, @NotNull LootRollContext context);
+
+    /**
+     * Like {@link #populate(Inventory, int, LootRollContext)}, but each item goes into a randomly
+     * chosen empty slot instead of filling slots in order.
+     *
+     * @return the rolled items that did not fit
+     */
+    @NotNull
+    List<@NotNull ItemStack> populateRandomly(@NotNull Inventory inventory, int slots, @NotNull LootRollContext context);
+
+    /**
+     * Rolls this pool's natural number of items against {@code context} and places them into
+     * {@code inventory}'s empty slots in slot order.
+     * <p>
+     * Note that this is <em>not</em> the context-carrying equivalent of
+     * {@link LootPool#populate(Inventory)}, which rolls one item per slot: here the pool's own roll
+     * counts decide how many items there are, and a pool that produces fewer than the inventory
+     * holds leaves the rest of it empty.
+     *
+     * @return the rolled items that did not fit
+     */
+    @NotNull
+    default List<@NotNull ItemStack> populate(@NotNull Inventory inventory, @NotNull LootRollContext context) {
+        return LootPool.populate(populate(context), inventory);
+    }
+
+    /**
+     * Like {@link #populate(Inventory, LootRollContext)}, but each item goes into a randomly chosen
+     * empty slot instead of filling slots in order.
+     *
+     * @return the rolled items that did not fit
+     */
+    @NotNull
+    default List<@NotNull ItemStack> populateRandomly(@NotNull Inventory inventory, @NotNull LootRollContext context) {
+        return LootPool.populateRandomly(populate(context), inventory);
+    }
 
 }

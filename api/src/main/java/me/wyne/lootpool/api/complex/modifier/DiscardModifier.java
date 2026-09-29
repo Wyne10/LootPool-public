@@ -11,9 +11,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * Drops the item from the loot entirely. The roll still happened - it simply produces nothing -
- * which is different from an entry that yields a stack of air, since that would still be counted
- * as one of the pool's drops.
+ * Drops the item from the loot entirely, the equivalent of vanilla's {@code discard}. The roll
+ * still happened - it simply produces nothing - which is different from an entry that yields a
+ * stack of air, since that would still be counted as one of the pool's drops.
  * <p>
  * On its own this makes a modifier list produce nothing at all, so it is meant to be wrapped in a
  * {@link ConditionalModifier}: "discard unless the player has the permission", "discard a quarter

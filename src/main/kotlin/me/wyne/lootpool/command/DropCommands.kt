@@ -328,15 +328,13 @@ fun LootPool.populateDefault(slots: Int?, context: LootRollContext): List<ItemSt
 /** Fills [inventory] in slot order, letting a complex pool roll against [context]. */
 private fun LootPool.populateInto(inventory: Inventory, slots: Int?, context: LootRollContext): List<ItemStack> =
     if (this is ContextualLootPool)
-        if (slots == null) LootPool.populate(populate(context), inventory) else populate(inventory, slots, context)
+        if (slots == null) populate(inventory, context) else populate(inventory, slots, context)
     else
         if (slots == null) populate(inventory) else populate(inventory, slots)
 
 /** Fills [inventory] in slot or random order, letting a complex pool roll against [context]. */
 private fun LootPool.fillInto(inventory: Inventory, random: Boolean, context: LootRollContext): List<ItemStack> =
-    if (this is ContextualLootPool) {
-        val items = populate(context)
-        if (random) LootPool.populateRandomly(items, inventory) else LootPool.populate(items, inventory)
-    } else {
+    if (this is ContextualLootPool)
+        if (random) populateRandomly(inventory, context) else populate(inventory, context)
+    else
         if (random) populateRandomly(inventory) else populate(inventory)
-    }

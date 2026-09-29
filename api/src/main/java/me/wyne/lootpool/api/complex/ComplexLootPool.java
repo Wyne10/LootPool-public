@@ -119,6 +119,12 @@ public record ComplexLootPool(@NotNull String key,
         return LootPool.populate(populate(slots, context), inventory);
     }
 
+    @Override
+    @NotNull
+    public List<@NotNull ItemStack> populateRandomly(@NotNull Inventory inventory, int slots, @NotNull LootRollContext context) {
+        return LootPool.populateRandomly(populate(slots, context), inventory);
+    }
+
     /**
      * Equivalent to {@link #populate(int, LootRollContext)} with {@link LootRollContext#EMPTY},
      * which means every condition needing a player fails.
@@ -139,12 +145,13 @@ public record ComplexLootPool(@NotNull String key,
     }
 
     /**
-     * Like {@link #populate(Inventory, int)}, but each item goes into a randomly chosen empty slot.
+     * Equivalent to {@link #populateRandomly(Inventory, int, LootRollContext)} with
+     * {@link LootRollContext#EMPTY}.
      */
     @Override
     @NotNull
     public List<@NotNull ItemStack> populateRandomly(@NotNull Inventory inventory, int slots) {
-        return LootPool.populateRandomly(populate(slots, LootRollContext.EMPTY), inventory);
+        return populateRandomly(inventory, slots, LootRollContext.EMPTY);
     }
 
     /**
@@ -158,23 +165,25 @@ public record ComplexLootPool(@NotNull String key,
     }
 
     /**
-     * Overrides the {@link LootPool} default to produce this pool's natural output rather than one
+     * Equivalent to {@link #populate(Inventory, LootRollContext)} with {@link LootRollContext#EMPTY},
+     * overriding the {@link LootPool} default to produce this pool's natural output rather than one
      * item per inventory slot.
      */
     @Override
     @NotNull
     public List<@NotNull ItemStack> populate(@NotNull Inventory inventory) {
-        return LootPool.populate(populate(LootRollContext.EMPTY), inventory);
+        return populate(inventory, LootRollContext.EMPTY);
     }
 
     /**
-     * Overrides the {@link LootPool} default to produce this pool's natural output rather than one
-     * item per inventory slot.
+     * Equivalent to {@link #populateRandomly(Inventory, LootRollContext)} with
+     * {@link LootRollContext#EMPTY}, overriding the {@link LootPool} default to produce this pool's
+     * natural output rather than one item per inventory slot.
      */
     @Override
     @NotNull
     public List<@NotNull ItemStack> populateRandomly(@NotNull Inventory inventory) {
-        return LootPool.populateRandomly(populate(LootRollContext.EMPTY), inventory);
+        return populateRandomly(inventory, LootRollContext.EMPTY);
     }
 
     /**

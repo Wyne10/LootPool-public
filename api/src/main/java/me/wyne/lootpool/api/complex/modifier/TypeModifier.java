@@ -13,14 +13,15 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * Replaces the item's material, keeping its stack size.
+ * Replaces the item's material, keeping its stack size, the equivalent of vanilla's
+ * {@code set_item}.
  * <p>
  * Meta that the new material cannot carry is dropped by Bukkit on conversion - turning an enchanted
  * sword into a stone block keeps neither the enchantments nor the damage - so put this before the
  * modifiers that decorate the item rather than after them.
  * <p>
  * {@link Material#AIR} is not a way to remove an item: the result would still be counted as one of
- * the pool's drops. There is no modifier that removes loot; see {@link LootModifier}.
+ * the pool's drops. Use {@link DiscardModifier} for that.
  *
  * @param material the material to give the item
  */
