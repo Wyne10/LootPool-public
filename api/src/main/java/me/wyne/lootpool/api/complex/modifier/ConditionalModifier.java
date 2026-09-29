@@ -35,8 +35,12 @@ public record ConditionalModifier(@NotNull LootModifier modifier,
         conditions = List.copyOf(conditions);
     }
 
+    /**
+     * @return the wrapped modifier's result when the conditions pass - {@code null} included, so a
+     *         conditional discard drops the item - and {@code item} untouched when they do not
+     */
     @Override
-    @NotNull
+    @Nullable
     public ItemStack apply(@NotNull ItemStack item, @NotNull LootRollContext context) {
         return LootCondition.testAll(conditions, context) ? modifier.apply(item, context) : item;
     }

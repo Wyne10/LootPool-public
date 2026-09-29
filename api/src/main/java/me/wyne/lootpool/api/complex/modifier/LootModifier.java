@@ -7,6 +7,7 @@ import me.wyne.lootpool.api.complex.LootRollContext;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -23,6 +24,10 @@ import java.util.List;
  * Implementations must be {@link ConfigurationSerializable} and registered with
  * {@link org.bukkit.configuration.serialization.ConfigurationSerialization}, or they cannot be
  * saved. They must not mutate {@code item} in place unless they return it.
+ * <p>
+ * A modifier may also remove the item altogether by returning {@code null}, which is how
+ * {@link DiscardModifier} works. That is distinct from returning a stack of
+ * {@link org.bukkit.Material#AIR}, which would still be counted as one of the pool's drops.
  */
 public interface LootModifier extends ConfigurationSerializable {
 
@@ -31,22 +36,26 @@ public interface LootModifier extends ConfigurationSerializable {
      *
      * @param item    the item to transform; owned by the caller's roll, safe to mutate and return
      * @param context the context the containing pool is being rolled against
-     * @return the transformed item, which may be {@code item} itself
+     * @return the transformed item, which may be {@code item} itself, or {@code null} to drop it
+     *         from the loot entirely
      */
-    @NotNull
+    @Nullable
     ItemStack apply(@NotNull ItemStack item, @NotNull LootRollContext context);
 
     /**
      * Applies every modifier in {@code modifiers} to {@code item}, in order, feeding each one the
-     * previous one's result.
+     * previous one's result and stopping as soon as one drops the item.
      *
-     * @return the item after the last modifier, or {@code item} unchanged if {@code modifiers} is empty
+     * @return the item after the last modifier, {@code item} unchanged if {@code modifiers} is
+     *         empty, or {@code null} if any of them dropped it
      */
-    @NotNull
+    @Nullable
     static ItemStack applyAll(@NotNull List<@NotNull LootModifier> modifiers, @NotNull ItemStack item, @NotNull LootRollContext context) {
         ItemStack result = item;
         for (LootModifier modifier : modifiers) {
             result = modifier.apply(result, context);
+            if (result == null)
+                return null;
         }
         return result;
     }

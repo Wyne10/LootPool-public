@@ -87,7 +87,11 @@ public record LootRoll(int minRolls, int maxRolls,
                 continue;
             for (ItemStack item : entry.generate(context)) {
                 ItemStack modified = LootModifier.applyAll(entry.modifiers(), item, context);
-                result.add(LootModifier.applyAll(modifiers, modified, context));
+                if (modified == null)
+                    continue;
+                ItemStack finished = LootModifier.applyAll(modifiers, modified, context);
+                if (finished != null)
+                    result.add(finished);
             }
         }
         return result;

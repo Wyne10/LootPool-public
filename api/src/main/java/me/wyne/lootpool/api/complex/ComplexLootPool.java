@@ -92,7 +92,9 @@ public record ComplexLootPool(@NotNull String key,
         List<ItemStack> result = new ArrayList<>();
         for (LootRoll roll : rolls) {
             for (ItemStack item : roll.generate(context)) {
-                result.add(LootModifier.applyAll(modifiers, item, context));
+                ItemStack modified = LootModifier.applyAll(modifiers, item, context);
+                if (modified != null)
+                    result.add(modified);
             }
         }
         return result;

@@ -20,6 +20,7 @@ import me.wyne.lootpool.api.complex.modifier.AttributeEntry
 import me.wyne.lootpool.api.complex.ComplexLootPool
 import me.wyne.lootpool.api.complex.modifier.ConditionalModifier
 import me.wyne.lootpool.api.complex.modifier.DamageModifier
+import me.wyne.lootpool.api.complex.modifier.DiscardModifier
 import me.wyne.lootpool.api.complex.EmptyEntry
 import me.wyne.lootpool.api.complex.modifier.EnchantModifier
 import me.wyne.lootpool.api.complex.EnchantmentEntry
@@ -27,12 +28,16 @@ import me.wyne.lootpool.api.complex.EnchantmentPool
 import me.wyne.lootpool.api.complex.condition.InvertedCondition
 import me.wyne.lootpool.api.complex.ItemEntry
 import me.wyne.lootpool.api.complex.LootRoll
+import me.wyne.lootpool.api.complex.modifier.AmountModifier
+import me.wyne.lootpool.api.complex.modifier.LimitModifier
 import me.wyne.lootpool.api.complex.modifier.LoreModifier
 import me.wyne.lootpool.api.complex.modifier.NameModifier
 import me.wyne.lootpool.api.complex.condition.PermissionCondition
 import me.wyne.lootpool.api.complex.PoolEntry
 import me.wyne.lootpool.api.complex.condition.RandomChanceCondition
 import me.wyne.lootpool.api.complex.modifier.SetAttributesModifier
+import me.wyne.lootpool.api.complex.modifier.SmeltModifier
+import me.wyne.lootpool.api.complex.modifier.TypeModifier
 import me.wyne.lootpool.api.complex.condition.TimeCondition
 import me.wyne.lootpool.api.complex.condition.WeatherCondition
 import me.wyne.lootpool.api.complex.condition.WorldCondition
@@ -72,6 +77,11 @@ class LootPoolManager @Inject constructor(private val plugin: me.wyne.lootpool.L
         ConfigurationSerialization.registerClass(AttributeEntry::class.java)
         ConfigurationSerialization.registerClass(NameModifier::class.java)
         ConfigurationSerialization.registerClass(LoreModifier::class.java)
+        ConfigurationSerialization.registerClass(AmountModifier::class.java)
+        ConfigurationSerialization.registerClass(LimitModifier::class.java)
+        ConfigurationSerialization.registerClass(TypeModifier::class.java)
+        ConfigurationSerialization.registerClass(SmeltModifier::class.java)
+        ConfigurationSerialization.registerClass(DiscardModifier::class.java)
 
         ConfigurationSerialization.registerClass(RandomChanceCondition::class.java)
         ConfigurationSerialization.registerClass(AllOfCondition::class.java)
@@ -118,6 +128,7 @@ class LootPoolManager @Inject constructor(private val plugin: me.wyne.lootpool.L
 
     override fun reload() {
         ReloadConfig.run(plugin)
+        SmeltModifier.clearCache()
         load(plugin.config)
     }
 

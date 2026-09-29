@@ -2,12 +2,17 @@ package me.wyne.lootpool.gui.complex
 
 import me.wyne.lootpool.api.complex.modifier.AttributeEntry
 import me.wyne.lootpool.api.complex.modifier.ConditionalModifier
+import me.wyne.lootpool.api.complex.modifier.AmountModifier
 import me.wyne.lootpool.api.complex.modifier.DamageModifier
+import me.wyne.lootpool.api.complex.modifier.DiscardModifier
+import me.wyne.lootpool.api.complex.modifier.LimitModifier
 import me.wyne.lootpool.api.complex.modifier.EnchantModifier
 import me.wyne.lootpool.api.complex.modifier.LootModifier
 import me.wyne.lootpool.api.complex.modifier.LoreModifier
 import me.wyne.lootpool.api.complex.modifier.NameModifier
 import me.wyne.lootpool.api.complex.modifier.SetAttributesModifier
+import me.wyne.lootpool.api.complex.modifier.SmeltModifier
+import me.wyne.lootpool.api.complex.modifier.TypeModifier
 import me.wyne.lootpool.core.ListHandle
 import me.wyne.lootpool.core.describe
 import me.wyne.lootpool.core.rewrap
@@ -54,8 +59,12 @@ class ModifierListScreen(
     private fun render(modifier: LootModifier): ItemStack {
         val inner = unwrap(modifier)
         val conditional = modifier is ConditionalModifier
-        return item(materialOf(inner), "gui-modifier", "description" replace describe(modifier))
-            .lore(if (conditional) "gui-modifier-conditional-lore" else "gui-modifier-lore")
+        val lore = when {
+            conditional -> "gui-modifier-conditional-lore"
+            inner is SmeltModifier || inner is DiscardModifier -> "gui-modifier-readonly-lore"
+            else -> "gui-modifier-lore"
+        }
+        return item(materialOf(inner), "gui-modifier", "description" replace describe(modifier)).lore(lore)
     }
 
     private fun materialOf(modifier: LootModifier): Material = when (modifier) {
@@ -64,6 +73,11 @@ class ModifierListScreen(
         is SetAttributesModifier -> Material.IRON_CHESTPLATE
         is NameModifier -> Material.NAME_TAG
         is LoreModifier -> Material.WRITABLE_BOOK
+        is AmountModifier -> Material.PAPER
+        is LimitModifier -> Material.HOPPER
+        is TypeModifier -> modifier.material().takeIf { it.isItem } ?: Material.STONE
+        is SmeltModifier -> Material.FURNACE
+        is DiscardModifier -> Material.LAVA_BUCKET
         else -> Material.PAPER
     }
 
@@ -130,16 +144,26 @@ class ModifierTypeScreen(
 ) : FieldScreen(session, ROWS, Component.text("$ownerLabel / add modifier"), { emptyList() }) {
 
     override fun renderContent() {
-        button(11, item(Material.ENCHANTED_BOOK, "gui-modifier-type-enchant").lore("gui-modifier-type-enchant-lore")) {
+        button(2, item(Material.ENCHANTED_BOOK, "gui-modifier-type-enchant").lore("gui-modifier-type-enchant-lore")) {
             session.push(EnchantmentPoolPickerScreen(session, ctx) { key ->
                 modifiers.add(EnchantModifier(key, 1, 1, true))
                 session.markDirty()
             })
         }
-        button(12, item(Material.IRON_SWORD, "gui-modifier-type-damage").lore("gui-modifier-type-damage-lore")) { add(DamageModifier(0.0, 0.0)) }
-        button(13, item(Material.IRON_CHESTPLATE, "gui-modifier-type-attributes").lore("gui-modifier-type-attributes-lore")) { add(SetAttributesModifier(emptyList(), false)) }
-        button(14, item(Material.NAME_TAG, "gui-modifier-type-name").lore("gui-modifier-type-name-lore")) { add(NameModifier("")) }
-        button(15, item(Material.WRITABLE_BOOK, "gui-modifier-type-lore").lore("gui-modifier-type-lore-lore")) { add(LoreModifier(emptyList(), LoreModifier.Mode.APPEND)) }
+        button(3, item(Material.IRON_SWORD, "gui-modifier-type-damage").lore("gui-modifier-type-damage-lore")) { add(DamageModifier(0.0, 0.0)) }
+        button(4, item(Material.IRON_CHESTPLATE, "gui-modifier-type-attributes").lore("gui-modifier-type-attributes-lore")) { add(SetAttributesModifier(emptyList(), false)) }
+        button(5, item(Material.NAME_TAG, "gui-modifier-type-name").lore("gui-modifier-type-name-lore")) { add(NameModifier("")) }
+        button(6, item(Material.WRITABLE_BOOK, "gui-modifier-type-lore").lore("gui-modifier-type-lore-lore")) { add(LoreModifier(emptyList(), LoreModifier.Mode.APPEND)) }
+        button(11, item(Material.PAPER, "gui-modifier-type-amount").lore("gui-modifier-type-amount-lore")) { add(AmountModifier(1, 1)) }
+        button(12, item(Material.HOPPER, "gui-modifier-type-limit").lore("gui-modifier-type-limit-lore")) { add(LimitModifier(1, 64)) }
+        button(13, item(Material.STONE, "gui-modifier-type-type").lore("gui-modifier-type-type-lore")) {
+            session.push(MaterialPickerScreen(session) { material ->
+                modifiers.add(TypeModifier(material))
+                session.markDirty()
+            })
+        }
+        button(14, item(Material.FURNACE, "gui-modifier-type-smelt").lore("gui-modifier-type-smelt-lore")) { add(SmeltModifier()) }
+        button(15, item(Material.LAVA_BUCKET, "gui-modifier-type-discard").lore("gui-modifier-type-discard-lore")) { add(DiscardModifier()) }
     }
 
     private fun add(modifier: LootModifier) {
@@ -260,6 +284,43 @@ fun modifierDetailScreen(
                 ),
                 textField(15, Material.WRITTEN_BOOK, "gui-field-lore-lines", { it.lines().size.toString() }) {
                     "/lootpool complex modifier set lore "
+                }
+            )
+        }
+
+        is AmountModifier -> FieldScreen(session, 3, title) {
+            val it = current() as AmountModifier
+            listOf(
+                intField(12, Material.PAPER, "gui-field-min-amount", 1, { it.minAmount() }) { v ->
+                    replace(AmountModifier(v, maxOf(v, it.maxAmount())))
+                },
+                intField(14, Material.PAPER, "gui-field-max-amount", 1, { it.maxAmount() }) { v ->
+                    replace(AmountModifier(minOf(v, it.minAmount()), v))
+                }
+            )
+        }
+
+        is LimitModifier -> FieldScreen(session, 3, title) {
+            val it = current() as LimitModifier
+            listOf(
+                intField(12, Material.HOPPER, "gui-field-min-amount", 1, { it.minAmount() }) { v ->
+                    replace(LimitModifier(v, maxOf(v, it.maxAmount())))
+                },
+                intField(14, Material.HOPPER, "gui-field-max-amount", 1, { it.maxAmount() }) { v ->
+                    replace(LimitModifier(minOf(v, it.minAmount()), v))
+                }
+            )
+        }
+
+        is TypeModifier -> FieldScreen(session, 3, title) {
+            val it = current() as TypeModifier
+            listOf(
+                actionField(13, it.material().takeIf { m -> m.isItem } ?: Material.STONE,
+                    "gui-field-material", { it.material().name.lowercase() }) { s ->
+                    s.push(MaterialPickerScreen(s) { material ->
+                        replace(TypeModifier(material))
+                        s.markDirty()
+                    })
                 }
             )
         }
@@ -387,5 +448,42 @@ private fun attributeEntryScreen(
                 { slot -> slot?.name?.lowercase() ?: "any" }
             )
         )
+    }
+}
+
+/** Picks a material, for the material modifier. Paged over everything that exists as an item. */
+class MaterialPickerScreen(
+    session: EditSession,
+    private val onPick: (Material) -> Unit
+) : ButtonScreen(session, ROWS, Component.text("Select a material")) {
+
+    private val materials: List<Material> = Material.entries
+        .filter { it.isItem && it != Material.AIR }
+        .sortedBy { it.name }
+
+    override val contentCount: Int get() = materials.size
+
+    override fun renderContent() {
+        materials.drop(page * contentSize)
+            .take(contentSize)
+            .forEachIndexed { slot, material ->
+                inventory.setItem(
+                    slot,
+                    ItemStack(material)
+                        .lore("gui-material-key", "material" replace material.name.lowercase())
+                        .lore("gui-select-lore")
+                )
+            }
+    }
+
+    override fun onContentClick(event: InventoryClickEvent, index: Int) {
+        event.isCancelled = true
+        val material = materials.getOrNull(index) ?: return
+        onPick(material)
+        session.pop()
+    }
+
+    companion object {
+        private const val ROWS = 6
     }
 }

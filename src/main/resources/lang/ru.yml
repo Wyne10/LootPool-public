@@ -76,6 +76,10 @@ gui-entry-no-modifiers: "[red]Пустые предметы не могут со
 gui-entry-repoint: "[white]Целевой пул: [gold]<pool>"
 gui-pool-option: "[white]<pool> [dark_gray](<type>)"
 gui-modifier: "[white]<description>"
+gui-modifier-readonly-lore:
+  - "[gray][F] [white]Сделать условным"
+  - "[gray][Shift + ЛКМ]/[Shift + ПКМ] [white]Переставить"
+  - "[gray][Q] [red]Удалить"
 gui-modifier-lore:
   - "[gray][ЛКМ] [white]Изменить"
   - "[gray][F] [white]Сделать условным"
@@ -106,6 +110,24 @@ gui-modifier-type-name-lore:
 gui-modifier-type-lore: "[white]Описание"
 gui-modifier-type-lore-lore:
   - "[white]Добавить или заменить описание"
+gui-modifier-type-amount: "[white]Количество"
+gui-modifier-type-amount-lore:
+  - "[white]Выбрать количество из диапазона"
+gui-modifier-type-limit: "[white]Ограничение количества"
+gui-modifier-type-limit-lore:
+  - "[white]Привести количество к диапазону"
+gui-modifier-type-type: "[white]Материал"
+gui-modifier-type-type-lore:
+  - "[white]Заменить материал предмета"
+gui-modifier-type-smelt: "[white]Переплавка"
+gui-modifier-type-smelt-lore:
+  - "[white]Переплавить предмет как в печи"
+gui-modifier-type-discard: "[white]Удаление"
+gui-modifier-type-discard-lore:
+  - "[white]Убрать предмет из лута"
+  - "[gray]Сделайте его условным, иначе список пуст"
+gui-material-key: "[dark_gray]<material>"
+gui-field-material: "[white]Материал: [gold]<value>"
 gui-enchantment-pool-option: "[white]<pool>"
 gui-enchantment-pool-option-lore:
   - "[white]Зачарований: [gold]<entries>"

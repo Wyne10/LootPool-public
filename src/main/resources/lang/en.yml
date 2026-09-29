@@ -76,6 +76,10 @@ gui-entry-no-modifiers: "[red]Empty entries can not hold modifiers"
 gui-entry-repoint: "[white]Referenced pool: [gold]<pool>"
 gui-pool-option: "[white]<pool> [dark_gray](<type>)"
 gui-modifier: "[white]<description>"
+gui-modifier-readonly-lore:
+  - "[gray][F] [white]Make conditional"
+  - "[gray][Shift + LMB]/[Shift + RMB] [white]Reorder"
+  - "[gray][Q] [red]Remove"
 gui-modifier-lore:
   - "[gray][LMB] [white]Edit"
   - "[gray][F] [white]Make conditional"
@@ -106,6 +110,24 @@ gui-modifier-type-name-lore:
 gui-modifier-type-lore: "[white]Lore"
 gui-modifier-type-lore-lore:
   - "[white]Add or replace item lore"
+gui-modifier-type-amount: "[white]Stack size"
+gui-modifier-type-amount-lore:
+  - "[white]Roll the amount from a range"
+gui-modifier-type-limit: "[white]Stack size clamp"
+gui-modifier-type-limit-lore:
+  - "[white]Bring the amount into a range"
+gui-modifier-type-type: "[white]Material"
+gui-modifier-type-type-lore:
+  - "[white]Replace the item's material"
+gui-modifier-type-smelt: "[white]Smelt"
+gui-modifier-type-smelt-lore:
+  - "[white]Smelt the item as a furnace would"
+gui-modifier-type-discard: "[white]Discard"
+gui-modifier-type-discard-lore:
+  - "[white]Drop the item from the loot"
+  - "[gray]Make it conditional, or the list yields nothing"
+gui-material-key: "[dark_gray]<material>"
+gui-field-material: "[white]Material: [gold]<value>"
 gui-enchantment-pool-option: "[white]<pool>"
 gui-enchantment-pool-option-lore:
   - "[white]Enchantments: [gold]<entries>"

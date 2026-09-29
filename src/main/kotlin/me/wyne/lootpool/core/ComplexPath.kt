@@ -5,6 +5,7 @@ import me.wyne.lootpool.api.complex.condition.AnyOfCondition
 import me.wyne.lootpool.api.complex.ComplexLootPool
 import me.wyne.lootpool.api.complex.modifier.ConditionalModifier
 import me.wyne.lootpool.api.complex.modifier.DamageModifier
+import me.wyne.lootpool.api.complex.modifier.DiscardModifier
 import me.wyne.lootpool.api.complex.EmptyEntry
 import me.wyne.lootpool.api.complex.modifier.EnchantModifier
 import me.wyne.lootpool.api.complex.condition.InvertedCondition
@@ -13,12 +14,16 @@ import me.wyne.lootpool.api.complex.condition.LootCondition
 import me.wyne.lootpool.api.complex.LootEntry
 import me.wyne.lootpool.api.complex.modifier.LootModifier
 import me.wyne.lootpool.api.complex.LootRoll
+import me.wyne.lootpool.api.complex.modifier.AmountModifier
+import me.wyne.lootpool.api.complex.modifier.LimitModifier
 import me.wyne.lootpool.api.complex.modifier.LoreModifier
 import me.wyne.lootpool.api.complex.modifier.NameModifier
 import me.wyne.lootpool.api.complex.condition.PermissionCondition
 import me.wyne.lootpool.api.complex.PoolEntry
 import me.wyne.lootpool.api.complex.condition.RandomChanceCondition
 import me.wyne.lootpool.api.complex.modifier.SetAttributesModifier
+import me.wyne.lootpool.api.complex.modifier.SmeltModifier
+import me.wyne.lootpool.api.complex.modifier.TypeModifier
 import me.wyne.lootpool.api.complex.condition.TimeCondition
 import me.wyne.lootpool.api.complex.condition.WeatherCondition
 import me.wyne.lootpool.api.complex.condition.WorldCondition
@@ -240,6 +245,11 @@ fun describe(modifier: LootModifier): String = when (modifier) {
     is SetAttributesModifier -> "Attributes (${modifier.entries().size})"
     is NameModifier -> "Name '${modifier.text()}'"
     is LoreModifier -> "Lore ${modifier.mode().name.lowercase()} (${modifier.lines().size} line(s))"
+    is AmountModifier -> "Amount ${modifier.minAmount()}..${modifier.maxAmount()}"
+    is LimitModifier -> "Limit to ${modifier.minAmount()}..${modifier.maxAmount()}"
+    is TypeModifier -> "Type ${modifier.material().name.lowercase()}"
+    is SmeltModifier -> "Smelt"
+    is DiscardModifier -> "Discard"
     else -> modifier.javaClass.simpleName
 }
 

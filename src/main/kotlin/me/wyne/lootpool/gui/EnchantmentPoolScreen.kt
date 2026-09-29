@@ -62,7 +62,7 @@ class EnchantmentPoolScreen(
             val name = enchantment.displayName(level).decoration(TextDecoration.ITALIC, false)
             if (enabled) {
                 val total = totalWeight
-                val percentage = if (total == 0.0) 0.0 else (draft!!.weight / total) * 100
+                val percentage = if (total == 0.0) 0.0 else (draft.weight / total) * 100
                 meta.displayName(
                     Component.empty().decoration(TextDecoration.ITALIC, false)
                         .append(name)

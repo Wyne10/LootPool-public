@@ -9,6 +9,7 @@ import dev.jorel.commandapi.arguments.BooleanArgument
 import dev.jorel.commandapi.arguments.DoubleArgument
 import dev.jorel.commandapi.arguments.GreedyStringArgument
 import dev.jorel.commandapi.arguments.IntegerArgument
+import dev.jorel.commandapi.arguments.ItemStackArgument
 import dev.jorel.commandapi.arguments.MultiLiteralArgument
 import dev.jorel.commandapi.arguments.SafeSuggestions
 import dev.jorel.commandapi.arguments.StringArgument
@@ -19,15 +20,19 @@ import me.wyne.lootpool.api.LootPoolProvider
 import me.wyne.lootpool.api.complex.EnchantmentPoolProvider
 import me.wyne.lootpool.api.complex.modifier.AttributeEntry
 import me.wyne.lootpool.api.complex.modifier.ConditionalModifier
+import me.wyne.lootpool.api.complex.modifier.AmountModifier
 import me.wyne.lootpool.api.complex.modifier.DamageModifier
+import me.wyne.lootpool.api.complex.modifier.DiscardModifier
+import me.wyne.lootpool.api.complex.modifier.LimitModifier
 import me.wyne.lootpool.api.complex.modifier.EnchantModifier
 import me.wyne.lootpool.api.complex.modifier.LootModifier
 import me.wyne.lootpool.api.complex.modifier.LoreModifier
 import me.wyne.lootpool.api.complex.modifier.NameModifier
 import me.wyne.lootpool.api.complex.modifier.SetAttributesModifier
+import me.wyne.lootpool.api.complex.modifier.SmeltModifier
+import me.wyne.lootpool.api.complex.modifier.TypeModifier
 import me.wyne.lootpool.command.assertEnchantmentPoolExists
 import me.wyne.lootpool.command.complexPoolKey
-import me.wyne.lootpool.command.editorFor
 import me.wyne.lootpool.command.elementPath
 import me.wyne.lootpool.command.enchantmentPoolKey
 import me.wyne.lootpool.command.failInvalidIndex
@@ -41,10 +46,12 @@ import me.wyne.lootpool.core.rewrap
 import me.wyne.lootpool.core.unwrap
 import me.wyne.wutils.i18n.kotlin.placeholderComponent
 import me.wyne.wutils.i18n.kotlin.replace
+import org.bukkit.Material
 import org.bukkit.attribute.Attribute
 import org.bukkit.attribute.AttributeModifier
 import org.bukkit.command.CommandSender
 import org.bukkit.inventory.EquipmentSlot
+import org.bukkit.inventory.ItemStack
 
 fun modifierComplexCommand(provider: LootPoolProvider, enchantmentProvider: EnchantmentPoolProvider): CommandAPICommand {
     val subcommands = listOf(
@@ -166,6 +173,108 @@ private fun addModifierCommand(provider: LootPoolProvider, enchantmentProvider: 
             modified(sender, args)
         })
 
+    val amount = CommandAPICommand("amount")
+        .withShortDescription("Add a stack-size modifier.")
+        .withFullDescription(
+            """
+                Roll the produced item's stack size from a range, replacing whatever amount it
+                arrived with.
+                Put this on a roll or the pool to impose one range on everything it produces; use
+                "limit" instead to keep each entry's own amount and only bring it into range.
+            """.trimIndent()
+        )
+        .withPermission("lootpool.modify")
+        .withArguments(complexPoolKey("key", provider))
+        .withArguments(elementPath("path", provider))
+        .withArguments(IntegerArgument("minAmount", 1))
+        .withOptionalArguments(IntegerArgument("maxAmount", 1))
+        .executes(CommandExecutor { sender, args ->
+            val modifiers = modifiersOf(ownerFor(args, sender, provider), sender)
+            modifiers.add(readAmountModifier(args))
+            modified(sender, args)
+        })
+
+    val limit = CommandAPICommand("limit")
+        .withShortDescription("Add a stack-size clamp.")
+        .withFullDescription(
+            """
+                Bring the produced item's stack size into a range without re-rolling it.
+                An amount already inside the range is left exactly as it is, so this works as a
+                backstop over entries that set their own amounts.
+            """.trimIndent()
+        )
+        .withPermission("lootpool.modify")
+        .withArguments(complexPoolKey("key", provider))
+        .withArguments(elementPath("path", provider))
+        .withArguments(IntegerArgument("minAmount", 1))
+        .withOptionalArguments(IntegerArgument("maxAmount", 1))
+        .executes(CommandExecutor { sender, args ->
+            val modifiers = modifiersOf(ownerFor(args, sender, provider), sender)
+            modifiers.add(readLimitModifier(args))
+            modified(sender, args)
+        })
+
+    val type = CommandAPICommand("type")
+        .withShortDescription("Add a material modifier.")
+        .withFullDescription(
+            """
+                Replace the produced item's material, keeping its stack size.
+                Only the material of the item given here is used - any amount or NBT on it is
+                ignored.
+                Meta the new material cannot carry is dropped, so put this before the modifiers
+                that decorate the item rather than after them.
+            """.trimIndent()
+        )
+        .withPermission("lootpool.modify")
+        .withArguments(complexPoolKey("key", provider))
+        .withArguments(elementPath("path", provider))
+        .withArguments(ItemStackArgument("item"))
+        .executes(CommandExecutor { sender, args ->
+            val modifiers = modifiersOf(ownerFor(args, sender, provider), sender)
+            modifiers.add(TypeModifier(readMaterial(args)))
+            modified(sender, args)
+        })
+
+    val smelt = CommandAPICommand("smelt")
+        .withShortDescription("Add a smelting modifier.")
+        .withFullDescription(
+            """
+                Smelt the produced item as a furnace would, so a mob can drop its cooked food or
+                its smelted ore without a second entry.
+                Only the material changes - three raw beef become three steaks - and an item with
+                no furnace recipe is left alone.
+            """.trimIndent()
+        )
+        .withPermission("lootpool.modify")
+        .withArguments(complexPoolKey("key", provider))
+        .withArguments(elementPath("path", provider))
+        .executes(CommandExecutor { sender, args ->
+            val modifiers = modifiersOf(ownerFor(args, sender, provider), sender)
+            modifiers.add(SmeltModifier())
+            modified(sender, args)
+        })
+
+    val discard = CommandAPICommand("discard")
+        .withShortDescription("Add a discard modifier.")
+        .withFullDescription(
+            """
+                Drop the produced item from the loot entirely - the roll still happens, it just
+                yields nothing.
+                On its own this makes the list produce nothing at all, so make it conditional with
+                "/lootpool complex modifier conditional" and give it conditions: "discard unless
+                the player has the permission", "discard a quarter of the time".
+                Anything after it in the same list never runs, because the item is already gone.
+            """.trimIndent()
+        )
+        .withPermission("lootpool.modify")
+        .withArguments(complexPoolKey("key", provider))
+        .withArguments(elementPath("path", provider))
+        .executes(CommandExecutor { sender, args ->
+            val modifiers = modifiersOf(ownerFor(args, sender, provider), sender)
+            modifiers.add(DiscardModifier())
+            modified(sender, args)
+        })
+
     return CommandAPICommand("add")
         .withShortDescription("Add an item modifier.")
         .withFullDescription("Attach an item modifier to a pool, a roll or an entry.")
@@ -174,6 +283,11 @@ private fun addModifierCommand(provider: LootPoolProvider, enchantmentProvider: 
         .withSubcommand(name)
         .withSubcommand(lore)
         .withSubcommand(attributes)
+        .withSubcommand(amount)
+        .withSubcommand(limit)
+        .withSubcommand(type)
+        .withSubcommand(smelt)
+        .withSubcommand(discard)
 }
 
 private fun removeModifierCommand(provider: LootPoolProvider) = CommandAPICommand("remove")
@@ -475,6 +589,62 @@ private fun setModifierCommand(provider: LootPoolProvider, enchantmentProvider: 
             .withSubcommand(replace)
     }
 
+    val amount = CommandAPICommand("amount")
+        .withShortDescription("Change a stack-size modifier.")
+        .withFullDescription("Replace the range an existing stack-size modifier rolls its amount from.")
+        .withPermission("lootpool.modify")
+        .withArguments(complexPoolKey("key", provider))
+        .withArguments(elementPath("path", provider))
+        .withArguments(modifierIndexArgument<AmountModifier>("modifier", provider))
+        .withArguments(IntegerArgument("minAmount", 1))
+        .withOptionalArguments(IntegerArgument("maxAmount", 1))
+        .executes(CommandExecutor { sender, args ->
+            val owner = ownerFor(args, sender, provider)
+            val modifiers = modifiersOf(owner, sender)
+            val index = modifierIndex(modifiers, owner, args, sender)
+            modifiers[index] = rewrap(modifiers[index], readAmountModifier(args))
+            modified(sender, args)
+        })
+
+    val limit = CommandAPICommand("limit")
+        .withShortDescription("Change a stack-size clamp.")
+        .withFullDescription("Replace the range an existing stack-size clamp brings amounts into.")
+        .withPermission("lootpool.modify")
+        .withArguments(complexPoolKey("key", provider))
+        .withArguments(elementPath("path", provider))
+        .withArguments(modifierIndexArgument<LimitModifier>("modifier", provider))
+        .withArguments(IntegerArgument("minAmount", 1))
+        .withOptionalArguments(IntegerArgument("maxAmount", 1))
+        .executes(CommandExecutor { sender, args ->
+            val owner = ownerFor(args, sender, provider)
+            val modifiers = modifiersOf(owner, sender)
+            val index = modifierIndex(modifiers, owner, args, sender)
+            modifiers[index] = rewrap(modifiers[index], readLimitModifier(args))
+            modified(sender, args)
+        })
+
+    val type = CommandAPICommand("type")
+        .withShortDescription("Change a material modifier.")
+        .withFullDescription(
+            """
+                Replace the material an existing material modifier gives the item.
+                Only the material of the item given here is used - any amount or NBT on it is
+                ignored.
+            """.trimIndent()
+        )
+        .withPermission("lootpool.modify")
+        .withArguments(complexPoolKey("key", provider))
+        .withArguments(elementPath("path", provider))
+        .withArguments(modifierIndexArgument<TypeModifier>("modifier", provider))
+        .withArguments(ItemStackArgument("item"))
+        .executes(CommandExecutor { sender, args ->
+            val owner = ownerFor(args, sender, provider)
+            val modifiers = modifiersOf(owner, sender)
+            val index = modifierIndex(modifiers, owner, args, sender)
+            modifiers[index] = rewrap(modifiers[index], TypeModifier(readMaterial(args)))
+            modified(sender, args)
+        })
+
     return CommandAPICommand("set")
         .withShortDescription("Change an item modifier.")
         .withFullDescription(
@@ -482,9 +652,10 @@ private fun setModifierCommand(provider: LootPoolProvider, enchantmentProvider: 
                 Change the settings of a modifier already attached to a pool, a roll or an entry.
                 The modifier keeps its place in the list, so the order it is applied in does not
                 change, and a conditional modifier stays conditional.
-                "enchant", "damage" and "name" replace a modifier's settings outright, while "lore"
-                and "attribute" are groups of their own, because those modifiers hold a list you
-                edit an entry at a time.
+                "enchant", "damage", "name", "amount", "limit" and "type" replace a modifier's
+                settings outright, while "lore" and "attribute" are groups of their own, because
+                those modifiers hold a list you edit an entry at a time.
+                "smelt" and "discard" have nothing to set - remove and re-add them instead.
             """.trimIndent()
         )
         .withSubcommand(enchant)
@@ -492,6 +663,9 @@ private fun setModifierCommand(provider: LootPoolProvider, enchantmentProvider: 
         .withSubcommand(name)
         .withSubcommand(loreModifierCommand(provider))
         .withSubcommand(attributeModifierCommand(provider))
+        .withSubcommand(amount)
+        .withSubcommand(limit)
+        .withSubcommand(type)
 }
 
 private fun attributeArgument(nodeName: String): Argument<String> =
@@ -522,6 +696,22 @@ private fun readEnchantModifier(args: CommandArguments, sender: CommandSender, e
         maxEnchants.coerceAtLeast(minEnchants),
         args.getByClassOrDefault("onlyCompatible", Boolean::class.java, true)
     )
+}
+
+/** Takes just the material off the item argument; its amount and NBT are not used. */
+private fun readMaterial(args: CommandArguments): Material =
+    args.getByClass("item", ItemStack::class.java)!!.type
+
+private fun readAmountModifier(args: CommandArguments): AmountModifier {
+    val minAmount = args.getByClass("minAmount", Int::class.java)!!
+    val maxAmount = args.getByClassOrDefault("maxAmount", Int::class.java, minAmount)
+    return AmountModifier(minOf(minAmount, maxAmount), maxOf(minAmount, maxAmount))
+}
+
+private fun readLimitModifier(args: CommandArguments): LimitModifier {
+    val minAmount = args.getByClass("minAmount", Int::class.java)!!
+    val maxAmount = args.getByClassOrDefault("maxAmount", Int::class.java, minAmount)
+    return LimitModifier(minOf(minAmount, maxAmount), maxOf(minAmount, maxAmount))
 }
 
 private fun readDamageModifier(args: CommandArguments): DamageModifier {
