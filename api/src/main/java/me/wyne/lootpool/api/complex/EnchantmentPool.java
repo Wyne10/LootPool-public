@@ -78,7 +78,7 @@ public record EnchantmentPool(@NotNull String key, @NotNull List<@NotNull Enchan
         if (!isBook && !enchantment.canEnchantItem(target))
             return false;
         for (Enchantment other : chosen) {
-            if (enchantment.conflictsWith(other))
+            if (enchantment.conflictsWith(other) || other.conflictsWith(enchantment))
                 return false;
         }
         return true;
