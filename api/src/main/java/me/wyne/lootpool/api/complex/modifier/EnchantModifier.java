@@ -4,7 +4,10 @@ import me.wyne.lootpool.api.LootPoolApi;
 import me.wyne.lootpool.api.complex.EnchantmentPool;
 import me.wyne.lootpool.api.complex.EnchantmentPoolProvider;
 import me.wyne.lootpool.api.complex.LootRollContext;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.enchantments.Enchantment;
@@ -15,7 +18,9 @@ import org.bukkit.util.NumberConversions;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -28,6 +33,9 @@ import java.util.concurrent.ThreadLocalRandom;
  * Books receive their enchantments as stored enchantments ({@link EnchantmentStorageMeta}), so a
  * {@link Material#BOOK} entry becomes a usable enchanted book. Everything else is enchanted
  * directly, ignoring vanilla level caps.
+ * <p>
+ * The client only renders enchantments it knows, so any applied enchantment outside the
+ * {@link NamespacedKey#MINECRAFT} namespace also gets its name prepended to the item's lore.
  *
  * @param pool           the registry key of the {@link EnchantmentPool} to draw from
  * @param minEnchants    the inclusive lower bound on how many enchantments to apply
@@ -81,8 +89,25 @@ public record EnchantModifier(@NotNull String pool, int minEnchants, int maxEnch
         } else {
             enchantments.forEach((enchantment, level) -> meta.addEnchant(enchantment, level, true));
         }
+        addCustomEnchantmentLore(meta, enchantments);
         item.setItemMeta(meta);
         return item;
+    }
+
+    /** Lists the non-vanilla enchantments among {@code enchantments} above the item's existing lore. */
+    private static void addCustomEnchantmentLore(@NotNull ItemMeta meta, @NotNull Map<Enchantment, Integer> enchantments) {
+        List<Component> names = new ArrayList<>();
+        enchantments.forEach((enchantment, level) -> {
+            if (!enchantment.getKey().getNamespace().equals(NamespacedKey.MINECRAFT))
+                names.add(enchantment.displayName(level).decoration(TextDecoration.ITALIC, false));
+        });
+        if (names.isEmpty())
+            return;
+
+        List<Component> lore = new ArrayList<>(names);
+        if (meta.hasLore() && meta.lore() != null)
+            lore.addAll(meta.lore());
+        meta.lore(lore);
     }
 
     @Override
