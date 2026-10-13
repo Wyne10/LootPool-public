@@ -14,6 +14,7 @@ import org.bukkit.entity.Player
 import org.bukkit.event.inventory.ClickType
 import org.bukkit.event.inventory.InventoryAction
 import org.bukkit.event.inventory.InventoryClickEvent
+import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.EnchantmentStorageMeta
 
@@ -71,10 +72,12 @@ class EnchantmentPoolScreen(
                 )
                 if (meta is EnchantmentStorageMeta)
                     meta.addStoredEnchant(enchantment, level.coerceAtLeast(1), true)
+                meta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS)
             } else {
                 meta.displayName(name.color(NamedTextColor.GRAY))
+                meta.removeItemFlags(ItemFlag.HIDE_POTION_EFFECTS)
             }
-            val lore = player.placeholderComponent("gui-enchantment-key", "enchantment" replace enchantment.key.key)
+            val lore = player.placeholderComponent("gui-enchantment-key", "enchantment" replace enchantment.key.toString())
                 .get().decoration(TextDecoration.ITALIC, false)
             meta.lore(
                 listOf(lore) + player.placeholderComponent("gui-enchantment-vanilla-max", "max" replace enchantment.maxLevel)

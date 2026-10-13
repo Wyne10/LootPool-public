@@ -470,7 +470,7 @@ class MaterialPickerScreen(
                 inventory.setItem(
                     slot,
                     ItemStack(material)
-                        .lore("gui-material-key", "material" replace material.name.lowercase())
+                        .lore("gui-material-key", "material" replace material.key.toString())
                         .lore("gui-select-lore")
                 )
             }
