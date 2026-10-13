@@ -26,6 +26,10 @@ The declared `material` is only a fallback. It shows as-is if the pool doesn't e
 
 The item is for display only. It isn't handed out, and running `/lootpool give daily_reward …` from a click action makes a new roll that won't match what was shown.
 
+{% hint style="info" %}
+Both the property and the catalog read the pool's flat entry list, so a [complex pool](complex-loot-pools.md) shows its entries with **no roll counts, conditions or modifiers applied** — a sword that only ever drops enchanted appears unenchanted. That's the same preview contract `/lootpool info` and `getLootList()` have; see [what a preview can't show](complex-loot-pools.md#what-a-preview-cant-show).
+{% endhint %}
+
 ## The `LOOTPOOL` catalog
 
 A [generated menu](https://abstractmenus.github.io/docs/en/advanced/generation/) with the `LOOTPOOL` catalog gets one element per entry of the pool. That makes it a ready-made "possible drops" screen:
@@ -59,7 +63,7 @@ matrix {
 }
 ```
 
-Entries appear in the pool's own order. A multi or composite pool shows every entry of every pool it's built from. A vanilla pool shows a fresh sample roll each time the menu opens.
+Entries appear in the pool's own order. A multi or composite pool shows every entry of every pool it's built from, and a complex pool every entry of every roll, with pool references resolved four levels deep. A vanilla pool shows a fresh sample roll each time the menu opens.
 
 ### Catalog placeholders
 

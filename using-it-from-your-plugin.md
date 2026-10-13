@@ -16,13 +16,18 @@ repositories {
 }
 
 dependencies {
-    compileOnly("io.github.wyne10:lootpool-api:2.8.4")
+    compileOnly("io.github.wyne10:lootpool-api:2.9.1")
 }
 ```
 
 Keep it `compileOnly`. The API classes ship inside the LootPool plugin jar at their real package names, so shading your own copy leaves you with two unrelated `LootPool` interfaces and a `ClassCastException`. The API also compiles against the Paper API, which your plugin already has.
 
-Everything lives in `me.wyne.lootpool.api`: the `LootPool` interface, one record per [pool type](pool-types.md) (`BasicLootPool`, `KeyedLoot`, `MultiLootPool`, `CompositeLootPool`, `RollLootPool`, `SnapshotLootPool`, `VanillaLootPool`), the `Loot` entry record, the `LootPoolProvider` registry, and the `LootPoolApi` access point.
+| Package                                  | Holds                                                                                                      |
+| ---------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `me.wyne.lootpool.api`                   | `LootPool`, `Loot`, one record per flat [pool type](pool-types.md), `LootPoolProvider`, `LootPoolApi`      |
+| `me.wyne.lootpool.api.complex`           | `ComplexLootPool`, `LootRoll`, the entry types, `LootRollContext`, `ContextualLootPool`, `EnchantmentPool` |
+| `me.wyne.lootpool.api.complex.modifier`  | `LootModifier` and the built-in modifiers                                                                  |
+| `me.wyne.lootpool.api.complex.condition` | `LootCondition` and the built-in conditions                                                                |
 
 Then declare the plugin dependency in `plugin.yml`:
 
@@ -46,7 +51,7 @@ LootPoolProvider provider = Bukkit.getServicesManager()
         .getProvider();
 ```
 
-By the time your plugin enables, every pool on disk is loaded.
+By the time your plugin enables, every pool on disk is loaded. The [enchantment pool](enchantment-pools.md) registry is published the same two ways, as `EnchantmentPoolProvider` and `LootPoolApi.getEnchantmentProvider()`.
 
 ## Rolling a pool
 
@@ -75,6 +80,50 @@ The overloads that take no count behave as described in [Pool types](pool-types.
 
 `LootPool` extends Bukkit's `LootTable`, so `populateLoot` and `fillInventory` work too, for code that expects a loot table. The `Random` and `LootContext` arguments are ignored, except by a vanilla pool.
 
+## Rolling a complex pool
+
+A [complex pool](complex-loot-pools.md) has conditions that can ask about a player, a world, a biome, the time and the weather. None of that fits `LootPool`'s signatures, so it is offered through an extra interface instead of widening the one everybody already implements:
+
+```java
+public interface ContextualLootPool extends LootPool {
+    List<ItemStack> populate(LootRollContext context);
+    List<ItemStack> populate(int slots, LootRollContext context);
+    // …plus the inventory overloads
+}
+```
+
+`LootRollContext` carries a nullable player, a nullable location and a luck value:
+
+```java
+LootPool pool = LootPoolApi.getProvider().getLootPool("dungeon_chest");
+
+if (pool instanceof ContextualLootPool contextual) {
+    // Everything the conditions can ask about.
+    List<ItemStack> items = contextual.populate(LootRollContext.of(player));
+
+    // Loot that belongs to a place rather than a person.
+    contextual.populate(chest.getInventory(), LootRollContext.of(chest.getLocation()));
+}
+```
+
+`LootRollContext.of(player)` also carries where they're standing. `of(location)` carries no player, and `LootRollContext.EMPTY` carries neither.
+
+{% hint style="warning" %}
+**A condition that can't be answered fails.** Calling the plain `populate(5)` on a complex pool rolls it with `LootRollContext.EMPTY`, so every `permission`, `world`, `biome`, `time`, `weather` and `hasloot` condition in it fails and the pool likely produces nothing. Pass a context whenever you have one.
+{% endhint %}
+
+If you'd rather not branch on the type, the plugin's own commands go through one helper you can copy:
+
+```java
+List<ItemStack> roll(LootPool pool, Integer slots, LootRollContext context) {
+    if (pool instanceof ContextualLootPool contextual)
+        return slots == null ? contextual.populate(context) : contextual.populate(slots, context);
+    if (pool instanceof RollLootPool roll)
+        return roll.populate(slots == null ? roll.rollSlots() : slots);
+    return slots == null ? List.of() : pool.populate(slots);
+}
+```
+
 ## Reading a pool
 
 ```java
@@ -85,9 +134,9 @@ for (Loot loot : pool.getLootList()) {
 }
 ```
 
-`getLootList()` returns an immutable copy. For multi and composite pools it's every entry of every pool they're built from, and for a vanilla pool it's a fresh sample roll on every call.
+`getLootList()` returns an immutable copy. For multi and composite pools it's every entry of every pool they're built from, for a vanilla pool it's a fresh sample roll on every call, and for a complex pool it's every entry of every roll with pool references resolved four levels deep — **with no roll counts, conditions or modifiers applied**. Treat it as a preview, not as a description of what the pool does.
 
-`getMapOf(Class)` gives you every pool of one type. `getMapOf(KeyedLoot.class)` returns all keyed loot, for example.
+`getMapOf(Class)` gives you every pool of one type. `getMapOf(KeyedLoot.class)` returns all keyed loot, and `getMapOf(ComplexLootPool.class)` all complex pools.
 
 ## Creating pools
 
@@ -107,6 +156,23 @@ provider.writeLootPool(new RollLootPool("gem_chest", "gems", 2, 4));
 provider.writeLootPool(new CompositeLootPool("reward", Map.of("gems", 1, "ores", 3)));
 ```
 
+A complex pool is built the same way, out of nested records:
+
+```java
+provider.writeLootPool(new ComplexLootPool("dungeon_chest",
+        List.of(
+                new LootRoll(3, 5, List.of(new PoolEntry("resources-common", 1))),
+                new LootRoll(1, 1, List.of(new ItemEntry(
+                        new Loot(new ItemStack(Material.DIAMOND_SWORD), 10, 1, 1),
+                        List.of(),
+                        List.of(new EnchantModifier("sword_enchants", 1, 3, true))
+                )))
+        ),
+        List.of(),                                        // pool-wide modifiers
+        List.of(new RandomChanceCondition(0.8))           // pool-wide conditions
+));
+```
+
 | Method                | Effect                                                                                                                           |
 | --------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
 | `writeLootPool(pool)` | Registers the pool and saves it to `lootpool/<key>.yml`. It survives reloads and restarts.                                       |
@@ -118,6 +184,17 @@ Both add methods replace any pool registered under the same key.
 
 Keys follow the same rule as in-game: lowercase letters, digits, `_`, `-` and `.` only (see [Pool types](pool-types.md#choosing-a-type)). The commands check this, but the API doesn't. A pool with any other key has a `null` `getKey()`, and `addLootPool` and `writeLootPool` throw a `NullPointerException` on it. `NamespacedKey.fromString("lootpool:" + key) != null` tells you whether a key is valid.
 
+## Copying a pool
+
+Every built-in type implements `CloneableLootPool`, which copies it under a new key, defensively copying whatever it holds:
+
+```java
+CloneableLootPool copy = ((CloneableLootPool) pool).withKey("dungeon_chest_hard");
+provider.writeLootPool(copy);
+```
+
+Pools the original _references_ by key are shared, not copied — cloning a composite gives you a second composite pointing at the same children.
+
 ## When the provider isn't there
 
 `LootPoolApi.getProvider()` returns `null`, and so does the services-manager lookup, until LootPool has enabled, or if it isn't installed. `getLootPool(key)` returns `null` for a key that doesn't exist.
@@ -125,3 +202,7 @@ Keys follow the same rule as in-game: lowercase letters, digits, `_`, `-` and `.
 Don't keep `LootPool` objects around between uses. A reload replaces every loaded pool, and an edit replaces the pool it touched, so a stored reference goes stale. Store the key and look the pool up each time. The lookup is a map read.
 
 The registry and inventories aren't thread-safe. Call the API from the server thread.
+
+## Going further
+
+To add a pool type, an item modifier or a condition of your own, see [Extending LootPool](extending-lootpool.md).
