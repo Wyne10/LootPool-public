@@ -1,8 +1,12 @@
 package me.wyne.lootpool.gui.complex
 
+import me.wyne.lootpool.api.BasicLootPool
+import me.wyne.lootpool.api.KeyedLoot
 import me.wyne.lootpool.api.Loot
 import me.wyne.lootpool.api.LootPool
 import me.wyne.lootpool.api.LootPoolProvider
+import me.wyne.lootpool.api.SnapshotLootPool
+import me.wyne.lootpool.api.VanillaLootPool
 import me.wyne.lootpool.api.complex.ComplexLootPool
 import me.wyne.lootpool.api.complex.EmptyEntry
 import me.wyne.lootpool.api.complex.EnchantmentPoolProvider
@@ -332,7 +336,9 @@ class PoolPickerScreen(
     private val onPick: (String) -> Unit
 ) : ButtonScreen(session, ROWS, Component.text("Select a loot pool")) {
 
-    private val keys: List<String> = ctx.lootPools.lootPoolMap.keys.sorted()
+    private val keys: List<String> = ctx.lootPools.lootPoolMap.entries
+        .sortedWith(compareBy({ typeOrder(it.value) }, { it.key }))
+        .map { it.key }
 
     override val contentCount: Int get() = keys.size
 
@@ -341,10 +347,17 @@ class PoolPickerScreen(
             .take(contentSize)
             .forEachIndexed { slot, key ->
                 val pool: LootPool? = ctx.lootPools.getLootPool(key)
+                val material = when (pool) {
+                    is ComplexLootPool -> Material.ENDER_CHEST
+                    is KeyedLoot -> pool.loot.item.type
+                    is SnapshotLootPool -> Material.SHULKER_BOX
+                    is VanillaLootPool -> Material.GRASS_BLOCK
+                    else -> Material.CHEST
+                }
                 inventory.setItem(
                     slot,
                     item(
-                        if (pool is ComplexLootPool) Material.ENDER_CHEST else Material.CHEST,
+                        material,
                         "gui-pool-option",
                         "pool" replace key,
                         "type" replace (pool?.javaClass?.simpleName ?: "?")
@@ -362,6 +375,15 @@ class PoolPickerScreen(
 
     companion object {
         private const val ROWS = 6
+
+        private fun typeOrder(pool: LootPool?): Int = when (pool) {
+            is BasicLootPool -> 0
+            is ComplexLootPool -> 1
+            is KeyedLoot -> 2
+            is SnapshotLootPool -> 3
+            is VanillaLootPool -> 4
+            else -> 5
+        }
     }
 }
 
