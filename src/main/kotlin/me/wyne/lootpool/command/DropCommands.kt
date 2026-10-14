@@ -160,14 +160,15 @@ class PopulateCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPool
         .withPermission("lootpool.populate")
         .withArguments(lootPoolKey("key") { lootPoolProvider.getMapOf(lootPoolType) })
         .withArguments(EntitySelectorArgument.OnePlayer("target"))
-        .withOptionalArguments(IntegerArgument("slots", 0))
+        .withOptionalArguments(BooleanArgument("random"), IntegerArgument("slots", 0))
         .executes(CommandExecutor { sender, args ->
             val key = args.getByClass("key", String::class.java)!!
             assertLootPoolExists(key, sender, lootPoolProvider.getMapOf(lootPoolType))
             val target = args.getByClass("target", Player::class.java)!!
             val lootPool = lootPoolProvider.getLootPool(key)!!
+            val random = args.getByClass("random", Boolean::class.java) ?: false
             val slots = args.getByClass("slots", Int::class.java)
-            val exceed = lootPool.populateInto(target.inventory, slots, LootRollContext.of(target))
+            val exceed = lootPool.populateInto(target.inventory, random, slots, LootRollContext.of(target))
             target.addOrDrop(*exceed.toTypedArray())
             sender.placeholderComponent("success-loot-drop", "key" replace key, "amount" replace (slots ?: "some")).sendMessagePlayer(sender)
         })
@@ -219,7 +220,7 @@ class FillCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType
         .withPermission("lootpool.fill")
         .withArguments(lootPoolKey("key") { lootPoolProvider.getMapOf(lootPoolType) })
         .withArguments(LocationArgument("location", LocationType.BLOCK_POSITION))
-        .withOptionalArguments(BooleanArgument("random"))
+        .withOptionalArguments(BooleanArgument("random"), IntegerArgument("slots", 0))
         .executes(CommandExecutor { sender, args ->
             val key = args.getByClass("key", String::class.java)!!
             assertLootPoolExists(key, sender, lootPoolProvider.getMapOf(lootPoolType))
@@ -233,8 +234,9 @@ class FillCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType
                         "z" replace location.blockZ).get()
                 )
             val random = args.getByClass("random", Boolean::class.java) ?: false
+            val slots = args.getByClass("slots", Int::class.java)
             val lootPool = lootPoolProvider.getLootPool(key)!!
-            lootPool.fillInto(container.inventory, random, LootRollContext.of(location))
+            lootPool.populateInto(container.inventory, random, slots, LootRollContext.of(location))
             sender.placeholderComponent("success-loot-drop", "key" replace key, "amount" replace container.inventory.size).sendMessagePlayer(sender)
         })
 }
@@ -325,16 +327,15 @@ fun LootPool.populateDefault(slots: Int?, context: LootRollContext): List<ItemSt
     else -> if (slots == null) emptyList() else populate(slots)
 }
 
-/** Fills [inventory] in slot order, letting a complex pool roll against [context]. */
-private fun LootPool.populateInto(inventory: Inventory, slots: Int?, context: LootRollContext): List<ItemStack> =
-    if (this is ContextualLootPool)
-        if (slots == null) populate(inventory, context) else populate(inventory, slots, context)
-    else
-        if (slots == null) populate(inventory) else populate(inventory, slots)
-
 /** Fills [inventory] in slot or random order, letting a complex pool roll against [context]. */
-private fun LootPool.fillInto(inventory: Inventory, random: Boolean, context: LootRollContext): List<ItemStack> =
+fun LootPool.populateInto(inventory: Inventory, random: Boolean, slots: Int?, context: LootRollContext): List<ItemStack> =
     if (this is ContextualLootPool)
-        if (random) populateRandomly(inventory, context) else populate(inventory, context)
+        if (slots == null)
+            if (random) populateRandomly(inventory, context) else populate(inventory, context)
+        else
+            if (random) populateRandomly(inventory, slots, context) else populate(inventory, slots, context)
     else
-        if (random) populateRandomly(inventory) else populate(inventory)
+        if (slots == null)
+            if (random) populateRandomly(inventory) else populate(inventory)
+        else
+            if (random) populateRandomly(inventory, slots) else populate(inventory, slots)

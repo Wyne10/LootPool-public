@@ -6,6 +6,7 @@ import dev.jorel.commandapi.CommandAPIBukkit
 import dev.jorel.commandapi.CommandAPICommand
 import dev.jorel.commandapi.arguments.Argument
 import dev.jorel.commandapi.arguments.ArgumentSuggestions
+import dev.jorel.commandapi.arguments.BooleanArgument
 import dev.jorel.commandapi.arguments.GreedyStringArgument
 import dev.jorel.commandapi.arguments.IntegerArgument
 import dev.jorel.commandapi.arguments.ListArgumentBuilder
@@ -28,6 +29,7 @@ import me.wyne.lootpool.api.LootPoolProvider
 import me.wyne.lootpool.api.MultiLootPool
 import me.wyne.lootpool.api.RollLootPool
 import me.wyne.lootpool.api.complex.ComplexLootPool
+import me.wyne.lootpool.api.complex.LootRollContext
 import org.bukkit.Bukkit
 import org.bukkit.NamespacedKey
 import org.bukkit.command.CommandSender
@@ -231,14 +233,17 @@ class PreviewCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolT
         )
         .withPermission("lootpool.info")
         .withArguments(lootPoolKey("key") { lootPoolProvider.getMapOf(lootPoolType) })
-        .withOptionalArguments(IntegerArgument("size", 1, 6))
+        .withOptionalArguments(IntegerArgument("size", 1, 6), BooleanArgument("random"),
+            IntegerArgument("slots", 0))
         .executesPlayer(PlayerCommandExecutor { sender, args ->
             val key = args.getByClass("key", String::class.java)!!
             assertLootPoolExists(key, sender, lootPoolProvider.getMapOf(lootPoolType))
             val lootPool = lootPoolProvider.getLootPool(key)!!
             val size = args.getByClassOrDefault("size", Int::class.java, 3)
             val inventory = Bukkit.createInventory(sender, size * 9, Component.text(lootPool.key.key))
-            lootPool.populate(inventory)
+            val random = args.getByClass("random", Boolean::class.java) ?: false
+            val slots = args.getByClass("slots", Int::class.java)
+            lootPool.populateInto(inventory, random, slots, LootRollContext.of(sender))
             sender.openInventory(inventory)
         })
 }
