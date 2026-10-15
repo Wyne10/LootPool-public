@@ -22,7 +22,7 @@ gui-back-lore:
   - "[gray][ЛКМ] [white]Вернуться"
 gui-step: "[white]Шаг: [gold]<step>"
 gui-step-lore:
-  - "[gray][ЛКМ] [white]Переключить [gold]1 [white]/ [gold]10 [white]/ [gold]100"
+  - "[gray][ЛКМ/ПКМ] [white]Переключить [gold]1 [white]/ [gold]10 [white]/ [gold]100"
 gui-field-number-lore:
   - "[gray][ЛКМ [red]-[gray]]/[ПКМ [green]+[gray]] [white]Изменить"
 gui-field-toggle-lore:

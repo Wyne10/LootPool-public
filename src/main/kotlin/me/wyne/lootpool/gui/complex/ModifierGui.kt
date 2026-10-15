@@ -233,6 +233,7 @@ fun modifierDetailScreen(
     return when (current()) {
         is EnchantModifier -> FieldScreen(session, 3, title) {
             val it = current() as EnchantModifier
+            val maxEnchants = it.enchantmentPool?.entries()?.size?.coerceAtLeast(1) ?: Int.MAX_VALUE
             listOf(
                 actionField(10, Material.ENCHANTED_BOOK, "gui-field-enchant-pool", { it.pool() }) { s ->
                     s.push(EnchantmentPoolPickerScreen(s, ctx) { key ->
@@ -241,10 +242,10 @@ fun modifierDetailScreen(
                         s.markDirty()
                     })
                 },
-                intField(12, Material.PAPER, "gui-field-min-enchants", 0, { it.minEnchants() }) { v ->
+                intField(12, Material.PAPER, "gui-field-min-enchants", 0, maxEnchants, { it.minEnchants() }) { v ->
                     replace(EnchantModifier(it.pool(), v, maxOf(v, it.maxEnchants()), it.onlyCompatible()))
                 },
-                intField(14, Material.PAPER, "gui-field-max-enchants", 0, { it.maxEnchants() }) { v ->
+                intField(14, Material.PAPER, "gui-field-max-enchants", 0, maxEnchants, { it.maxEnchants() }) { v ->
                     replace(EnchantModifier(it.pool(), minOf(v, it.minEnchants()), v, it.onlyCompatible()))
                 },
                 boolField(16, "gui-field-only-compatible", { it.onlyCompatible() }) { v ->
@@ -291,10 +292,10 @@ fun modifierDetailScreen(
         is AmountModifier -> FieldScreen(session, 3, title) {
             val it = current() as AmountModifier
             listOf(
-                intField(12, Material.PAPER, "gui-field-min-amount", 1, { it.minAmount() }) { v ->
+                intField(12, Material.PAPER, "gui-field-min-amount", 1, 64, { it.minAmount() }) { v ->
                     replace(AmountModifier(v, maxOf(v, it.maxAmount())))
                 },
-                intField(14, Material.PAPER, "gui-field-max-amount", 1, { it.maxAmount() }) { v ->
+                intField(14, Material.PAPER, "gui-field-max-amount", 1, 64, { it.maxAmount() }) { v ->
                     replace(AmountModifier(minOf(v, it.minAmount()), v))
                 }
             )
@@ -303,10 +304,10 @@ fun modifierDetailScreen(
         is LimitModifier -> FieldScreen(session, 3, title) {
             val it = current() as LimitModifier
             listOf(
-                intField(12, Material.HOPPER, "gui-field-min-amount", 1, { it.minAmount() }) { v ->
+                intField(12, Material.HOPPER, "gui-field-min-amount", 1, 64, { it.minAmount() }) { v ->
                     replace(LimitModifier(v, maxOf(v, it.maxAmount())))
                 },
-                intField(14, Material.HOPPER, "gui-field-max-amount", 1, { it.maxAmount() }) { v ->
+                intField(14, Material.HOPPER, "gui-field-max-amount", 1, 64, { it.maxAmount() }) { v ->
                     replace(LimitModifier(minOf(v, it.minAmount()), v))
                 }
             )

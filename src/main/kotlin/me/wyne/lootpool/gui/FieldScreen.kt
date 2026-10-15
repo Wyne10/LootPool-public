@@ -49,13 +49,21 @@ fun intField(
     material: Material,
     nameKey: String,
     min: Int = 0,
+    max: Int = Int.MAX_VALUE,
     get: () -> Int,
     set: (Int) -> Unit
 ) = Field(slot, { material }, nameKey, "gui-field-number-lore", { get().toString() }) { event, session ->
     when {
-        event.isLeftClick -> set((get() - session.step).coerceAtLeast(min))
-        event.isRightClick -> set(get() + session.step)
+        event.isLeftClick -> set(cycle(get().toLong() - session.step, min, max))
+        event.isRightClick -> set(cycle(get().toLong() + session.step, min, max))
     }
+}
+
+/** A step past either end of [min]..[max] lands on the opposite end. */
+private fun cycle(value: Long, min: Int, max: Int) = when {
+    value > max -> min
+    value < min -> max
+    else -> value.toInt()
 }
 
 /** A 0..1 fraction, nudged in whole percent per step and displayed as a percentage. */

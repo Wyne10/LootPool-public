@@ -58,11 +58,19 @@ class EditSession(val player: Player) : Listener {
         dirty = true
     }
 
-    fun cycleStep() {
-        step = when (step) {
-            1 -> 10
-            10 -> 100
-            else -> 1
+    fun cycleStep(clickType: ClickType) {
+        step = if (clickType == ClickType.LEFT) {
+            when (step) {
+                1 -> 100
+                10 -> 1
+                else -> 10
+            }
+        } else {
+            when (step) {
+                1 -> 10
+                10 -> 100
+                else -> 1
+            }
         }
     }
 

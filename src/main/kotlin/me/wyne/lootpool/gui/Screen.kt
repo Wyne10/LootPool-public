@@ -124,7 +124,7 @@ abstract class ButtonScreen(
         else
             button(controlRow + 4, item(Material.OAK_DOOR, "gui-back").lore("gui-back-lore")) { session.pop() }
         button(controlRow + stepSlot, item(Material.COMPARATOR, "gui-step", "step" replace session.step).lore("gui-step-lore")) {
-            session.cycleStep()
+            session.cycleStep(it.click)
             session.refresh()
         }
     }

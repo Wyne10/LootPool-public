@@ -242,12 +242,13 @@ fun conditionDetailScreen(
 
         is TimeCondition -> FieldScreen(session, 3, title) {
             val it = current() as TimeCondition
+            val lastTick = (TimeCondition.DAY_LENGTH - 1).toInt()
             listOf(
-                intField(12, Material.CLOCK, "gui-field-min-time", 0, { it.minTime().toInt() }) { v ->
-                    replace(TimeCondition(v.coerceIn(0, 24000).toLong(), it.maxTime()))
+                intField(12, Material.CLOCK, "gui-field-min-time", 0, lastTick, { it.minTime().toInt() }) { v ->
+                    replace(TimeCondition(v.toLong(), it.maxTime()))
                 },
-                intField(14, Material.CLOCK, "gui-field-max-time", 0, { it.maxTime().toInt() }) { v ->
-                    replace(TimeCondition(it.minTime(), v.coerceIn(0, 24000).toLong()))
+                intField(14, Material.CLOCK, "gui-field-max-time", 0, lastTick, { it.maxTime().toInt() }) { v ->
+                    replace(TimeCondition(it.minTime(), v.toLong()))
                 }
             )
         }

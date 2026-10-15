@@ -22,7 +22,7 @@ gui-back-lore:
   - "[gray][LMB] [white]Go back"
 gui-step: "[white]Step: [gold]<step>"
 gui-step-lore:
-  - "[gray][LMB] [white]Cycle [gold]1 [white]/ [gold]10 [white]/ [gold]100"
+  - "[gray][LMB/RMB] [white]Cycle [gold]1 [white]/ [gold]10 [white]/ [gold]100"
 gui-field-number-lore:
   - "[gray][LMB [red]-[gray]]/[RMB [green]+[gray]] [white]Change"
 gui-field-toggle-lore:
