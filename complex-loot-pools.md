@@ -227,3 +227,16 @@ dungeon_chest:
 `/lootpool info`, the [AbstractMenus catalog](abstractmenus-integration.md) and the API's `getLootList()` all flatten a complex pool into a plain list of every entry across every roll, with pool entries resolved up to four levels deep. That list is for inspection only: **roll counts, conditions and modifiers are absent from it**, so a preview of a pool that enchants its swords shows unenchanted swords.
 
 Every command that hands out loot runs the real pipeline instead — including `give`, `drop` and `insert`, which draw from the flat list for other pool types. Their `amount` and `unique` options have no effect on a complex pool, because the pool decides its own stack sizes and its own item count. `project` is the exception: it is a preview by definition, so it gives one of every entry in the flattened list.
+
+## Inside another pool
+
+Other pool types can name a complex pool by key, and what the player actually gets depends on which type is doing the naming:
+
+* [**Composite**](pool-types.md#composite) picks one whole sub-pool and hands it the entire roll, so a complex pool it picks runs its real pipeline.
+* A [**pool entry**](complex-loot-pools.md#entries) in another complex pool also runs the real pipeline, producing the referenced pool's natural output.
+* [**Multi**](pool-types.md#multi) merges the entries of everything it names into one flat list — the same lossy flattening a [preview](complex-loot-pools.md#what-a-preview-cant-show) does. The complex pool's pipeline never runs there, so its roll counts, conditions and item modifiers are all dropped, and only its entries survive, with pool entries resolved four levels deep.
+* [**Roll**](pool-types.md#roll) hands its rolled count to the complex pool as a slot count. The pool rolls in full and the result is truncated to that count, which cuts from the end: rolls run in order, so the last rolls are the ones lost.
+
+{% hint style="warning" %}
+Both of those last two quietly change what the pool produces. Prefer composite or a pool entry when the complex pool's rolls, conditions and modifiers have to survive the indirection, and let the complex pool state its own item count rather than wrapping it in a roll pool.
+{% endhint %}

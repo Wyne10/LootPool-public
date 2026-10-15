@@ -71,6 +71,10 @@ Merges the entries of the pools it names into one flat list, then rolls that lis
 
 Entries from all three pools compete directly, so a pool with more entries or heavier weights takes a proportionally bigger share.
 
+{% hint style="warning" %}
+A [complex pool](complex-loot-pools.md) named by a multi pool is flattened into that flat list like everything else, and the flattening is lossy. The multi pool takes the complex pool's entries and nothing else: its roll counts, its conditions and its item modifiers are all ignored, and pool entries inside it resolve only four levels deep. A complex pool that enchants its swords contributes plain swords, and one gated by a `chance` condition contributes its entries unconditionally — the pipeline never runs. Reach for [Composite](pool-types.md#composite) instead when the complex pool has to roll itself, or reference it as a [pool entry](complex-loot-pools.md#entries) from another complex pool.
+{% endhint %}
+
 ## Composite
 
 Names other pools, each with a weight of its own. Every use first picks **one** of those pools by weight, then lets that pool do the whole roll:
@@ -96,6 +100,10 @@ Wraps another pool and adds a roll count. Whenever the roll pool is used without
 Filling a chest from `dungeon_chest` puts 3 to 6 items from `dungeon_loot` into it, where filling from `dungeon_loot` directly would fill every empty slot. Leave out `maxRolls` to always make exactly `minRolls` draws, or leave out both for a single draw.
 
 A roll pool wraps any type. Over a [Composite](pool-types.md#composite) pool it picks one child pool and makes all 3 to 6 draws from that one. When a command does pass a slot count, the roll pool hands it straight to the wrapped pool and ignores its own range.
+
+{% hint style="warning" %}
+Over a [complex pool](complex-loot-pools.md) the rolled number stops being a number of draws and becomes a cap. The complex pool rolls itself in full, and the roll pool then truncates the result to that number — and because a complex pool's rolls are evaluated in order, what gets trimmed is whatever its last rolls produced. Wrapping _"3 to 5 commons, 1 tool, 1 guaranteed quest item"_ — a pool that produces 5 to 7 items — in `/lootpool roll chest dungeon_loot 3 6` loses the tool and the quest item on any cap below 5, and still loses them on a cap of 5 or 6 whenever the commons roll high. A complex pool already decides how many items it produces, so it seldom wants a roll pool around it.
+{% endhint %}
 
 ## Snapshot
 
