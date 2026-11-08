@@ -1,10 +1,6 @@
 package me.wyne.lootpool.api.complex;
 
-import me.wyne.lootpool.api.Loot;
-import me.wyne.lootpool.api.LootPool;
-import me.wyne.lootpool.api.LootPoolApi;
-import me.wyne.lootpool.api.LootPoolProvider;
-import me.wyne.lootpool.api.RollLootPool;
+import me.wyne.lootpool.api.*;
 import me.wyne.lootpool.api.complex.condition.LootCondition;
 import me.wyne.lootpool.api.complex.modifier.LootModifier;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
@@ -71,6 +67,8 @@ public record PoolEntry(@NotNull String pool, int weight,
             return contextual.populate(context);
         if (lootPool instanceof RollLootPool rollLootPool)
             return rollLootPool.populate(rollLootPool.rollSlots());
+        if (lootPool instanceof SnapshotLootPool snapshotLootPool)
+            return snapshotLootPool.populate(snapshotLootPool.getLootList().size());
         return lootPool.populate(1);
     }
 

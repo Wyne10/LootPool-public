@@ -48,9 +48,9 @@ public interface LootPool extends LootTable {
     List<@NotNull ItemStack> populate(int slots);
 
     /**
-     * Rolls loot into {@code inventory}'s empty slots, one roll per empty slot.
+     * Equivalent to {@link #populate(int)} with {@code slots} set to the inventory's size.
      *
-     * @return the items that could not be placed because the inventory ran out of empty slots
+     * @return the rolled items that did not fit into an empty slot
      */
     @NotNull
     default List<@NotNull ItemStack> populateList(@NotNull Inventory inventory) {
