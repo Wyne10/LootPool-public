@@ -50,14 +50,7 @@ ConfigurationSerialization.registerClass(MyLootPool.class);
 
 **Timing is the whole trick.** LootPool reads every pool file during its own startup, and a file naming a class Bukkit doesn't know about fails to deserialize. The failure is caught and logged, so the symptom is a pool that silently isn't there rather than a crash.
 
-So register in your plugin's **`onLoad`**, and tell the server to load your plugin first:
-
-```yaml
-# plugin.yml
-name: MyPlugin
-loadbefore: [LootPool]
-softdepend: [LootPool]
-```
+So register in your plugin's **`onLoad`**:
 
 ```java
 @Override
@@ -65,8 +58,6 @@ public void onLoad() {
     ConfigurationSerialization.registerClass(MyLootPool.class);
 }
 ```
-
-`loadbefore` orders the _load_ phase, which is what you need — `depend` only orders _enable_, by which time LootPool has already read its files. Registering a serializable class doesn't touch LootPool's API, so it's safe to do even when LootPool isn't installed.
 
 ### Serialization rules
 
@@ -115,11 +106,10 @@ public record CustomKeyedLoot(@NotNull String key, @NotNull Loot loot)
 }
 ```
 
-Three things make it work:
+Two things make it work:
 
 1. **`LootPool`'s static helpers do the real work.** `LootPool.populate(lootList, slots)`, `LootPool.populate(lootList, inventory, slots)` and `LootPool.populateRandomly(…)` implement the weighted draw and the placement, so an implementation only has to produce a `List<Loot>`.
 2. **The pool is late-binding.** Because `getLootList()` resolves the custom item every time, an edit to the item definition shows up in every pool built on it without rewriting a single file. The built-in `MultiLootPool` and `CompositeLootPool` do the same thing with pool keys.
-3. **It registers in `onLoad` under `loadbefore: [LootPool]`**, as above. It predates `@SerializableAs`, so its files name the class in full — worth adding on a new type, but not worth changing on an old one.
 
 Creating one is then a command of CustomItems' own:
 
