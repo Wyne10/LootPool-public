@@ -47,7 +47,7 @@ A plain list of entries that you build in [the loot editor](the-loot-editor.md).
 /lootpool pool create common_ores
 ```
 
-Rolling a basic pool into an inventory without a slot count makes **one draw per empty slot**, so it fills the whole inventory. Give a slot count, or wrap the pool in a [Roll](pool-types.md#roll) pool, when you want fewer items.
+Rolling a basic pool into an inventory without a slot count makes **one draw per empty slot**, so it fills the whole inventory. Without an inventory, as with `/lootpool spawn`, it makes one draw per entry instead. Give a slot count, or wrap the pool in a [Roll](pool-types.md#roll) pool, when you want fewer items.
 
 ## Keyed loot
 
@@ -114,7 +114,7 @@ Captures an inventory, either your own or a container you point at, and remember
 /lootpool snapshot vault_layout 120 64 -35
 ```
 
-Filling a container or a player inventory from a snapshot puts each item back into its original slot. An item whose slot is taken, or doesn't exist in the target, is left over (`populate` drops leftovers at the player's feet). Snapshotting your own inventory captures armor and off-hand too, and populating a player from it puts them back.
+Filling a container or a player inventory from a snapshot puts each item back into its original slot. An item whose slot is taken, or doesn't exist in the target, is left over (`populate` drops leftovers at the player's feet). Snapshotting your own inventory captures armor and off-hand too, and populating a player from it puts them back. Where there is no inventory to place into, such as `/lootpool spawn` or a [pool entry](complex-loot-pools.md#entries), a snapshot produces every saved item.
 
 Random placement (`fill … true`) ignores the saved slots. It draws from the entries like a basic pool, where every entry has weight 1, and scatters the results across empty slots.
 

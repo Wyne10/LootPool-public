@@ -108,7 +108,7 @@ public record CustomKeyedLoot(@NotNull String key, @NotNull Loot loot)
 
 Two things make it work:
 
-1. **`LootPool`'s static helpers do the real work.** `LootPool.populate(lootList, slots)`, `LootPool.populate(lootList, inventory, slots)` and `LootPool.populateRandomly(…)` implement the weighted draw and the placement, so an implementation only has to produce a `List<Loot>`.
+1. **`LootPool`'s static helpers do the real work.** `LootPool.populate(lootList, slots)`, `LootPool.populate(lootList, inventory, slots)` and `LootPool.populateRandomly(…)` implement the weighted draw and the placement, so an implementation only has to produce a `List<Loot>`. The no-count `populate()` defaults to one draw per entry; override it only if your type decides its own item count.
 2. **The pool is late-binding.** Because `getLootList()` resolves the custom item every time, an edit to the item definition shows up in every pool built on it without rewriting a single file. The built-in `MultiLootPool` and `CompositeLootPool` do the same thing with pool keys.
 
 Creating one is then a command of CustomItems' own:

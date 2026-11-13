@@ -39,6 +39,23 @@ public interface LootPool extends LootTable {
     Loot getRandom();
 
     /**
+     * Rolls this pool's natural output, without touching any inventory, for callers that have no
+     * slot count of their own.
+     * <p>
+     * The default makes one independent draw per entry in {@link #getLootList()}. Implementations
+     * whose output size is part of their definition override it: {@link RollLootPool} rolls its own
+     * roll count, {@link CompositeLootPool} delegates to the one sub-pool it picks,
+     * {@link VanillaLootPool} runs its table once, and a
+     * {@link me.wyne.lootpool.api.complex.ComplexLootPool ComplexLootPool} runs its rolls.
+     *
+     * @return the rolled items, in roll order
+     */
+    @NotNull
+    default List<@NotNull ItemStack> populate() {
+        return populate(getLootList().size());
+    }
+
+    /**
      * Rolls {@code slots} independent {@link ItemStack}s from this pool, without touching any inventory.
      *
      * @param slots the number of items to roll

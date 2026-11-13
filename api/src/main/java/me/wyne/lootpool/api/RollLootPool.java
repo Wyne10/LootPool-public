@@ -20,7 +20,7 @@ import java.util.concurrent.ThreadLocalRandom;
  * drawn per use should vary within {@code [minRolls, maxRolls]}.
  * <p>
  * The random roll count only applies to the inventory/no-slots convenience methods
- * ({@link #populateList(Inventory)}, {@link #populate(Inventory)}, {@link #populateRandomly(Inventory)},
+ * ({@link #populate()}, {@link #populateList(Inventory)},{@link #populate(Inventory)}, {@link #populateRandomly(Inventory)},
  * {@link #populateLoot(Random, LootContext)} and {@link #fillInventory(Inventory, Random, LootContext)}),
  * all of which use {@link #rollSlots()} in place of the inventory size. The explicit-{@code slots}
  * overloads ({@link #populate(int)}, {@link #populate(Inventory, int)}, {@link #populateRandomly(Inventory, int)})
@@ -110,6 +110,16 @@ public record RollLootPool(@NotNull String key, @NotNull String pool, int minRol
     public @NotNull Loot getRandom() {
         LootPool lootPool = getLootPool();
         return lootPool != null ? lootPool.getRandom() : Loot.EMPTY;
+    }
+
+    /**
+     * Rolls {@link #rollSlots()} items from the referenced pool, like the other no-slots methods.
+     *
+     * @return the rolled items, or an empty list if {@link #getLootPool()} is {@code null}
+     */
+    @Override
+    public @NotNull List<@NotNull ItemStack> populate() {
+        return populate(rollSlots());
     }
 
     /**

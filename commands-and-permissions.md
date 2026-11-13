@@ -145,14 +145,16 @@ A [complex pool](complex-loot-pools.md) is the exception. `give`, `drop` and `in
 
 `fill`, `populate`, `spawn` and `preview` hand the work to the pool. A composite picks one child pool, a roll pool uses its range, a snapshot puts items in their saved slots, a vanilla pool runs the vanilla table, and a complex pool runs its rolls, modifiers and conditions.
 
-| Command                                     | Permission          | What it does                                                                                                                                        |
-| ------------------------------------------- | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/lootpool fill <key> <x y z> [random]`     | `lootpool.fill`     | Fills the container at a block location. What doesn't fit is lost.                                                                                  |
-| `/lootpool populate <key> <player> [slots]` | `lootpool.populate` | Fills a player's inventory. What doesn't fit is dropped at their feet.                                                                              |
-| `/lootpool spawn <key> <x y z> [slots]`     | `lootpool.spawn`    | Drops the loot on the ground. A roll or complex pool uses its own count when `slots` is left out; **any other pool drops nothing without `slots`**. |
-| `/lootpool preview <key> [rows]`            | `lootpool.info`     | Opens a chest of 1 to 6 rows (3 by default) filled from the pool                                                                                    |
+| Command                                                | Permission          | What it does                                                           |
+| ------------------------------------------------------ | ------------------- | ---------------------------------------------------------------------- |
+| `/lootpool fill <key> <x y z> [random] [slots]`        | `lootpool.fill`     | Fills the container at a block location. What doesn't fit is lost.     |
+| `/lootpool populate <key> <player> [random] [slots]`   | `lootpool.populate` | Fills a player's inventory. What doesn't fit is dropped at their feet. |
+| `/lootpool spawn <key> <x y z> [slots]`                | `lootpool.spawn`    | Drops the loot on the ground                                           |
+| `/lootpool preview <key> [rows] [random] [slots]`      | `lootpool.info`     | Opens a chest of 1 to 6 rows (3 by default) filled from the pool       |
 
-Without a slot count, a basic, multi or composite pool makes **one draw per empty slot** of the target, so `fill` fills the whole chest and `populate` fills the player's whole inventory, armor and off-hand slots included. For a sensible amount of loot, point these commands at a [roll pool](pool-types.md#roll) or pass `slots`.
+`random` set to `true` scatters the items across random empty slots, and `slots` overrides the pool's own count.
+
+Without a slot count, a basic, multi or composite pool makes **one draw per empty slot** of the target, so `fill` fills the whole chest and `populate` fills the player's whole inventory, armor and off-hand slots included. `spawn` has no target inventory, so there a basic or multi pool makes **one draw per entry**, a snapshot drops every saved item, and a composite spawns whatever the child pool it picks would. For a sensible amount of loot, point these commands at a [roll pool](pool-types.md#roll) or pass `slots`.
 
 {% hint style="danger" %}
 The preview is an ordinary chest, so the items in it are real and can be taken out. Give `lootpool.info` only to staff.

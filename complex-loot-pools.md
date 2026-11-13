@@ -59,7 +59,7 @@ The pool produces however many items the rolls yield. Nothing is padded: a comma
 
 An **item entry** is the same `Loot` record the [loot editor](the-loot-editor.md) builds, so it keeps the item's full name, lore, enchantments and NBT, and rolls its stack size between its own minimum and maximum.
 
-A **pool entry** hands the draw to another pool of any type, resolved by key on every roll. That's what makes _"one draw from `tools`, five draws from `resources`"_ two rolls of one entry each, and what lets you keep item categories in ordinary basic pools and compose them here. A key that no longer resolves is skipped, like everywhere else in the plugin.
+A **pool entry** hands the draw to another pool of any type, resolved by key on every roll. That's what makes _"one draw from `tools`, five draws from `resources`"_ two rolls of one entry each, and what lets you keep item categories in ordinary basic pools and compose them here. A basic, multi or composite pool gives one draw, while a pool with its own idea of size gives all of it: a roll pool rolls its range, a snapshot gives every saved item, and another complex pool runs its rolls. A key that no longer resolves is skipped, like everywhere else in the plugin.
 
 An **empty entry** is the "nothing dropped" slot — the complex pool's version of the editor's **Nothing** item. Note that it is _not_ the same as discarding: an empty entry consumes the draw and produces nothing, while a [discard modifier](complex-loot-pools.md#item-modifiers) removes an item another entry already produced.
 

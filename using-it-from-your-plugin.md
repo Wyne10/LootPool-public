@@ -70,11 +70,14 @@ pool.populateRandomly(chest.getInventory());
 // Roll 5 items without touching any inventory.
 List<ItemStack> items = pool.populate(5);
 
+// Or let the pool decide how many.
+List<ItemStack> natural = pool.populate();
+
 // Draw a single entry and turn it into an item stack.
 ItemStack reward = pool.getRandom().create();
 ```
 
-The overloads that take no count behave as described in [Pool types](pool-types.md). A basic pool makes one draw per empty slot, a roll pool uses its range, and a snapshot places its items in their saved slots. Pass a count to control it yourself: `populate(inventory, 3)`, `populateRandomly(inventory, 3)`.
+The overloads that take no count behave as described in [Pool types](pool-types.md). A basic pool makes one draw per empty slot, a roll pool uses its range, and a snapshot places its items in their saved slots. Plain `populate()` has no inventory to size against, so a basic or multi pool makes one draw per entry and a snapshot returns every saved item. Pass a count to control it yourself: `populate(inventory, 3)`, `populateRandomly(inventory, 3)`.
 
 `Loot` also offers `create(Loot.Amount.MIN)`, `create(Loot.Amount.MAX)` and `create(int)` when you want a fixed stack size instead of a rolled one.
 
@@ -109,7 +112,7 @@ if (pool instanceof ContextualLootPool contextual) {
 `LootRollContext.of(player)` also carries where they're standing. `of(location)` carries no player, and `LootRollContext.EMPTY` carries neither.
 
 {% hint style="warning" %}
-**A condition that can't be answered fails.** Calling the plain `populate(5)` on a complex pool rolls it with `LootRollContext.EMPTY`, so every `permission`, `world`, `biome`, `time`, `weather` and `hasloot` condition in it fails and the pool likely produces nothing. Pass a context whenever you have one.
+**A condition that can't be answered fails.** Calling the plain `populate()` or `populate(5)` on a complex pool rolls it with `LootRollContext.EMPTY`, so every `permission`, `world`, `biome`, `time`, `weather` and `hasloot` condition in it fails and the pool likely produces nothing. Pass a context whenever you have one.
 {% endhint %}
 
 If you'd rather not branch on the type, the plugin's own commands go through one helper you can copy:
@@ -118,9 +121,7 @@ If you'd rather not branch on the type, the plugin's own commands go through one
 List<ItemStack> roll(LootPool pool, Integer slots, LootRollContext context) {
     if (pool instanceof ContextualLootPool contextual)
         return slots == null ? contextual.populate(context) : contextual.populate(slots, context);
-    if (pool instanceof RollLootPool roll)
-        return roll.populate(slots == null ? roll.rollSlots() : slots);
-    return slots == null ? List.of() : pool.populate(slots);
+    return slots == null ? pool.populate() : pool.populate(slots);
 }
 ```
 

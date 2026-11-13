@@ -21,8 +21,9 @@ import java.util.Map;
  * <p>
  * How many items the referenced pool produces is the pool's own business: a
  * {@link ContextualLootPool} such as another {@link ComplexLootPool} rolls its natural output, a
- * {@link RollLootPool} rolls its own roll count, and any other pool produces a single weighted
- * draw. Dangling references produce nothing rather than failing.
+ * {@link RollLootPool} rolls its own roll count, a {@link SnapshotLootPool} produces every saved
+ * item, and any other pool produces a single weighted draw. Dangling references produce nothing
+ * rather than failing.
  *
  * @param pool       the registry key of the pool to delegate to
  * @param weight     this entry's relative chance of being picked

@@ -40,7 +40,7 @@ import java.util.Random;
  * The explicit-{@code slots} overloads truncate that result to {@code slots}; they never pad it, so
  * asking for more items than the rolls produce simply returns fewer. Following
  * {@link me.wyne.lootpool.api.RollLootPool}'s convention, the no-slots convenience methods
- * ({@link #populateList(Inventory)}, {@link #populate(Inventory)}, {@link #populateRandomly(Inventory)},
+ * ({@link #populate()}, {@link #populateList(Inventory)}, {@link #populate(Inventory)}, {@link #populateRandomly(Inventory)},
  * {@link #populateLoot(Random, LootContext)} and {@link #fillInventory(Inventory, Random, LootContext)})
  * use the pool's natural output rather than the inventory's size.
  *
@@ -81,6 +81,16 @@ public record ComplexLootPool(@NotNull String key,
      */
     public ComplexLootPool(@NotNull String key) {
         this(key, List.of(), List.of(), List.of());
+    }
+
+    /**
+     * Runs the pipeline with {@link LootRollContext#EMPTY}, producing the pool's natural output.
+     * Conditions that need a player or a location fail against an empty context, so prefer
+     * {@link #populate(LootRollContext)} whenever one is available.
+     */
+    @Override
+    public @NotNull List<@NotNull ItemStack> populate() {
+        return populate(LootRollContext.EMPTY);
     }
 
     @Override

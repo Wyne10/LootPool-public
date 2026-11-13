@@ -120,6 +120,15 @@ public record CompositeLootPool(@NotNull String key, @NotNull Map<@NotNull Strin
     }
 
     /**
+     * Picks one sub-pool via {@link #getRandomLootPool()} and returns its own
+     * {@link LootPool#populate()}, so the picked pool decides how many items it produces.
+     */
+    @Override
+    public @NotNull List<@NotNull ItemStack> populate() {
+        return getRandomLootPool().populate();
+    }
+
+    /**
      * Picks one sub-pool via {@link #getRandomLootPool()} and rolls all {@code slots} items from
      * it, rather than from a mix of the referenced pools.
      */

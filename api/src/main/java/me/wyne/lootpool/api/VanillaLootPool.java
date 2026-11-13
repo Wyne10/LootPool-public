@@ -88,6 +88,15 @@ public record VanillaLootPool(@NotNull String key, @NotNull NamespacedKey path) 
     }
 
     /**
+     * Rolls the vanilla table once via {@link #defaultContext()} and returns whatever it drops,
+     * without the extra roll the default's {@link #getLootList()} call would make.
+     */
+    @Override
+    public @NotNull List<@NotNull ItemStack> populate() {
+        return populateLoot(ThreadLocalRandom.current(), defaultContext()).stream().toList();
+    }
+
+    /**
      * {@code slots} is ignored; this rolls the vanilla table once via {@link #defaultContext()}
      * and returns whatever it drops.
      */

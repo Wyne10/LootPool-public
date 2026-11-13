@@ -181,8 +181,7 @@ class SpawnCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolTyp
             """
                 Spawn loot from a loot pool as dropped items at the given world location,
                 using the loot pool's own logic.
-                "slots" is how many slots to roll; a roll loot pool defaults to its own random
-                roll count, while other pools need a slot count or nothing is dropped.
+                "slots" is how many slots to roll (defaults to loot pool logic).
             """.trimIndent()
         )
         .withPermission("lootpool.spawn")
@@ -215,6 +214,7 @@ class FillCommand<T : LootPool>(lootPoolProvider: LootPoolProvider, lootPoolType
                 Unlike "insert", this fills the whole container inventory as defined by the pool
                 rather than rolling a fixed number of slots.
                 "random" scatters the loot across random slots instead of filling them in order.
+                "slots" is how many slots to populate (defaults to loot pool logic).
             """.trimIndent()
         )
         .withPermission("lootpool.fill")
@@ -324,7 +324,7 @@ private fun rollDrops(
 fun LootPool.populateDefault(slots: Int?, context: LootRollContext): List<ItemStack> = when (this) {
     is ContextualLootPool -> if (slots == null) populate(context) else populate(slots, context)
     is RollLootPool -> populate(slots ?: rollSlots())
-    else -> if (slots == null) emptyList() else populate(slots)
+    else -> if (slots == null) populate() else populate(slots)
 }
 
 /** Fills [inventory] in slot or random order, letting a complex pool roll against [context]. */
