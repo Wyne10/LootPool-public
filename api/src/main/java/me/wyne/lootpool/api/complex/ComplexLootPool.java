@@ -20,6 +20,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * A {@link LootPool} shaped like a vanilla loot table: an ordered list of {@link LootRoll}s, each
@@ -47,7 +48,7 @@ import java.util.Random;
  * <h2>Previews</h2>
  * {@link #getLootList()} returns the flattened union of every entry across every roll, for
  * inspection purposes. It does not reflect the actual roll behavior — roll counts, conditions and
- * modifiers are all absent from it — and neither does {@link #getRandom()}.
+ * modifiers are all absent from it.
  *
  * @param key        this pool's identifier in the plugin's registry
  * @param rolls      the roll groups, evaluated in order
@@ -242,15 +243,19 @@ public record ComplexLootPool(@NotNull String key,
     }
 
     /**
-     * Weighted-random-selects one entry from {@link #getLootList()}. Like that method, this is a
-     * preview: it ignores rolls, conditions and modifiers.
+     * Runs {@link #populate()} and picks one of the produced items at random, wrapped as a
+     * single-weight {@link Loot} with a fixed amount.
      *
-     * @return the selected entry, or {@link Loot#EMPTY} if the pool has no eligible entries
+     * @return the selected item as a {@link Loot} entry, or {@link Loot#EMPTY} if {@link #populate()} produced nothing
      */
     @Override
     @NotNull
     public Loot getRandom() {
-        return LootPool.getRandom(getLootList());
+        List<ItemStack> items = populate();
+        if (items.isEmpty())
+            return Loot.EMPTY;
+        ItemStack item = items.get(ThreadLocalRandom.current().nextInt(items.size()));
+        return new Loot(item, 1, item.getAmount(), item.getAmount());
     }
 
     @Override
